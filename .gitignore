@@ -1,0 +1,5 @@
+.rojo/
+Packages/
+ServerPackages/
+*.lock
+build.xlsm
