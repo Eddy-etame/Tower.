@@ -1,0 +1,8 @@
+# Toolchain pins for Project 001 — carried from the studio's proven setup (Horror Castle era toolchain, the one part worth keeping).
+# Managed by Rokit: https://github.com/rojo-rbx/rokit — run `rokit install` after cloning.
+
+[tools]
+rojo = "rojo-rbx/rojo@7.6.1"
+stylua = "JohnnyMorganz/stylua@2.5.2"
+selene = "Kampfkarren/selene@0.31.0"
+wally = "upliftgames/wally@0.3.2"

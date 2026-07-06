@@ -1,0 +1,9 @@
+[package]
+name = "runtime-studio/project-001"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+# No dependencies yet by design: Promise lands with the first async system,
+# ProfileService lands when persistence starts (luau-architect) — never before they're needed.
+[dependencies]
