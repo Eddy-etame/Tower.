@@ -1,4 +1,4 @@
-﻿# T5 Research Dossier — Index
+# T5 Research Dossier - Index
 
 Generated 2026-07-06 by an 11-agent research sweep (roblox-watch doctrine: mechanisms not vibes, every finding carries an application plan). Feeds the four experience whiteboards (T1-T4).
 
