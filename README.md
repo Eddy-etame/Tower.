@@ -37,6 +37,14 @@ Zero red errors in Output is the standard — a single console error means the b
 
 To develop with live sync instead of rebuilding: run `rojo serve`, then in Studio open the Rojo plugin panel and press **Connect**. Edits to `src/` sync into Studio live.
 
+### Troubleshooting: "The version of Roblox Studio is out of date"
+
+The updater cannot replace Studio's files while ANY Roblox process is alive — a stuck instance makes every reinstall attempt "block" even after the download worked. Fix, in order:
+
+1. Close every Roblox process: Task Manager → end `RobloxStudioBeta` and `RobloxCrashHandler` (or in PowerShell: `Stop-Process -Name RobloxStudioBeta,RobloxCrashHandler -Force`).
+2. Check whether the files already updated — they often did: compare the folder name in `%LOCALAPPDATA%\Roblox\Versions\` against the official current version (`https://clientsettings.roblox.com/v2/client-version/WindowsStudio64` → `clientVersionUpload`). If they match, just relaunch — no reinstall needed.
+3. Only if they differ: run `RobloxStudioInstaller.exe` from that Versions folder (with everything closed), then relaunch.
+
 ## Repo layout
 
 ```
