@@ -13,6 +13,15 @@
 **Impact:** T1-T5 deliverables land here; canon docs in runtime-suite/canon remain Notion-mastered (unchanged).
 **Approved:** Eddy (chat, 2026-07-06).
 
+## 2026-07-06 — GATE A: all four experience whiteboards approved
+**Decision:** The Silent Witness, The Violent Rhythm, The Hidden Presence, and The Moral Collapse whiteboards approved as designed; Stage 2 (climax-first five-act design) authorized for all four. The Moral Collapse companion's hum confirmed as diegetic creature SFX (legal under no-music).
+**Approved:** Eddy (chat, 2026-07-06 — "we'll go with your suggestions").
+
+## 2026-07-06 — Project remote: the existing connected repo
+**Decision:** Project 001 pushes to the already-connected GitHub remote `Eddy-etame/Tower.` on branch `dev/eddy`. `main` there remains the Horror Castle archive and is never pushed directly (Rule 17); Project 001's main will exist only via reviewed merge.
+**Context:** Eddy: the repo where the initial project idea started is the project's connected repo. Claude's standing recommendation, non-blocking: rename the GitHub repo (Tower. → e.g. project-001) for era-clarity — renames keep redirects, zero disruption; and cut a clean default branch at first reviewed merge.
+**Approved:** Eddy (chat, 2026-07-06). Pushed same turn: dev/eddy (4 commits at time of push).
+
 ## 2026-07-06 — Private exports quarantined; game repo stays clean
 **Decision:** Account exports (conversations.json, memories.json, users.json, projects/) moved to `RuntimeStudio/_private/`; the game repo is this dedicated folder so private data can never be pushed.
 **Context:** Audit F4 (past transcripts exposed credentials); approved as boot question 2.
