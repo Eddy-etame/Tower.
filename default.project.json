@@ -2,6 +2,34 @@
 	"name": "Project001",
 	"tree": {
 		"$className": "DataModel",
+		"Workspace": {
+			"StagingGround": {
+				"$className": "SpawnLocation",
+				"$properties": {
+					"Anchored": true,
+					"Duration": 0,
+					"Neutral": true,
+					"Position": [0, 0.5, 0],
+					"Size": [12, 1, 12]
+				}
+			},
+			"Baseplate": {
+				"$className": "Part",
+				"$properties": {
+					"Anchored": true,
+					"Locked": true,
+					"Material": "Slate",
+					"Color": [0.16, 0.16, 0.18],
+					"Position": [0, -2, 0],
+					"Size": [512, 4, 512]
+				}
+			}
+		},
+		"TextChatService": {
+			"$properties": {
+				"ChatVersion": "TextChatService"
+			}
+		},
 		"ReplicatedStorage": {
 			"Shared": {
 				"$path": "src/shared"
