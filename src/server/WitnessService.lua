@@ -188,7 +188,7 @@ function WitnessService.resetWorld()
 			roomHandle.tickLabel.Text = ""
 		end
 	end
-	Blockout.closeSeal(world)
+	Blockout.closeDoor(world)
 end
 
 return WitnessService

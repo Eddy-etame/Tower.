@@ -122,12 +122,14 @@ function Blockout.build(layout, tuning)
 			Material = Enum.Material.Concrete,
 			Name = (space.id or "Space") .. "_Floor",
 		}, folder)
-		makePart({
-			Size = Vector3.new(width + 2, 0.5, depth + 2),
-			CFrame = CFrame.new(centerX, layout.WALL_HEIGHT + 0.25, centerZ),
-			Color = CEILING_COLOR,
-			Name = (space.id or "Space") .. "_Ceiling",
-		}, folder)
+		if not space.noCeiling then
+			makePart({
+				Size = Vector3.new(width + 2, 0.5, depth + 2),
+				CFrame = CFrame.new(centerX, layout.WALL_HEIGHT + 0.25, centerZ),
+				Color = CEILING_COLOR,
+				Name = (space.id or "Space") .. "_Ceiling",
+			}, folder)
+		end
 		local relay = makePart({
 			Size = Vector3.new(0.8, 0.8, 0.8),
 			CFrame = CFrame.new(centerX, layout.WALL_HEIGHT - 0.7, centerZ),
@@ -256,16 +258,79 @@ function Blockout.build(layout, tuning)
 	handles.scratchPart = scratch
 	handles.scratchSound = scratchSound
 
-	-- the sealed exit: found early as a mystery, opened by reading the dossier
-	local sealDef = layout.seal
-	local seal = makePart({
-		Size = Vector3.new(1.2, layout.WALL_HEIGHT, sealDef.zTo - sealDef.zFrom),
-		CFrame = CFrame.new(sealDef.x, layout.WALL_HEIGHT / 2, (sealDef.zFrom + sealDef.zTo) / 2),
-		Color = Color3.fromRGB(58, 56, 54),
+	-- THE EXIT DOOR: the visible goal. Sealed until the dossier's live line has been read.
+	local doorDef = layout.exitDoor
+	local doorCenter = Vector3.new(doorDef.x, layout.DOOR_HEIGHT / 2, (doorDef.zFrom + doorDef.zTo) / 2)
+	local door = makePart({
+		Size = Vector3.new(1.3, layout.DOOR_HEIGHT, doorDef.zTo - doorDef.zFrom),
+		CFrame = CFrame.new(doorCenter),
+		Color = Color3.fromRGB(48, 46, 44),
 		Material = Enum.Material.DiamondPlate,
-		Name = "AnnexSeal",
+		Name = "ExitDoor",
 	}, folder)
-	handles.seal = seal
+	handles.door = door
+	handles.doorClosedCFrame = door.CFrame
+	local doorPrompt = Instance.new("ProximityPrompt")
+	doorPrompt.ActionText = "Open"
+	doorPrompt.ObjectText = "Exit Door"
+	doorPrompt.MaxActivationDistance = 9
+	doorPrompt.RequiresLineOfSight = false
+	doorPrompt.Parent = door
+	handles.doorPrompt = doorPrompt
+	local doorLamp = makePart({
+		Size = Vector3.new(0.6, 0.6, 2),
+		CFrame = CFrame.new(doorDef.x - 0.6, layout.DOOR_HEIGHT + 0.8, 0),
+		Color = Color3.fromRGB(200, 40, 40),
+		Material = Enum.Material.Neon,
+		Name = "ExitLamp",
+	}, folder)
+	local doorLampLight = Instance.new("PointLight")
+	doorLampLight.Range = 14
+	doorLampLight.Brightness = 1.6
+	doorLampLight.Color = doorLamp.Color
+	doorLampLight.Parent = doorLamp
+	handles.doorLamp = doorLamp
+	local doorSound = Instance.new("Sound")
+	doorSound.SoundId = tuning.CLICK_SOUND
+	doorSound.PlaybackSpeed = 0.25
+	doorSound.Volume = 0.8
+	doorSound.Parent = door
+	handles.doorSound = doorSound
+
+	-- the win pad: stand here, outside, in daylight
+	handles.winPad = makePart({
+		Size = Vector3.new(4, 0.3, 8),
+		CFrame = CFrame.new(layout.winPad.x, 0.25, layout.winPad.z),
+		Color = Color3.fromRGB(235, 230, 214),
+		Material = Enum.Material.Neon,
+		Name = "WinPad",
+	}, folder)
+
+	-- readable notes: the session log speaking back
+	handles.notes = {}
+	for _, noteDef in layout.notes do
+		local cframe
+		if noteDef.onWall then
+			cframe = CFrame.new(noteDef.x, noteDef.y, noteDef.z) * CFrame.Angles(0, math.rad(180), 0)
+		else
+			cframe = CFrame.new(noteDef.x, noteDef.y, noteDef.z)
+				* CFrame.Angles(math.rad(-90), math.rad(noteDef.yaw), 0)
+		end
+		local paper = makePart({
+			Size = Vector3.new(1.7, 2.3, 0.08),
+			CFrame = cframe,
+			Color = PAPER,
+			Material = Enum.Material.SmoothPlastic,
+			Name = "Note_" .. noteDef.id,
+		}, folder)
+		local prompt = Instance.new("ProximityPrompt")
+		prompt.ActionText = "Read"
+		prompt.ObjectText = "Note"
+		prompt.MaxActivationDistance = 7
+		prompt.RequiresLineOfSight = false
+		prompt.Parent = paper
+		handles.notes[noteDef.id] = { part = paper, prompt = prompt }
+	end
 
 	local boardDef = layout.board
 	handles.board = makePart({
@@ -299,14 +364,19 @@ function Blockout.build(layout, tuning)
 	return handles
 end
 
-function Blockout.openSeal(handles)
-	handles.seal.CanCollide = false
-	handles.seal.Transparency = 0.85
+function Blockout.openDoor(handles)
+	handles.door.CFrame = handles.doorClosedCFrame - Vector3.new(0, handles.door.Size.Y - 0.4, 0)
+	handles.doorPrompt.Enabled = false
+	handles.doorLamp.Color = Color3.fromRGB(70, 200, 90)
+	handles.doorLamp.PointLight.Color = handles.doorLamp.Color
+	handles.doorSound:Play()
 end
 
-function Blockout.closeSeal(handles)
-	handles.seal.CanCollide = true
-	handles.seal.Transparency = 0
+function Blockout.closeDoor(handles)
+	handles.door.CFrame = handles.doorClosedCFrame
+	handles.doorPrompt.Enabled = true
+	handles.doorLamp.Color = Color3.fromRGB(200, 40, 40)
+	handles.doorLamp.PointLight.Color = handles.doorLamp.Color
 end
 
 -- A small dark disc after each unobserved move: the second corroborating trace

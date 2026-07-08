@@ -75,13 +75,14 @@ MapLayout.rooms = {
 -- Non-room built spaces (floors, ceilings, lights — no click, no tally).
 MapLayout.extraSpaces = {
 	{
-		id = "EXITCHAMBER",
-		minX = 85,
-		maxX = 96,
-		minZ = -25,
-		maxZ = -9,
-		floorColor = Color3.fromRGB(96, 96, 100),
-		lightColor = Color3.fromRGB(214, 214, 224),
+		id = "EXITHALL",
+		minX = 111,
+		maxX = 122,
+		minZ = -4,
+		maxZ = 4,
+		floorColor = Color3.fromRGB(180, 176, 168),
+		lightColor = Color3.fromRGB(255, 250, 240),
+		noCeiling = true, -- you leave into daylight
 	},
 }
 
@@ -95,25 +96,28 @@ MapLayout.walls = {
 	{ axis = "z", fixed = 8.5, from = 13, to = 111 }, -- long north wall
 	{ axis = "z", fixed = -8.5, from = 13, to = 62 }, -- south wall, rooms one and two
 	{ axis = "z", fixed = -8.5, from = 62, to = 86, gap = { from = 78, to = 83 } }, -- room three south, annex doorway
-	{ axis = "z", fixed = -8.5, from = 86, to = 111, gap = { from = 90, to = 94 } }, -- room four south, exit chamber doorway
+	{ axis = "z", fixed = -8.5, from = 86, to = 111 }, -- south wall, room four
 	{ axis = "x", fixed = 13.5, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } }, -- entrance
 	{ axis = "x", fixed = 38, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } },
 	{ axis = "x", fixed = 62, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } },
 	{ axis = "x", fixed = 86, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } },
-	{ axis = "x", fixed = 110.5, from = -9, to = 9 }, -- east dead end
+	-- east wall of room four carries THE EXIT DOOR — the goal, visible from the moment you enter R4
+	{ axis = "x", fixed = 110.5, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } },
 	-- the fin: blocks the direct sightline into the annex doorway, so finding it takes looking
 	{ axis = "z", fixed = -6, from = 76, to = 84 },
 	-- annex shell
 	{ axis = "x", fixed = 63.5, from = -25, to = -9 },
-	{ axis = "x", fixed = 84.5, from = -25, to = -19 }, -- lower east wall...
-	{ axis = "x", fixed = 84.5, from = -15, to = -9 }, -- ...upper east wall; the -19..-15 gap is the sealed exit
-	{ axis = "z", fixed = -25.5, from = 63, to = 97 }, -- south wall, annex + exit chamber
-	-- exit chamber shell
-	{ axis = "x", fixed = 96.5, from = -25, to = -9 },
+	{ axis = "x", fixed = 84.5, from = -25, to = -9 },
+	{ axis = "z", fixed = -25.5, from = 63, to = 85 },
+	-- exit hall shell (open sky)
+	{ axis = "z", fixed = 4.5, from = 110, to = 122 },
+	{ axis = "z", fixed = -4.5, from = 110, to = 122 },
 }
 
--- The sealed panel covering the annex->exit gap until the dossier's live line has been read.
-MapLayout.seal = { x = 84.5, zFrom = -19, zTo = -15 }
+-- The exit door: fills the east gap until the dossier's live line has been read.
+MapLayout.exitDoor = { x = 110.5, zFrom = -2.5, zTo = 2.5 }
+-- Standing on this pad after the door opens completes the run.
+MapLayout.winPad = { x = 119, z = 0 }
 
 -- Doorway reference points (watchables reorient toward the doorway nearest the player).
 MapLayout.doorways = {
@@ -122,7 +126,15 @@ MapLayout.doorways = {
 	{ x = 62, z = 0 },
 	{ x = 86, z = 0 },
 	{ x = 80.5, z = -8.5 },
-	{ x = 92, z = -8.5 },
+	{ x = 110.5, z = 0 },
+}
+
+-- Readable notes: the session log speaking back, and the trail to the record. N4 sits on the fin itself.
+MapLayout.notes = {
+	{ id = "N1", x = 20, z = 3, y = 3.5, yaw = 15, onWall = false },
+	{ id = "N2", x = 56, z = -3, y = 3.5, yaw = -25, onWall = false },
+	{ id = "N3", x = 92, z = 4, y = 3.5, yaw = 40, onWall = false },
+	{ id = "N4", x = 80, z = -5.4, y = 4.6, yaw = 0, onWall = true },
 }
 
 -- Watchable furniture: reorients strictly while unobserved. ROOM THREE's deviance is absence.

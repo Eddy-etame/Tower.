@@ -1,5 +1,6 @@
--- Silent Witness slice bootstrap. Server-authoritative by construction: every observation, log entry, and
--- dossier mark is computed here; the client renders and requests, nothing more.
+-- Silent Witness MVP bootstrap. Server-authoritative by construction: every observation, log entry, dossier
+-- mark, objective change, and the door state are computed here. The one remote is server->client UI only;
+-- the client sends nothing.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -11,6 +12,7 @@ local Blockout = require(script.Blockout)
 local SessionLog = require(script.SessionLog)
 local WitnessService = require(script.WitnessService)
 local DossierService = require(script.DossierService)
+local NotesService = require(script.NotesService)
 
 print(
 	("[Project001][Server] booted — v%d.%d.%d (%s)"):format(
@@ -21,33 +23,69 @@ print(
 	)
 )
 
+local OBJECTIVE_START = "FIND THE WAY OUT."
+local OBJECTIVE_RECORD = "THE DOOR WANTS THE COMPLETE RECORD."
+local OBJECTIVE_READ = "READ THE RECORD."
+local OBJECTIVE_LEAVE = "THE DOOR IS OPEN. LEAVE."
+local DOOR_REFUSAL = "THE RECORD IS INCOMPLETE.\nIT IS STILL WRITING YOU."
+
+local uiRemote = Instance.new("RemoteEvent")
+uiRemote.Name = "SliceUI"
+uiRemote.Parent = ReplicatedStorage
+
 local world = Blockout.build(MapLayout, tuning)
 WitnessService.init(world, MapLayout, SessionLog, tuning)
-DossierService.init(world.board, MapLayout, SessionLog, tuning, function()
-	-- reading the dossier is the exit condition: the sealed panel found earlier unseals
-	Blockout.openSeal(world)
-end)
+NotesService.init(SessionLog)
 
 local states = {} -- [userId] = per-player tracking state
+local dossierRead = {} -- [userId] = true once the live line finished
 
 local function stateFor(player)
 	local state = states[player.UserId]
 	if not state then
-		state = { room = nil, sampleTimer = 0, stillTime = 0, pauseAnchor = nil, lastPosition = nil }
+		state = { room = nil, sampleTimer = 0, stillTime = 0, pauseAnchor = nil, lastPosition = nil, won = false }
 		states[player.UserId] = state
 	end
 	return state
 end
+
+local function sendObjective(player, text)
+	uiRemote:FireClient(player, { kind = "objective", text = text })
+end
+
+DossierService.init(world.board, MapLayout, SessionLog, tuning, function(player)
+	-- reading the record is the exit condition: the door at the far end unseals
+	dossierRead[player.UserId] = true
+	Blockout.openDoor(world)
+	sendObjective(player, OBJECTIVE_LEAVE)
+end)
 
 local function fullReset(player)
 	SessionLog.reset(player)
 	DossierService.reset(player)
 	WitnessService.resetWorld()
 	states[player.UserId] = nil
+	dossierRead[player.UserId] = nil
 	local character = player.Character
 	if character and character.PrimaryPart then
 		character:PivotTo(CFrame.new(0, 3.5, 0))
 	end
+	sendObjective(player, OBJECTIVE_START)
+end
+
+world.doorPrompt.Triggered:Connect(function(player)
+	if dossierRead[player.UserId] then
+		return
+	end
+	world.doorSound:Play()
+	uiRemote:FireClient(player, { kind = "note", text = DOOR_REFUSAL })
+	sendObjective(player, OBJECTIVE_RECORD)
+end)
+
+for noteId, note in world.notes do
+	note.prompt.Triggered:Connect(function(player)
+		uiRemote:FireClient(player, { kind = "note", text = NotesService.textFor(player, noteId) })
+	end)
 end
 
 local resetDebounce = {}
@@ -64,10 +102,62 @@ world.resetPad.Touched:Connect(function(hit)
 	fullReset(player)
 end)
 
+world.winPad.Touched:Connect(function(hit)
+	local character = hit.Parent
+	local player = character and Players:GetPlayerFromCharacter(character)
+	if not player then
+		return
+	end
+	local state = stateFor(player)
+	if state.won or not dossierRead[player.UserId] then
+		return
+	end
+	state.won = true
+	local log = SessionLog.get(player)
+	local entries = 0
+	for _, count in log.entryCounts do
+		entries += count
+	end
+	local still = 0
+	for _, pause in log.pauses do
+		still += pause.duration
+	end
+	uiRemote:FireClient(player, {
+		kind = "endcard",
+		lines = {
+			"YOU LEFT.",
+			"IT KEPT THE NOTES.",
+			string.format(
+				"SUBJECT %04d — ENTRIES %d · STOOD %ds · CORRECTIONS %d",
+				(player.UserId % 8999) + 1000,
+				entries,
+				math.floor(still),
+				log.reorients
+			),
+		},
+	})
+	task.delay(tuning.ENDCARD_SECONDS, function()
+		if player.Parent then
+			fullReset(player)
+		end
+	end)
+end)
+
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function()
+		task.delay(2, function()
+			if player.Parent then
+				sendObjective(player, OBJECTIVE_START)
+			end
+		end)
+	end)
+end)
+
 Players.PlayerRemoving:Connect(function(player)
 	SessionLog.reset(player)
 	DossierService.reset(player)
 	states[player.UserId] = nil
+	dossierRead[player.UserId] = nil
 	resetDebounce[player.UserId] = nil
 end)
 
@@ -101,6 +191,9 @@ local function processPlayer(player, dt, now)
 			WitnessService.onEntry(player, room, position, character, now)
 			if room.id == "ANNEX" then
 				DossierService.generate(player)
+				if not dossierRead[player.UserId] then
+					sendObjective(player, OBJECTIVE_READ)
+				end
 			end
 		end
 	end

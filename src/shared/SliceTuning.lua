@@ -27,6 +27,10 @@ return {
 	SCRATCH_SPEED = 0.32,
 	SCRATCH_VOLUME = 0.25,
 
+	-- MVP loop UI
+	NOTE_POPUP_SECONDS = 4.5,
+	ENDCARD_SECONDS = 5,
+
 	-- the dossier board
 	MAX_ROUTE_POINTS = 150,
 	MAX_ENTRY_MARKS = 24,
