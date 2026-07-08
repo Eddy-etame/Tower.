@@ -101,10 +101,10 @@ recordSheet.BackgroundColor3 = PAPER
 recordSheet.BorderSizePixel = 0
 recordSheet.Parent = recordDim
 
-local function sheetLabel(text, xScale, yScale, wScale, textSize, color, xAlign)
+local function sheetLabel(text, xScale, yScale, wScale, hScale, color, xAlign)
 	local textLabel = Instance.new("TextLabel")
 	textLabel.Position = UDim2.fromScale(xScale, yScale)
-	textLabel.Size = UDim2.fromScale(wScale, 0.07)
+	textLabel.Size = UDim2.fromScale(wScale, hScale)
 	textLabel.BackgroundTransparency = 1
 	textLabel.Font = Enum.Font.SpecialElite
 	textLabel.TextScaled = true
