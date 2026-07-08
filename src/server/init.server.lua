@@ -23,7 +23,10 @@ print(
 
 local world = Blockout.build(MapLayout, tuning)
 WitnessService.init(world, MapLayout, SessionLog, tuning)
-DossierService.init(world.board, MapLayout, SessionLog, tuning)
+DossierService.init(world.board, MapLayout, SessionLog, tuning, function()
+	-- reading the dossier is the exit condition: the sealed panel found earlier unseals
+	Blockout.openSeal(world)
+end)
 
 local states = {} -- [userId] = per-player tracking state
 
@@ -68,6 +71,17 @@ Players.PlayerRemoving:Connect(function(player)
 	resetDebounce[player.UserId] = nil
 end)
 
+WitnessService.startScratchLoop(function(fromPosition)
+	local nearest = math.huge
+	for _, player in Players:GetPlayers() do
+		local root = player.Character and player.Character.PrimaryPart
+		if root then
+			nearest = math.min(nearest, (root.Position - fromPosition).Magnitude)
+		end
+	end
+	return nearest
+end)
+
 local function processPlayer(player, dt, now)
 	local character = player.Character
 	local root = character and character.PrimaryPart
@@ -84,7 +98,7 @@ local function processPlayer(player, dt, now)
 	if roomId ~= previousId then
 		state.room = room
 		if room then
-			WitnessService.onEntry(player, room, position)
+			WitnessService.onEntry(player, room, position, character, now)
 			if room.id == "ANNEX" then
 				DossierService.generate(player)
 			end
@@ -115,7 +129,7 @@ local function processPlayer(player, dt, now)
 		state.lastPosition = position
 	end
 
-	WitnessService.chairsCheck(player, character, position, now)
+	WitnessService.watchablesCheck(player, character, position, now)
 	DossierService.update(player, character, dt)
 end
 

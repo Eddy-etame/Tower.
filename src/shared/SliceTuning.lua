@@ -10,9 +10,22 @@ return {
 	PAUSE_SPEED = 1.5, -- studs/second below which the player counts as standing
 	PAUSE_MIN_SECONDS = 3,
 
-	-- chair reorientation (the unobserved-change tell: never seen moving, always seen HAVING moved)
+	-- watchable reorientation (the unobserved-change tell: never seen moving, always seen HAVING moved)
 	CHAIR_COOLDOWN = 6,
 	CHAIR_MIN_ANGLE = 25, -- degrees; skip rotations too small to read at silhouette scale
+	PAINTING_TILT_DEG = 9,
+	PAINTING_SLIDE = 0.7, -- studs toward the door side
+
+	-- the click event (audio + light-dip twin, same beat — audio-sibling law)
+	CLICK_DIP = 0.35, -- brightness multiplier during the dip
+	CLICK_DIP_SECONDS = 0.12,
+
+	-- the note-taker's scratch behind room three's wall
+	SCRATCH_GAP_MIN = 2.2,
+	SCRATCH_GAP_MAX = 5.5,
+	SCRATCH_RANGE = 30, -- only bothers playing when someone is close enough to hear
+	SCRATCH_SPEED = 0.32,
+	SCRATCH_VOLUME = 0.25,
 
 	-- the dossier board
 	MAX_ROUTE_POINTS = 150,
@@ -26,5 +39,5 @@ return {
 	-- STUB placeholder audio (Rule 2): built-in rbxasset until the studio records real foley
 	CLICK_SOUND = "rbxasset://sounds/electronicpingshort.wav",
 	CLICK_SPEED = 0.55, -- pitched down so the ping reads as a dry mechanical click
-	CLICK_VOLUME = 0.4,
+	CLICK_VOLUME = 0.7,
 }

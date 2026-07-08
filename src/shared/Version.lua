@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 2,
-	patch = 0,
+	patch = 1,
 	stage = "slice-silent-witness",
 }

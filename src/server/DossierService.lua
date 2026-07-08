@@ -13,15 +13,16 @@ local CANVAS = Vector2.new(1200, 600)
 local MAP_OFFSET = Vector2.new(36, 90)
 local MAP_SIZE = Vector2.new(600, 470)
 
-local board, layout, SessionLog, tuning
+local board, layout, SessionLog, tuning, onFirstRead
 local gui, surface
 local states = {} -- [userId] = { generated, liveLineShown, readTime, typing }
 
-function DossierService.init(boardPart, mapLayout, sessionLog, sliceTuning)
+function DossierService.init(boardPart, mapLayout, sessionLog, sliceTuning, firstReadCallback)
 	board = boardPart
 	layout = mapLayout
 	SessionLog = sessionLog
 	tuning = sliceTuning
+	onFirstRead = firstReadCallback
 
 	gui = Instance.new("SurfaceGui")
 	gui.Face = Enum.NormalId.Front
@@ -196,6 +197,9 @@ function DossierService.update(player, character, dt)
 		end
 		state.liveLineShown = true
 		state.typing = false
+		if onFirstRead then
+			onFirstRead(player)
+		end
 	end)
 end
 
