@@ -1,5 +1,11 @@
 # Project 001 — Decision Log (append-only, dated; higher canon wins on conflict)
 
+## 2026-07-07 — Workflow pivot: slice before documentation
+**Decision:** Development is prototype-first from now on. The Silent Witness gets a vertical slice that answers five questions — (1) does the player actually feel watched, (2) does the dossier reveal land, (3) which clues do players naturally notice, (4) what confuses them, (5) can we reliably generate the session dossier in Roblox — and the experience docs EVOLVE from real playtests instead of expanding on assumptions. The four Stage-2 docs stand as approved concepts (no redesign); their further elaboration is frozen until the slice teaches us something real. Build little by little; never the whole system.
+**Context:** Eddy, verbatim intent: "Our goal isn't to have the best document. It's to build the best game. The document should evolve from the prototype, not replace it." Consistent with Bible ch. 10 (Prototype: fast, simple, cheap) and ch. 14 (build the smallest proof).
+**Impact:** T8 full architecture proposal superseded by slice-scoped architecture; T1's next step is the slice, not more prose.
+**Approved:** Eddy (chat, 2026-07-07). Propagated same turn: registry, this log.
+
 ## 2026-07-06 — Audio: no music in the prototype
 **Decision:** The prototype ships NO music — sound effects, ambience, and silence only.
 **Context:** Audit F5 scope residue; Eddy ruled "for now, no music yet."
