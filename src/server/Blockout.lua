@@ -227,19 +227,88 @@ function Blockout.build(layout, tuning)
 		}, folder)
 	end
 
-	-- the pull: warm light leaking through the fin gap
-	local leak = makePart({
-		Size = Vector3.new(layout.leak.width, 0.12, 1.6),
-		CFrame = CFrame.new(layout.leak.x, 0.26, layout.leak.z),
-		Color = Color3.fromRGB(255, 200, 130),
-		Material = Enum.Material.Neon,
-		Name = "AnnexLeak",
+	-- the pull: warm light spilling from the annex doorway and around both fin corners (findable, not hidden)
+	for index, leakDef in layout.leaks do
+		local leak = makePart({
+			Size = Vector3.new(leakDef.width, 0.12, leakDef.depth),
+			CFrame = CFrame.new(leakDef.x, 0.26, leakDef.z),
+			Color = Color3.fromRGB(255, 200, 130),
+			Material = Enum.Material.Neon,
+			Name = "AnnexLeak" .. index,
+		}, folder)
+		local leakLight = Instance.new("PointLight")
+		leakLight.Range = 10
+		leakLight.Brightness = 1.4
+		leakLight.Color = Color3.fromRGB(255, 200, 130)
+		leakLight.Parent = leak
+	end
+
+	-- the lobby names the game: the beginning is framed, not implied
+	local titleDef = layout.title
+	local titlePlate = makePart({
+		Size = Vector3.new(0.4, titleDef.height, titleDef.width),
+		CFrame = CFrame.lookAt(
+			Vector3.new(titleDef.x, titleDef.y, titleDef.z),
+			Vector3.new(titleDef.x - 4, titleDef.y, titleDef.z)
+		),
+		Color = Color3.fromRGB(30, 29, 28),
+		Material = Enum.Material.SmoothPlastic,
+		Name = "TitlePlate",
 	}, folder)
-	local leakLight = Instance.new("PointLight")
-	leakLight.Range = 10
-	leakLight.Brightness = 1.4
-	leakLight.Color = Color3.fromRGB(255, 200, 130)
-	leakLight.Parent = leak
+	local titleGui = Instance.new("SurfaceGui")
+	titleGui.Face = Enum.NormalId.Front
+	titleGui.CanvasSize = Vector2.new(1000, 260)
+	titleGui.Parent = titlePlate
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Size = UDim2.fromScale(1, 0.62)
+	titleLabel.Position = UDim2.fromScale(0, 0.08)
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Font = Enum.Font.SpecialElite
+	titleLabel.TextColor3 = PAPER
+	titleLabel.TextScaled = true
+	titleLabel.Text = "PROJECT 001"
+	titleLabel.Parent = titleGui
+	local subtitleLabel = Instance.new("TextLabel")
+	subtitleLabel.Size = UDim2.fromScale(1, 0.26)
+	subtitleLabel.Position = UDim2.fromScale(0, 0.7)
+	subtitleLabel.BackgroundTransparency = 1
+	subtitleLabel.Font = Enum.Font.SpecialElite
+	subtitleLabel.TextColor3 = Color3.fromRGB(150, 143, 128)
+	subtitleLabel.TextScaled = true
+	subtitleLabel.Text = "ENCOUNTER ONE — THE SILENT WITNESS"
+	subtitleLabel.Parent = titleGui
+
+	-- the ending hall's sealed doors: the rest of the prototype, honestly locked (a stub is labeled a stub)
+	handles.lockedDoors = {}
+	for _, lockedDef in layout.lockedDoors do
+		local lockedDoor = makePart({
+			Size = Vector3.new(4, 7, 0.6),
+			CFrame = CFrame.new(lockedDef.x, 3.5, lockedDef.z),
+			Color = Color3.fromRGB(48, 46, 44),
+			Material = Enum.Material.DiamondPlate,
+			Name = "LockedDoor_" .. lockedDef.label,
+		}, folder)
+		local lockedGui = Instance.new("SurfaceGui")
+		lockedGui.Face = Enum.NormalId.Front
+		lockedGui.CanvasSize = Vector2.new(300, 500)
+		lockedGui.Parent = lockedDoor
+		local lockedLabel = Instance.new("TextLabel")
+		lockedLabel.Size = UDim2.fromScale(1, 0.3)
+		lockedLabel.Position = UDim2.fromScale(0, 0.35)
+		lockedLabel.BackgroundTransparency = 1
+		lockedLabel.Font = Enum.Font.SpecialElite
+		lockedLabel.TextColor3 = PAPER
+		lockedLabel.TextScaled = true
+		lockedLabel.Text = lockedDef.label
+		lockedLabel.Parent = lockedGui
+		local lockedPrompt = Instance.new("ProximityPrompt")
+		lockedPrompt.ActionText = "Open"
+		lockedPrompt.ObjectText = "Sealed Door"
+		lockedPrompt.MaxActivationDistance = 8
+		lockedPrompt.RequiresLineOfSight = false
+		lockedPrompt.Parent = lockedDoor
+		table.insert(handles.lockedDoors, { prompt = lockedPrompt, label = lockedDef.label })
+	end
 
 	-- the scratch source (audio played by WitnessService when someone is near)
 	local scratch = makePart({
@@ -343,6 +412,25 @@ function Blockout.build(layout, tuning)
 		Material = Enum.Material.SmoothPlastic,
 		Name = "DossierBoard",
 	}, folder)
+	local boardGui = Instance.new("SurfaceGui")
+	boardGui.Face = Enum.NormalId.Front
+	boardGui.CanvasSize = Vector2.new(1200, 600)
+	boardGui.Parent = handles.board
+	local boardCover = Instance.new("TextLabel")
+	boardCover.Size = UDim2.fromScale(1, 1)
+	boardCover.BackgroundTransparency = 1
+	boardCover.Font = Enum.Font.SpecialElite
+	boardCover.TextColor3 = INK
+	boardCover.TextSize = 44
+	boardCover.Text = "SUBJECT RECORDS"
+	boardCover.Parent = boardGui
+	local boardPrompt = Instance.new("ProximityPrompt")
+	boardPrompt.ActionText = "Read the Record"
+	boardPrompt.ObjectText = "Your File"
+	boardPrompt.MaxActivationDistance = 12
+	boardPrompt.RequiresLineOfSight = false
+	boardPrompt.Parent = handles.board
+	handles.boardPrompt = boardPrompt
 
 	makePart({
 		Size = Vector3.new(10, 3, 2.5),

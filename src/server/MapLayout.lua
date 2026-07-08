@@ -75,15 +75,35 @@ MapLayout.rooms = {
 -- Non-room built spaces (floors, ceilings, lights — no click, no tally).
 MapLayout.extraSpaces = {
 	{
-		id = "EXITHALL",
+		id = "LOBBY",
+		minX = -6,
+		maxX = 13,
+		minZ = -8,
+		maxZ = 8,
+		floorColor = Color3.fromRGB(168, 164, 156),
+		lightColor = Color3.fromRGB(255, 248, 235),
+		noCeiling = true, -- the lobby sits under open sky; the game begins when you step inside
+	},
+	{
+		id = "ENDHALL",
 		minX = 111,
-		maxX = 122,
-		minZ = -4,
-		maxZ = 4,
+		maxX = 126,
+		minZ = -7,
+		maxZ = 7,
 		floorColor = Color3.fromRGB(180, 176, 168),
 		lightColor = Color3.fromRGB(255, 250, 240),
 		noCeiling = true, -- you leave into daylight
 	},
+}
+
+-- Lobby dressing: the game names itself, and the entrance is framed as the beginning.
+MapLayout.title = { x = 13.2, y = 7.2, z = 0, width = 10, height = 2.6 }
+
+-- The ending hall names what comes next: three sealed encounter doors, honestly locked.
+MapLayout.lockedDoors = {
+	{ label = "TWO", x = 114, z = 7.2 },
+	{ label = "THREE", x = 118, z = 7.2 },
+	{ label = "FOUR", x = 122, z = 7.2 },
 }
 
 -- Wall segments. axis "x": plane at fixed X spanning Z; axis "z": plane at fixed Z spanning X.
@@ -103,21 +123,22 @@ MapLayout.walls = {
 	{ axis = "x", fixed = 86, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } },
 	-- east wall of room four carries THE EXIT DOOR — the goal, visible from the moment you enter R4
 	{ axis = "x", fixed = 110.5, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } },
-	-- the fin: blocks the direct sightline into the annex doorway, so finding it takes looking
-	{ axis = "z", fixed = -6, from = 76, to = 84 },
+	-- the fin: breaks the direct sightline into the annex doorway WITHOUT hiding the way around it
+	-- (playtest 3: the entrance must be findable — wide openings both ends, light spilling past both corners)
+	{ axis = "z", fixed = -5, from = 77, to = 83 },
 	-- annex shell
 	{ axis = "x", fixed = 63.5, from = -25, to = -9 },
 	{ axis = "x", fixed = 84.5, from = -25, to = -9 },
 	{ axis = "z", fixed = -25.5, from = 63, to = 85 },
-	-- exit hall shell (open sky)
-	{ axis = "z", fixed = 4.5, from = 110, to = 122 },
-	{ axis = "z", fixed = -4.5, from = 110, to = 122 },
+	-- ending hall shell (open sky, east end open to the win pad)
+	{ axis = "z", fixed = 7.5, from = 110, to = 126 },
+	{ axis = "z", fixed = -7.5, from = 110, to = 126 },
 }
 
 -- The exit door: fills the east gap until the dossier's live line has been read.
 MapLayout.exitDoor = { x = 110.5, zFrom = -2.5, zTo = 2.5 }
 -- Standing on this pad after the door opens completes the run.
-MapLayout.winPad = { x = 119, z = 0 }
+MapLayout.winPad = { x = 123, z = 0 }
 
 -- Doorway reference points (watchables reorient toward the doorway nearest the player).
 MapLayout.doorways = {
@@ -134,7 +155,7 @@ MapLayout.notes = {
 	{ id = "N1", x = 20, z = 3, y = 3.5, yaw = 15, onWall = false },
 	{ id = "N2", x = 56, z = -3, y = 3.5, yaw = -25, onWall = false },
 	{ id = "N3", x = 92, z = 4, y = 3.5, yaw = 40, onWall = false },
-	{ id = "N4", x = 80, z = -5.4, y = 4.6, yaw = 0, onWall = true },
+	{ id = "N4", x = 80, z = -4.4, y = 4.6, yaw = 0, onWall = true },
 }
 
 -- Watchable furniture: reorients strictly while unobserved. ROOM THREE's deviance is absence.
@@ -157,8 +178,13 @@ MapLayout.tables = {
 
 -- The scratch source: behind room three's south wall, loudest at the annex side (the note-taker at work).
 MapLayout.scratchPoint = { x = 81, y = 4, z = -8.2 }
--- Light leak under the fin gap: the pull toward the hidden doorway.
-MapLayout.leak = { x = 80.5, z = -8.5, width = 5 }
+-- Warm light spilling from the annex doorway AND around both fin corners: the pull must be visible
+-- from the open room, not hidden behind its own concealment (playtest 3 fix).
+MapLayout.leaks = {
+	{ x = 80.5, z = -8.3, width = 5, depth = 1.6 },
+	{ x = 76.4, z = -6.4, width = 1.4, depth = 3.4 },
+	{ x = 83.6, z = -6.4, width = 1.4, depth = 3.4 },
+}
 
 MapLayout.board = { x = 74, y = 4.2, z = -24.4, width = 12, height = 5.5 }
 MapLayout.desk = { x = 74, z = -22.3 }

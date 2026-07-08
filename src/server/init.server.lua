@@ -1,6 +1,6 @@
--- Silent Witness MVP bootstrap. Server-authoritative by construction: every observation, log entry, dossier
--- mark, objective change, and the door state are computed here. The one remote is server->client UI only;
--- the client sends nothing.
+-- Project 001 MVP bootstrap: lobby -> encounter one -> ending hall -> back to lobby. Server-authoritative:
+-- every observation, log entry, objective, and door state is computed here. The one remote is
+-- server->client UI only; the client sends nothing.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -23,11 +23,13 @@ print(
 	)
 )
 
+local OBJECTIVE_LOBBY = "ENTER."
 local OBJECTIVE_START = "FIND THE WAY OUT."
 local OBJECTIVE_RECORD = "THE DOOR WANTS THE COMPLETE RECORD."
-local OBJECTIVE_READ = "READ THE RECORD."
+local OBJECTIVE_READ = "FIND YOUR FILE. READ IT."
 local OBJECTIVE_LEAVE = "THE DOOR IS OPEN. LEAVE."
 local DOOR_REFUSAL = "THE RECORD IS INCOMPLETE.\nIT IS STILL WRITING YOU."
+local LOCKED_DOOR_LINE = "NOT YET."
 
 local uiRemote = Instance.new("RemoteEvent")
 uiRemote.Name = "SliceUI"
@@ -35,15 +37,25 @@ uiRemote.Parent = ReplicatedStorage
 
 local world = Blockout.build(MapLayout, tuning)
 WitnessService.init(world, MapLayout, SessionLog, tuning)
+DossierService.init(MapLayout, SessionLog, tuning)
 NotesService.init(SessionLog)
 
 local states = {} -- [userId] = per-player tracking state
-local dossierRead = {} -- [userId] = true once the live line finished
+local dossierRead = {} -- [userId] = true once their record has been opened and held
 
 local function stateFor(player)
 	local state = states[player.UserId]
 	if not state then
-		state = { room = nil, sampleTimer = 0, stillTime = 0, pauseAnchor = nil, lastPosition = nil, won = false }
+		state = {
+			room = nil,
+			entered = false,
+			sampleTimer = 0,
+			stillTime = 0,
+			pauseAnchor = nil,
+			lastPosition = nil,
+			won = false,
+			reading = false,
+		}
 		states[player.UserId] = state
 	end
 	return state
@@ -53,16 +65,8 @@ local function sendObjective(player, text)
 	uiRemote:FireClient(player, { kind = "objective", text = text })
 end
 
-DossierService.init(world.board, MapLayout, SessionLog, tuning, function(player)
-	-- reading the record is the exit condition: the door at the far end unseals
-	dossierRead[player.UserId] = true
-	Blockout.openDoor(world)
-	sendObjective(player, OBJECTIVE_LEAVE)
-end)
-
 local function fullReset(player)
 	SessionLog.reset(player)
-	DossierService.reset(player)
 	WitnessService.resetWorld()
 	states[player.UserId] = nil
 	dossierRead[player.UserId] = nil
@@ -70,7 +74,7 @@ local function fullReset(player)
 	if character and character.PrimaryPart then
 		character:PivotTo(CFrame.new(0, 3.5, 0))
 	end
-	sendObjective(player, OBJECTIVE_START)
+	sendObjective(player, OBJECTIVE_LOBBY)
 end
 
 world.doorPrompt.Triggered:Connect(function(player)
@@ -82,9 +86,35 @@ world.doorPrompt.Triggered:Connect(function(player)
 	sendObjective(player, OBJECTIVE_RECORD)
 end)
 
+-- reading the record is the exit condition: the payload goes to the client, and after the reading
+-- window the door at the far end unseals
+world.boardPrompt.Triggered:Connect(function(player)
+	local state = stateFor(player)
+	if state.reading or dossierRead[player.UserId] then
+		return
+	end
+	state.reading = true
+	uiRemote:FireClient(player, { kind = "record", data = DossierService.buildPayload(player) })
+	task.delay(tuning.RECORD_OPEN_SECONDS, function()
+		if not player.Parent then
+			return
+		end
+		dossierRead[player.UserId] = true
+		stateFor(player).reading = false
+		Blockout.openDoor(world)
+		sendObjective(player, OBJECTIVE_LEAVE)
+	end)
+end)
+
 for noteId, note in world.notes do
 	note.prompt.Triggered:Connect(function(player)
 		uiRemote:FireClient(player, { kind = "note", text = NotesService.textFor(player, noteId) })
+	end)
+end
+
+for _, lockedDoor in world.lockedDoors do
+	lockedDoor.prompt.Triggered:Connect(function(player)
+		uiRemote:FireClient(player, { kind = "note", text = LOCKED_DOOR_LINE })
 	end)
 end
 
@@ -147,7 +177,7 @@ Players.PlayerAdded:Connect(function(player)
 	player.CharacterAdded:Connect(function()
 		task.delay(2, function()
 			if player.Parent then
-				sendObjective(player, OBJECTIVE_START)
+				sendObjective(player, OBJECTIVE_LOBBY)
 			end
 		end)
 	end)
@@ -155,7 +185,6 @@ end)
 
 Players.PlayerRemoving:Connect(function(player)
 	SessionLog.reset(player)
-	DossierService.reset(player)
 	states[player.UserId] = nil
 	dossierRead[player.UserId] = nil
 	resetDebounce[player.UserId] = nil
@@ -181,7 +210,7 @@ local function processPlayer(player, dt, now)
 	local state = stateFor(player)
 	local position = root.Position
 
-	-- room transitions drive the click/tick/dossier beats
+	-- room transitions drive the click/tick/objective beats
 	local room = MapLayout.roomAt(position.X, position.Z)
 	local roomId = room and room.id or nil
 	local previousId = state.room and state.room.id or nil
@@ -189,11 +218,11 @@ local function processPlayer(player, dt, now)
 		state.room = room
 		if room then
 			WitnessService.onEntry(player, room, position, character, now)
-			if room.id == "ANNEX" then
-				DossierService.generate(player)
-				if not dossierRead[player.UserId] then
-					sendObjective(player, OBJECTIVE_READ)
-				end
+			if not state.entered and room.id == "R1" then
+				state.entered = true
+				sendObjective(player, OBJECTIVE_START)
+			elseif room.id == "ANNEX" and not dossierRead[player.UserId] then
+				sendObjective(player, OBJECTIVE_READ)
 			end
 		end
 	end
@@ -223,7 +252,6 @@ local function processPlayer(player, dt, now)
 	end
 
 	WitnessService.watchablesCheck(player, character, position, now)
-	DossierService.update(player, character, dt)
 end
 
 local accumulator = 0

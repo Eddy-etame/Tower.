@@ -30,6 +30,9 @@ return {
 	-- MVP loop UI
 	NOTE_POPUP_SECONDS = 4.5,
 	ENDCARD_SECONDS = 5,
+	RECORD_OPEN_SECONDS = 6, -- server marks the record read (and opens the door) after this long
+	RECORD_VIEW_SECONDS = 9, -- client keeps the document on screen this long
+	LIVE_LINE_DELAY_SECONDS = 2,
 
 	-- the dossier board
 	MAX_ROUTE_POINTS = 150,

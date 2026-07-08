@@ -1,7 +1,7 @@
 -- Single source of truth for build identity, printed at boot by both server and client.
 return {
 	major = 0,
-	minor = 3,
+	minor = 4,
 	patch = 0,
-	stage = "mvp-silent-witness",
+	stage = "mvp-1-lobby-run-ending",
 }
