@@ -49,6 +49,40 @@ return {
 	SURGE_SOUND = "rbxasset://sounds/electronicpingshort.wav", -- STUB: the power-death sting (Audio dept records real)
 	SURGE_SOUND_SPEED = 0.55,
 
+	-- THE LIVING WATCHER (split-brain: the SERVER owns one invisible LogicRoot — freeze/catch/locomotion all
+	-- measure it, unchanged and unexploitable; the visible body is a CLIENT-LOCAL rig that smoothly follows the
+	-- replicated LogicRoot and layers procedural life on top). The alive-layer TEACHES the locked rule: it
+	-- breathes/sways/gazes while advancing and snaps taut-dead-still the instant it is lit (weeping-angel), so
+	-- the motion is the visual twin of the move-sound for the muted-mobile majority. No new assets — pure CFrame.
+	WATCHER_FOLLOW_K = 12, -- render-base catch-up rate (1-exp(-k*dt), ~90ms) — hides the 10Hz server steps at 60fps
+	WATCHER_SNAP_CLAMP = 1.5, -- studs: hard-snap the visual to the true hitbox beyond this (catch fairness + surge gaps)
+	WATCHER_CULL_DIST = 80, -- studs: skip the whole articulation block when far/off-screen (mobile frame budget)
+	WATCHER_YAW = math.rad(70), -- head-track yaw clamp; at the limit the head HOLDS (wants to keep looking, cannot)
+	WATCHER_PITCH_UP = math.rad(30),
+	WATCHER_PITCH_DN = math.rad(-25),
+	WATCHER_HEAD_K = 170, -- idle head spring stiffness — a living lock with micro-overshoot, not a servo
+	WATCHER_HEAD_RATIO = 0.7, -- damping ratio (<1 = slight organic overshoot)
+	WATCHER_HEAD_K_SNAP = 380, -- notice-beat stiffness spike (frozen->waking): a fast, SILENT head snap
+	WATCHER_NOTICE_RATIO = 0.55,
+	WATCHER_NOTICE_SECS = 0.4,
+	WATCHER_BREATH_HZ = 0.2, -- ~12 breaths/min — predatory-slow patience; proves it is not a statue
+	WATCHER_BREATH_RISE = 0.06, -- studs the chest heaves (kept sub-perceptual — restraint)
+	WATCHER_BREATH_PITCH = math.rad(2),
+	WATCHER_BREATH_HEAD_COUNTER = 0.4, -- fraction of chest pitch subtracted from the head so the gaze stays level
+	WATCHER_SWAY_A = 0.37, -- incommensurate weight-shift freqs (Hz) => quasi-non-repeating (anti-metronome)
+	WATCHER_SWAY_B = 0.5,
+	WATCHER_SWAY_PITCH = math.rad(1.5),
+	WATCHER_SWAY_ROLL = math.rad(3),
+	WATCHER_FREEZE_DAMP = 0.15, -- s to damp all life to 0 when lit (taut stillness that teaches the rule)
+	WATCHER_ALIVE_RAMP = 0.2, -- s to bring life back when it advances
+	WATCHER_LEAN_K = 90, -- lean spring stiffness (grace forward-lean / surge coil-release)
+	WATCHER_GRACE_LEAN = math.rad(8), -- forward lean on the grace window — the muted-mobile twin of the move-sound
+	WATCHER_SURGE_LEAN = math.rad(18), -- the released lunge lean
+	WATCHER_COIL = math.rad(-12), -- the pre-lunge coil (leans BACK first — the fair telegraph)
+	WATCHER_COIL_SECS = 0.22, -- how long it coils before releasing into the lunge
+	WATCHER_EYE_LO = 0.22, -- resting eye glow (dim points you can just find in the dark)
+	WATCHER_EYE_HI = 0.95, -- eye glow on the notice pulse
+
 	-- the objective
 	LEVER_HOLD = 0.6, -- ProximityPrompt hold to throw the lever
 	DOOR_TOUCH_WIN = true,
