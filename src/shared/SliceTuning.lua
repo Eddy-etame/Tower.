@@ -123,6 +123,24 @@ return {
 	PRESENCE_SILENCE_RADIUS = 18, -- studs: lamps within this of the presence dim to the dead-zone low
 	PRESENCE_RECORD_SECONDS = 3, -- stand still this long at the recorder to capture the tape
 
+	-- ENCOUNTER IV — THE MORAL COLLAPSE. A small warm light finds you in the dark and lights your way — the only
+	-- thing in the Threshold that ever responded to you. The way out needs light: a socket carved to fit it. SPEND
+	-- it (hold at the socket; it settles, the hum slows and stops, the door opens — and the world does not react
+	-- at all), OR CROSS THE DARK passage beside it (slow + quiet is beneath the shape's notice; RUN and it takes
+	-- you) keeping the light but dimming yourself. Two real actions, symmetric permanence, zero reward difference,
+	-- no judgment. The question is only: what is your way out worth? Committed server-side the instant it happens.
+	MORAL_ORB_OFFSET_UP = 4.5, -- how high the companion hovers
+	MORAL_ORB_OFFSET_FWD = 3, -- ...and how far ahead (it leads you), along +X
+	MORAL_ORB_OFFSET_SIDE = 2.5,
+	MORAL_ORB_FOLLOW = 6, -- follow catch-up rate (1-exp(-k*dt)) — an unhurried drift, not a leash
+	MORAL_DRAIN_SECONDS = 4.5, -- the spend: hum + glow slow and fade to nothing over this long (the climax's length)
+	MORAL_SOCKET_HOLD = 1.8, -- held place-action at the socket to commit (proximity alone NEVER commits)
+	MORAL_EXHALE_PERIOD = 4, -- the shape's breath: a safe window to move, then an EXHALE when any movement draws it
+	MORAL_EXHALE_SAFE = 2.8, -- the move window; the rest of the period is the exhale (the companion at the mouth flares)
+	MORAL_MOVE_THRESH = 2, -- studs/s above which you count as MOVING; still is beneath its notice
+	MORAL_PASSAGE_DANGER = 0.6, -- seconds of moving-during-an-exhale it tolerates before it takes you (grace to stop)
+	MORAL_BLACKOUT = 1.5, -- pass-through blackout on a dark-crossing death (the choice stays open)
+
 	-- the objective
 	ROOM_MAX_X = 64, -- x of the door line; past it the player is safe. ONE source (Threat.step + Arena + vignette)
 	LEVER_HOLD = 0.6, -- ProximityPrompt hold to throw the lever
