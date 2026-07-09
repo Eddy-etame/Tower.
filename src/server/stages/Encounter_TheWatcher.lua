@@ -46,10 +46,12 @@ function Stage.build(ctx)
 		holdUntil = os.clock() + tuning.RULES_SECONDS,
 		accum = 0,
 		revealed = false, -- the entry reveal beat plays once, not on every caught-retry
-		taught = false, -- the rules card + full frozen window happen once, not on every caught-retry
+		taught = {}, -- [userId] onboarded (per-player, like II/III/IV — a co-op joiner still gets the card)
+		active = true, -- false after teardown, so a pending caught-retry closure can't fire into the next stage
 		flashOn = {}, -- [userId] = client's reported light on/off (the freeze intent)
 		flashAt = {}, -- [userId] = last accepted report time (coalesces redundant spam)
 		battery = {}, -- [userId] = 0..1, server-owned (the light-rationing anti-camp)
+		lastDanger = {}, -- [userId] = last danger level sent (change-gate the vignette remote)
 	}
 
 	-- the client reports its light on/off; the server owns the battery and gates the freeze on it. Validate type
@@ -110,23 +112,28 @@ function Stage.onPlayerEnter(h, ctx, player)
 		-- face the player DOWN THE THROAT into the room (+X), not at a side wall, so they meet the space head-on
 		char:PivotTo(CFrame.lookAt(h.arena.entrance, h.arena.entrance + Vector3.new(1, 0, 0)))
 	end
-	h.flashOn[player.UserId] = true
-	h.battery[player.UserId] = 1
-	if not h.taught then
-		-- first entry: teach the rules and hold the Watcher for the full read
-		h.taught = true
-		h.holdUntil = os.clock() + ctx.tuning.RULES_SECONDS
+	local uid = player.UserId
+	h.escaped[uid] = nil -- re-arm the exit for a rejoining player
+	h.flashOn[uid] = true
+	h.battery[uid] = 1
+	-- holdUntil only ever EXTENDS (math.max): a co-op entrant's shorter hold must never cut a peer's in-flight
+	-- rules read short — that would wake the Watcher while someone is still reading the card (unfair catch)
+	if not h.taught[uid] then
+		-- first entry for THIS player: teach the rules and hold the Watcher for the full read
+		h.taught[uid] = true
+		h.holdUntil = math.max(h.holdUntil, os.clock() + ctx.tuning.RULES_SECONDS)
 		ctx.send(player, { kind = "rules", lines = RULES })
 	else
 		-- a caught-retry: the player already knows the rules — a brief regroup, then straight back in. This MUST
 		-- dismiss the caught card (only the rules beat used to; skipping rules here would leave it stuck on screen).
-		h.holdUntil = os.clock() + ctx.tuning.RETRY_HOLD
+		h.holdUntil = math.max(h.holdUntil, os.clock() + ctx.tuning.RETRY_HOLD)
 		ctx.send(player, { kind = "retry" })
 	end
 	ctx.send(player, { kind = "objective", text = objectiveText(h) })
 end
 
 function Stage.teardown(h)
+	h.active = false -- pending caught-retry closures bail instead of touching destroyed instances
 	if h.flashConn then
 		h.flashConn:Disconnect()
 	end
@@ -186,7 +193,9 @@ function Stage.update(h, dt)
 		h.holdUntil = os.clock() + tuning.CAUGHT_SECONDS
 		h.ctx.send(caught, { kind = "caught" })
 		task.delay(tuning.CAUGHT_SECONDS, function()
-			if not caught.Parent then
+			-- fire-time re-checks: the stage may have been torn down (h.active), the player may have left, or
+			-- they may have slipped out the open door DURING the caught card (escaped) — never yank them back
+			if not h.active or not caught.Parent or h.escaped[caught.UserId] then
 				return
 			end
 			h.powered = false
@@ -215,7 +224,11 @@ function Stage.update(h, dt)
 					level = level * 0.2
 				end
 			end
-			h.ctx.send(p, { kind = "danger", level = level })
+			-- change-gate (epsilon band — this level is continuous): no 10Hz same-value remote spam
+			if math.abs(level - (h.lastDanger[p.UserId] or -1)) > 0.02 then
+				h.lastDanger[p.UserId] = level
+				h.ctx.send(p, { kind = "danger", level = level })
+			end
 		end
 	end
 end

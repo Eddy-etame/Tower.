@@ -27,6 +27,7 @@ local CONE_BRIGHTNESS = isMobile and 6 or 4
 local CONE_COLOR = Color3.fromRGB(232, 238, 248)
 
 local enabled = true
+local suppressed = false -- stage-declared (server): a room whose fiction needs the dark turns the cone off entirely
 local lastToggle = 0
 local managed, level = false, 1 -- server-owned battery state (only in the rationing encounter)
 local light, fill, anchor
@@ -68,10 +69,11 @@ local function applyLight()
 	if not light then
 		return
 	end
+	local on = enabled and not suppressed
 	local dead = managed and level <= tuning.BATTERY_MIN
-	light.Enabled = enabled
-	fill.Enabled = enabled
-	if not enabled then
+	light.Enabled = on
+	fill.Enabled = on
+	if not on then
 		return
 	end
 	if dead then
@@ -132,6 +134,9 @@ local function toggle(_, state)
 	if state ~= Enum.UserInputState.Begin then
 		return
 	end
+	if suppressed then
+		return -- the room took the light; the toggle does nothing here
+	end
 	if os.clock() - lastToggle < 0.35 then
 		return
 	end
@@ -152,6 +157,7 @@ flashlightRemote.OnClientEvent:Connect(function(payload)
 	end
 	local wasManaged = managed
 	managed = payload.managed == true
+	suppressed = payload.disabled == true -- stage entry declares whether this room allows the cone at all
 	level = tonumber(payload.level) or 1
 	barBack.Visible = managed
 	if managed then
@@ -171,13 +177,20 @@ end)
 task.spawn(function()
 	local rng = Random.new()
 	while true do
-		if light and enabled and managed and level > tuning.BATTERY_MIN and level <= tuning.BATTERY_LOW then
+		if
+			light
+			and enabled
+			and not suppressed
+			and managed
+			and level > tuning.BATTERY_MIN
+			and level <= tuning.BATTERY_LOW
+		then
 			light.Enabled = false
 			fill.Enabled = false
 			task.wait(rng:NextNumber(0.03, 0.08))
 			if light then
-				light.Enabled = enabled
-				fill.Enabled = enabled
+				light.Enabled = enabled and not suppressed
+				fill.Enabled = enabled and not suppressed
 			end
 			task.wait(rng:NextNumber(0.25, 0.7))
 		else

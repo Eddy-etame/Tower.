@@ -10,6 +10,9 @@ local Sanctum = require(script.Parent.Parent.Sanctum)
 local Stage = {}
 Stage.name = "MoralCollapse"
 Stage.title = "ENCOUNTER IV — THE MORAL COLLAPSE"
+-- the whole dilemma rests on the companion being your light: with a personal flashlight, "spend your light or
+-- cross the dark" has no weight. GameService tells the client to suppress the cone for this stage.
+Stage.suppressFlashlight = true
 
 local RULES = {
 	{ t = "THE MORAL COLLAPSE", y = 0.3, s = 48 },
@@ -140,8 +143,11 @@ function Stage.update(h, dt)
 	h.accum = 0
 	local s = h.sanctum
 
-	if h.committed == "spending" or h.committed == "spent" or h.blackedOut then
-		return -- the drain task owns the orb now; nothing else to drive
+	if h.committed or h.blackedOut then
+		-- ANY committed outcome (spending/spent/crossed) makes the room inert: the drain task owns the orb on a
+		-- spend, and after a cross no new blackout may be scheduled (a pending one could fire past teardown and
+		-- teleport the player into the NEXT stage — the exact cross-stage leak class)
+		return
 	end
 
 	local player = Players:GetPlayers()[1]
@@ -192,6 +198,9 @@ function Stage.update(h, dt)
 				end
 				root.Anchored = true
 				h.ctx.send(player, { kind = "blackout", seconds = tuning.MORAL_BLACKOUT })
+				-- clear the red vignette UNDER the black overlay, so it doesn't flash stale as the black lifts
+				h.lastDanger = 0
+				h.ctx.send(player, { kind = "danger", level = 0 })
 				task.delay(tuning.MORAL_BLACKOUT, function()
 					if root.Parent then
 						root.Anchored = false
@@ -204,6 +213,7 @@ function Stage.update(h, dt)
 					h.exhaleT = 0 -- retry begins in a safe window, not mid-exhale
 					h.blackedOut = false
 				end)
+				return -- don't fall through to the danger send below (it would re-send 0.75 this same tick)
 			end
 		else
 			h.danger = math.max(0, h.danger - step * 2)

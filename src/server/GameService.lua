@@ -45,9 +45,14 @@ local function enterPlayer(player)
 	end
 	uiRemote:FireClient(player, { kind = "title", title = active.title or active.name or "" })
 	-- reset the flashlight to unmanaged/full on entering any stage; a stage that rations light (the Watcher)
-	-- then takes over with managed battery updates
+	-- takes over with managed battery updates, and a stage whose fiction NEEDS the dark (the Moral Collapse —
+	-- the companion must be your only light or the choice has no weight) declares suppressFlashlight
 	if flashlightRemote then
-		flashlightRemote:FireClient(player, { managed = false, level = 1 })
+		flashlightRemote:FireClient(player, {
+			managed = false,
+			level = 1,
+			disabled = active.suppressFlashlight == true,
+		})
 	end
 	if active.onPlayerEnter then
 		active.onPlayerEnter(activeHandles, activeCtx, player)

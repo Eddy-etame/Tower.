@@ -101,7 +101,14 @@ function Stage.onPlayerEnter(h, ctx, player)
 	ctx.send(player, { kind = "objective", text = "REACH THE DOOR — KEEP MOVING SO IT CAN'T CLOSE." })
 end
 
+function Stage.teardown(h)
+	h.torn = true -- a pending blackout-respawn closure must not teleport players into the NEXT stage
+end
+
 local function respawnStart(h)
+	if h.torn then
+		return
+	end
 	h.presenceX = h.corridor.corridorMinX - h.ctx.tuning.PRESENCE_MAX_GAP
 	h.warnings = 0 -- warnings re-arm on wake (scars stay)
 	for _, p in Players:GetPlayers() do
