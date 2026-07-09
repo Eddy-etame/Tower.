@@ -47,17 +47,37 @@ objective.TextStrokeTransparency = 0.4
 objective.Text = ""
 objective.Parent = gui
 
-local title = Instance.new("TextLabel")
-title.AnchorPoint = Vector2.new(0.5, 0.5)
-title.Position = UDim2.fromScale(0.5, 0.42)
-title.Size = UDim2.new(0.9, 0, 0, 60)
-title.BackgroundTransparency = 1
-title.Font = Enum.Font.SpecialElite
-title.TextSize = 52
-title.TextColor3 = INK
-title.TextTransparency = 1
-title.Text = ""
-title.Parent = gui
+-- the 3-second-understanding onboarding: threat + rule + objective + control, read at a glance then gone
+local CRIMSON = Color3.fromRGB(200, 60, 60)
+local rules = Instance.new("Frame")
+rules.Size = UDim2.fromScale(1, 1)
+rules.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+rules.BackgroundTransparency = 1
+rules.BorderSizePixel = 0
+rules.Visible = false
+rules.Parent = gui
+
+local function rulesLine(text, yScale, size, color)
+	local l = Instance.new("TextLabel")
+	l.AnchorPoint = Vector2.new(0.5, 0.5)
+	l.Position = UDim2.fromScale(0.5, yScale)
+	l.Size = UDim2.new(0.92, 0, 0, size + 10)
+	l.BackgroundTransparency = 1
+	l.Font = Enum.Font.SpecialElite
+	l.TextSize = size
+	l.TextColor3 = color or INK
+	l.Text = text
+	l.Parent = rules
+	return l
+end
+
+local rulesParts = {
+	rulesLine("THE WATCHER", 0.32, 54, INK),
+	rulesLine("KEEP IT IN YOUR LIGHT.", 0.46, 30, INK),
+	rulesLine("IT MOVES WHEN YOU LOOK AWAY.", 0.53, 30, INK),
+	rulesLine("GET OUT.", 0.66, 40, CRIMSON),
+	rulesLine("[F] LIGHT       [E] LEVER", 0.8, 20, Color3.fromRGB(150, 143, 128)),
+}
 
 local fullCard = Instance.new("Frame")
 fullCard.Size = UDim2.fromScale(1, 1)
@@ -103,13 +123,23 @@ uiRemote.OnClientEvent:Connect(function(payload)
 	end
 	if payload.kind == "objective" then
 		objective.Text = payload.text or ""
-	elseif payload.kind == "title" then
+	elseif payload.kind == "rules" then
 		hideCard()
-		title.Text = payload.title or ""
-		title.TextTransparency = 0
-		TweenService
-			:Create(title, TweenInfo.new(tuning.TITLE_SECONDS, Enum.EasingStyle.Quint), { TextTransparency = 1 })
-			:Play()
+		rules.Visible = true
+		rules.BackgroundTransparency = 0.35
+		for _, l in rulesParts do
+			l.TextTransparency = 0
+		end
+		-- snap in (understood at a glance), hold, then fade so it never blocks the game
+		task.delay(tuning.RULES_SECONDS - 0.8, function()
+			TweenService:Create(rules, TweenInfo.new(0.8), { BackgroundTransparency = 1 }):Play()
+			for _, l in rulesParts do
+				TweenService:Create(l, TweenInfo.new(0.8), { TextTransparency = 1 }):Play()
+			end
+			task.delay(0.85, function()
+				rules.Visible = false
+			end)
+		end)
 	elseif payload.kind == "danger" then
 		local lvl = math.clamp(tonumber(payload.level) or 0, 0, 1)
 		TweenService:Create(vignette, TweenInfo.new(0.2), { ImageTransparency = 1 - lvl * 0.72 }):Play()

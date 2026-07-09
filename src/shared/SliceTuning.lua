@@ -22,7 +22,7 @@ return {
 	-- UI timings
 	CAUGHT_SECONDS = 2.4,
 	ESCAPED_SECONDS = 5,
-	TITLE_SECONDS = 3.5,
+	RULES_SECONDS = 3.6, -- the 3-second-understanding onboarding: threat + rule + objective, shown then faded
 
 	-- STUB placeholder audio (Rule 2): built-in rbxasset until the studio records real foley
 	HEARTBEAT_SOUND = "rbxasset://sounds/electronicpingshort.wav",

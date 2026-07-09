@@ -41,7 +41,9 @@ local function beginRun(player)
 	if char and char.PrimaryPart then
 		char:PivotTo(CFrame.new(arena.entrance))
 	end
-	send(player, { kind = "title", title = "THE WATCHER" })
+	-- the Watcher holds still while the rules are on screen, so no one dies before they understand the game
+	holdUntil = os.clock() + tuning.RULES_SECONDS
+	send(player, { kind = "rules" })
 	send(player, { kind = "objective", text = leverThrown and OBJ_LEAVE or OBJ_LEVER })
 end
 
