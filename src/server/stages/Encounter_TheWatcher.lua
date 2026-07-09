@@ -16,7 +16,14 @@ local RULES = {
 	{ t = "IT MOVES WHEN YOU LOOK AWAY.", y = 0.5, s = 30 },
 	{ t = "YOUR LIGHT DRAINS. LET IT REST.", y = 0.59, s = 26, c = { 206, 190, 150 } },
 	{ t = "RESTORE THE POWER.   GET OUT.", y = 0.69, s = 34, c = { 200, 60, 60 } },
-	{ t = "[F] LIGHT       [E] RESTORE", y = 0.82, s = 20, c = { 150, 143, 128 } },
+	-- m = the mobile variant (the client picks it on touch — "[F]" would lie to the ~70% on phones)
+	{
+		t = "[F] LIGHT       [E] RESTORE",
+		m = "TAP LIGHT       HOLD A BREAKER",
+		y = 0.82,
+		s = 20,
+		c = { 150, 143, 128 },
+	},
 }
 
 local function objectiveText(h)

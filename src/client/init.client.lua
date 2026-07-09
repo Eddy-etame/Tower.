@@ -5,6 +5,9 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
 
 local version = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Version"))
 local tuning = require(ReplicatedStorage.Shared.SliceTuning)
@@ -80,7 +83,9 @@ local function buildRules(lines)
 	rulesParts = {}
 	for _, line in ipairs(lines or {}) do
 		local color = line.c and Color3.fromRGB(line.c[1], line.c[2], line.c[3]) or INK
-		table.insert(rulesParts, rulesLine(line.t, line.y, line.s, color))
+		-- a line may carry a mobile variant (line.m) — keyboard hints like "[F]" lie to the ~70% on touch
+		local text = (isMobile and line.m) or line.t
+		table.insert(rulesParts, rulesLine(text, line.y, line.s, color))
 	end
 end
 
