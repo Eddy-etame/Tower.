@@ -122,6 +122,10 @@ return {
 	PRESENCE_BLACKOUT = 1.5, -- seconds of sensory blackout on the third close, then respawn at the start
 	PRESENCE_SILENCE_RADIUS = 18, -- studs: lamps within this of the presence dim to the dead-zone low
 	PRESENCE_RECORD_SECONDS = 3, -- stand still this long at the recorder to capture the tape
+	PRESENCE_START_GRACE = 5, -- s of safe onboarding (covers the rules card) before it can pace/close/blackout you
+	PRESENCE_CLOSE_COOLDOWN = 1, -- s between close events (debounce)
+	PRESENCE_LEVEL_STEP = 0.2, -- quantize the danger level sent to the client so it can't be inverted to the coordinate
+	PRESENCE_BED_STEP = 4, -- ...and the bed volume, likewise (the dead-lamp band stays the finest positional tell)
 
 	-- ENCOUNTER IV — THE MORAL COLLAPSE. A small warm light finds you in the dark and lights your way — the only
 	-- thing in the Threshold that ever responded to you. The way out needs light: a socket carved to fit it. SPEND
@@ -138,6 +142,7 @@ return {
 	MORAL_EXHALE_PERIOD = 4, -- the shape's breath: a safe window to move, then an EXHALE when any movement draws it
 	MORAL_EXHALE_SAFE = 2.8, -- the move window; the rest of the period is the exhale (the companion at the mouth flares)
 	MORAL_MOVE_THRESH = 2, -- studs/s above which you count as MOVING; still is beneath its notice
+	MORAL_EXHALE_WARN = 0.7, -- s before the exhale that the dread ramps up (a facing-independent countdown; the flare is behind you)
 	MORAL_PASSAGE_DANGER = 0.6, -- seconds of moving-during-an-exhale it tolerates before it takes you (grace to stop)
 	MORAL_BLACKOUT = 1.5, -- pass-through blackout on a dark-crossing death (the choice stays open)
 

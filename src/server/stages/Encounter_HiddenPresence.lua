@@ -46,10 +46,12 @@ function Stage.build(ctx)
 		presenceX = corridor.corridorMinX - tuning.PRESENCE_MAX_GAP, -- starts behind the entry
 		warnings = 0,
 		closeCd = 0,
+		graceUntil = os.clock() + tuning.PRESENCE_START_GRACE, -- safe onboarding: no pacing/closing while the card is up
 		blackedOut = false,
 		recording = false,
-		taught = false,
+		taught = {},
 		escaped = {},
+		lastDanger = {},
 	}
 
 	corridor.tapePrompt.Triggered:Connect(function(player)
@@ -72,6 +74,8 @@ function Stage.build(ctx)
 			return
 		end
 		h.escaped[player.UserId] = true
+		ctx.send(player, { kind = "danger", level = 0 })
+		ctx.send(player, { kind = "objective", text = "" })
 		ctx.send(player, { kind = "banner", text = "YOU LEFT IT BEHIND." })
 		task.delay(tuning.ESCAPED_SECONDS, function()
 			if player.Parent then
@@ -88,8 +92,10 @@ function Stage.onPlayerEnter(h, ctx, player)
 	if char and char.PrimaryPart then
 		char:PivotTo(CFrame.lookAt(h.corridor.entranceSpawn, h.corridor.entranceSpawn + Vector3.new(1, 0, 0)))
 	end
-	if not h.taught then
-		h.taught = true
+	local uid = player.UserId
+	h.escaped[uid] = nil -- re-arm the exit for a rejoining player
+	if not h.taught[uid] then
+		h.taught[uid] = true
 		ctx.send(player, { kind = "rules", lines = RULES })
 	end
 	ctx.send(player, { kind = "objective", text = "REACH THE DOOR — KEEP MOVING SO IT CAN'T CLOSE." })
@@ -100,7 +106,7 @@ local function respawnStart(h)
 	h.warnings = 0 -- warnings re-arm on wake (scars stay)
 	for _, p in Players:GetPlayers() do
 		local char = p.Character
-		if char and char.PrimaryPart then
+		if char and char.PrimaryPart and not h.escaped[p.UserId] then -- never drag a player who already left back in
 			char:PivotTo(CFrame.lookAt(h.corridor.entranceSpawn, h.corridor.entranceSpawn + Vector3.new(1, 0, 0)))
 		end
 	end
@@ -126,9 +132,12 @@ function Stage.update(h, dt)
 		return
 	end
 	local playerX = root.Position.X
+	local live = os.clock() >= h.graceUntil -- during onboarding grace it shows the tell but cannot pace/close you
 
 	-- pace: creep toward the player, but never fall further than MAX_GAP behind (it is always WITH you)
-	h.presenceX += tuning.PRESENCE_SPEED * step
+	if live then
+		h.presenceX += tuning.PRESENCE_SPEED * step
+	end
 	local gap = playerX - h.presenceX
 	if gap > tuning.PRESENCE_MAX_GAP then
 		h.presenceX = playerX - tuning.PRESENCE_MAX_GAP
@@ -136,14 +145,16 @@ function Stage.update(h, dt)
 	end
 
 	-- close event: it has reached your gap. Warn (scar a lamp + yield) twice; the third passes through you.
-	if gap < tuning.PRESENCE_CLOSE_DIST and os.clock() >= h.closeCd then
-		h.closeCd = os.clock() + 1
+	if live and gap < tuning.PRESENCE_CLOSE_DIST and os.clock() >= h.closeCd then
+		h.closeCd = os.clock() + tuning.PRESENCE_CLOSE_COOLDOWN
 		h.warnings += 1
 		if h.warnings > tuning.PRESENCE_WARNINGS then
 			-- the third close: blackout, then respawn at the start
 			h.blackedOut = true
 			for _, p in Players:GetPlayers() do
-				h.ctx.send(p, { kind = "blackout", seconds = tuning.PRESENCE_BLACKOUT })
+				if not h.escaped[p.UserId] then
+					h.ctx.send(p, { kind = "blackout", seconds = tuning.PRESENCE_BLACKOUT })
+				end
 			end
 			task.delay(tuning.PRESENCE_BLACKOUT, function()
 				respawnStart(h)
@@ -155,19 +166,33 @@ function Stage.update(h, dt)
 			h.presenceX = playerX - (tuning.PRESENCE_CLOSE_DIST + tuning.PRESENCE_YIELD) -- it yields
 			gap = tuning.PRESENCE_CLOSE_DIST + tuning.PRESENCE_YIELD
 			for _, p in Players:GetPlayers() do
-				h.ctx.send(p, { kind = "banner", text = "IT STEPPED ASIDE. MOVE." })
+				if not h.escaped[p.UserId] then
+					h.ctx.send(p, { kind = "banner", text = "IT STEPPED ASIDE. MOVE." })
+				end
 			end
 		end
 	end
 
-	-- the tell: dim the lamp band on the presence; duck the bed as you enter its silence; dread by proximity
+	-- the tell: dim the lamp band on the presence; duck the bed as you enter its silence (both QUANTIZED to coarse
+	-- steps so a client can't invert the continuous value back into the presence's exact coordinate)
 	Corridor.setSilence(c, h.presenceX, tuning.PRESENCE_SILENCE_RADIUS)
 	if c.bed then
-		c.bed.Volume = tuning.AMBIENT_VOLUME * math.clamp(gap / tuning.PRESENCE_SILENCE_RADIUS, 0.15, 1)
+		local bedRaw = math.clamp(gap / tuning.PRESENCE_SILENCE_RADIUS, 0.15, 1)
+		c.bed.Volume = tuning.AMBIENT_VOLUME
+			* (math.floor(bedRaw * tuning.PRESENCE_BED_STEP) / tuning.PRESENCE_BED_STEP)
 	end
+	-- danger vignette: PER-PLAYER from that player's own gap (not the nearest's), quantized + change-gated
 	for _, p in Players:GetPlayers() do
-		if not h.escaped[p.UserId] then
-			h.ctx.send(p, { kind = "danger", level = math.clamp(1 - gap / tuning.PRESENCE_MAX_GAP, 0, 0.6) })
+		local uid = p.UserId
+		if not h.escaped[uid] then
+			local proot = p.Character and p.Character.PrimaryPart
+			local pgap = proot and (proot.Position.X - h.presenceX) or tuning.PRESENCE_MAX_GAP
+			local raw = math.clamp(1 - pgap / tuning.PRESENCE_MAX_GAP, 0, 0.6)
+			local level = math.floor(raw / tuning.PRESENCE_LEVEL_STEP) * tuning.PRESENCE_LEVEL_STEP
+			if level ~= h.lastDanger[uid] then
+				h.lastDanger[uid] = level
+				h.ctx.send(p, { kind = "danger", level = level })
+			end
 		end
 	end
 end

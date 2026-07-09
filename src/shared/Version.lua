@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 16,
-	patch = 0,
-	stage = "four-encounters-real",
+	patch = 1,
+	stage = "encounters-2-3-4-review-hardening",
 }

@@ -36,9 +36,9 @@ function Sanctum.build(tuning, parentFolder)
 	slab(folder, -20, H / 2, -12, 40, H, 1, BuildKit.jitter(WALL), nil, "ArrivalWall")
 	slab(folder, -20, H / 2, 12, 40, H, 1, BuildKit.jitter(WALL), nil, "ArrivalWall")
 	slab(folder, -40, H / 2, 0, 1, H, 26, BuildKit.jitter(WALL), nil, "ArrivalBack")
-	-- the throat between arrival and the exit room (z -4..4 gap in the x=0 wall)
-	slab(folder, 0, H / 2, -9, 1, H, 18, BuildKit.jitter(WALL), nil, "MidWall")
-	slab(folder, 0, H / 2, 9, 1, H, 18, BuildKit.jitter(WALL), nil, "MidWall")
+	-- the throat between arrival and the exit room (z -4..4 gap in the x=0 wall) — sz 10 leaves the gap open
+	slab(folder, 0, H / 2, -9, 1, H, 10, BuildKit.jitter(WALL), nil, "MidWall")
+	slab(folder, 0, H / 2, 9, 1, H, 10, BuildKit.jitter(WALL), nil, "MidWall")
 
 	-- EXIT ROOM (the one warm-lit room; the warmth is the horror)
 	slab(folder, 25, 0.1, 0, 50, 0.2, 28, BuildKit.jitter(FLOOR), nil, "ExitFloor")
@@ -47,9 +47,9 @@ function Sanctum.build(tuning, parentFolder)
 	-- north wall with the PASSAGE mouth (x 8..16)
 	slab(folder, 4, H / 2, 14, 8, H, 1, BuildKit.jitter(WALL), nil, "ExitWall")
 	slab(folder, 33, H / 2, 14, 34, H, 1, BuildKit.jitter(WALL), nil, "ExitWall")
-	-- east wall with the DOOR gap (z -4..4)
-	slab(folder, 50, H / 2, -9, 1, H, 18, BuildKit.jitter(WALL), nil, "ExitWall")
-	slab(folder, 50, H / 2, 9, 1, H, 18, BuildKit.jitter(WALL), nil, "ExitWall")
+	-- east wall with the DOOR gap (z -4..4) — sz 10 leaves the gap the door fills
+	slab(folder, 50, H / 2, -9, 1, H, 10, BuildKit.jitter(WALL), nil, "ExitWall")
+	slab(folder, 50, H / 2, 9, 1, H, 10, BuildKit.jitter(WALL), nil, "ExitWall")
 
 	-- the SOCKET — carved to fit, polished by use — and its husk (taking's full price, foreknown)
 	slab(folder, 42, 2, -12.5, 4, 4, 1.6, Color3.fromRGB(60, 54, 48), Enum.Material.Slate, "SocketBlock")
@@ -108,7 +108,7 @@ function Sanctum.build(tuning, parentFolder)
 	slab(folder, 12, H + 0.25, 41, 10, 0.5, 58, BuildKit.jitter(CEIL), nil, "PassageCeil")
 	slab(folder, 7.5, H / 2, 41, 1, H, 56, BuildKit.jitter(WALL), nil, "PassageWall")
 	slab(folder, 16.5, H / 2, 41, 1, H, 56, BuildKit.jitter(WALL), nil, "PassageWall")
-	slab(folder, 12, H / 2, 69, 8, H, 1, BuildKit.jitter(WALL), nil, "PassageEndTease")
+	slab(folder, 12, H / 2, 80, 16, H, 1, BuildKit.jitter(WALL), nil, "PassageBackstop") -- past the landing, not capping the passage
 	-- the dead lantern at the mouth — the dark's full price, foreknown
 	slab(folder, 15, 2, 16.5, 1, 2.4, 1, Color3.fromRGB(40, 38, 40), Enum.Material.Metal, "DeadLantern")
 	-- far exit (path B) — a sliver of light at the end

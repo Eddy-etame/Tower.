@@ -117,11 +117,17 @@ banner.TextTransparency = 1
 banner.Text = ""
 banner.Parent = gui
 
+local bannerGen = 0
 local function showBanner(text)
+	bannerGen += 1
+	local gen = bannerGen
 	banner.Text = text
 	banner.TextTransparency = 1
 	TweenService:Create(banner, TweenInfo.new(0.4), { TextTransparency = 0 }):Play()
 	task.delay(1.8, function()
+		if gen ~= bannerGen then -- a newer banner replaced this one; don't fade IT out
+			return
+		end
 		TweenService:Create(banner, TweenInfo.new(0.9), { TextTransparency = 1 }):Play()
 	end)
 end

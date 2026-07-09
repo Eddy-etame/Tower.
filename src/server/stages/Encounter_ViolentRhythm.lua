@@ -22,7 +22,8 @@ local RULES = {
 local function markAt(g, pos, radius)
 	for i, m in g.marks do
 		local dx, dz = pos.X - m.pos.X, pos.Z - m.pos.Z
-		if dx * dx + dz * dz <= radius * radius then
+		-- SQUARE test so the whole visible green plate is safe (a circle left the diagonal corners lethal)
+		if math.abs(dx) <= radius and math.abs(dz) <= radius then
 			return i
 		end
 	end
@@ -41,9 +42,10 @@ function Stage.build(ctx)
 		accum = 0,
 		phase = "safe",
 		graceUntil = os.clock() + tuning.RHYTHM_START_GRACE, -- witness one FULL breath before it can sweep you
-		taught = false,
+		taught = {}, -- [userId] onboarded (per-player, so a co-op joiner still gets the card; survives respawn)
 		escaped = {},
 		lastMark = {}, -- [userId] = furthest mark index secured (forward respawn)
+		lastDanger = {}, -- [userId] = last danger level sent (change-gate the vignette remote)
 	}
 
 	gallery.doorTouch.Touched:Connect(function(hit)
@@ -52,6 +54,8 @@ function Stage.build(ctx)
 			return
 		end
 		h.escaped[player.UserId] = true
+		ctx.send(player, { kind = "danger", level = 0 }) -- clear the vignette + stale objective in the safe chamber
+		ctx.send(player, { kind = "objective", text = "" })
 		ctx.send(player, { kind = "banner", text = "YOU CROSSED IT." })
 		task.delay(tuning.ESCAPED_SECONDS, function()
 			if player.Parent then
@@ -68,9 +72,11 @@ function Stage.onPlayerEnter(h, ctx, player)
 	if char and char.PrimaryPart then
 		char:PivotTo(CFrame.lookAt(h.gallery.entranceSpawn, h.gallery.entranceSpawn + Vector3.new(1, 0, 0)))
 	end
-	h.lastMark[player.UserId] = 0
-	if not h.taught then
-		h.taught = true
+	local uid = player.UserId
+	h.escaped[uid] = nil -- re-arm the exit for a rejoining player
+	h.lastMark[uid] = h.lastMark[uid] or 0 -- preserve furthest secured mark across respawn/reset
+	if not h.taught[uid] then
+		h.taught[uid] = true
 		ctx.send(player, { kind = "rules", lines = RULES })
 	end
 	ctx.send(player, { kind = "objective", text = "CROSS THE GALLERY — STAND ON A MARK WHEN IT SURGES." })
@@ -84,7 +90,7 @@ function Stage.update(h, dt)
 	if h.accum < tuning.CHECK_INTERVAL then
 		return
 	end
-	local step = h.accum
+	local step = math.min(h.accum, tuning.RHYTHM_WARN) -- one server hitch can't skip the whole WARN telegraph
 	h.accum = 0
 	local g = h.gallery
 	local SAFE, WARN, SURGE = tuning.RHYTHM_SAFE, tuning.RHYTHM_WARN, tuning.RHYTHM_SURGE
@@ -147,7 +153,10 @@ function Stage.update(h, dt)
 					level = 0.85
 				end
 			end
-			h.ctx.send(pl, { kind = "danger", level = level })
+			if math.abs(level - (h.lastDanger[uid] or -1)) > 0.02 then -- change-gate: no 10Hz same-value spam
+				h.lastDanger[uid] = level
+				h.ctx.send(pl, { kind = "danger", level = level })
+			end
 		end
 	end
 end

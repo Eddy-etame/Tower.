@@ -158,16 +158,18 @@ end
 
 -- permanently kill one lamp at x (a spent-warning SCAR — the count is readable in the world, never a hidden meter)
 function Corridor.scar(handles, nearX)
-	local best, bestD
+	local live, best, bestD = 0, nil, nil
 	for _, l in handles.lamps do
 		if not l.scarred then
+			live += 1
 			local d = math.abs(l.x - nearX)
 			if not bestD or d < bestD then
 				bestD, best = d, l
 			end
 		end
 	end
-	if best then
+	-- keep at least ~3 lamps live so a retry-heavy run can never scar away the dead-zone band (the core tell)
+	if best and live > 3 then
 		best.scarred = true
 		best.bulb.Color = LAMP_DEAD
 		best.bulb.Material = Enum.Material.SmoothPlastic

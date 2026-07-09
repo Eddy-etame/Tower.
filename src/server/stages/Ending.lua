@@ -32,7 +32,7 @@ end
 function Ending.onPlayerEnter(h, ctx, player)
 	local char = player.Character
 	if char and char.PrimaryPart then
-		char:PivotTo(CFrame.new(h.spawn))
+		char:PivotTo(CFrame.lookAt(h.spawn, h.spawn + Vector3.new(1, 0, 0))) -- face the pad (+X), not a blank wall
 	end
 	ctx.send(player, { kind = "objective", text = "STEP ONTO THE PAD TO DESCEND AGAIN." })
 end

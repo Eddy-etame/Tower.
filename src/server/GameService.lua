@@ -9,8 +9,9 @@ local GameService = {}
 
 local stages, tuning, uiRemote, flashlightRemote
 local current, active, activeHandles, activeFolder, activeCtx
+local generation = 0 -- bumped each stage build; a stale delayed clear() from a torn-down stage is ignored
 
-local function ctxFor(folder)
+local function ctxFor(folder, gen)
 	return {
 		folder = folder,
 		tuning = tuning,
@@ -26,8 +27,10 @@ local function ctxFor(folder)
 		players = function()
 			return Players:GetPlayers()
 		end,
+		-- advance ONLY if this ctx belongs to the still-current stage — so two players finishing within the
+		-- 5s escape window (or any stale scheduled clear) can't double-advance and skip an encounter
 		clear = function()
-			GameService.advance()
+			GameService.advance(gen)
 		end,
 	}
 end
@@ -63,19 +66,23 @@ end
 
 function GameService.startStage(index)
 	teardown()
+	generation += 1
 	current = index
 	active = stages[index]
 	activeFolder = Instance.new("Folder")
 	activeFolder.Name = "Stage_" .. (active.name or tostring(index))
 	activeFolder.Parent = workspace
-	activeCtx = ctxFor(activeFolder)
+	activeCtx = ctxFor(activeFolder, generation)
 	activeHandles = active.build(activeCtx)
 	for _, player in Players:GetPlayers() do
 		enterPlayer(player)
 	end
 end
 
-function GameService.advance()
+function GameService.advance(gen)
+	if gen ~= nil and gen ~= generation then
+		return -- a stale clear() from an already-torn-down stage; ignore it
+	end
 	local nxt = current + 1
 	if nxt > #stages then
 		nxt = 1 -- Ending loops back to the Beginning (a fresh descent)

@@ -38,8 +38,10 @@ function Stage.build(ctx)
 		danger = 0,
 		taughtExhale = false,
 		blackedOut = false,
-		taught = false,
+		taught = {},
 		escaped = {},
+		lastDanger = nil, -- change-gate the vignette remote
+		lastPassagePos = nil, -- server-sampled position for movement detection (client velocity is spoofable)
 	}
 
 	-- SPEND: a held place-action at the socket (armed only when the companion is near — proximity never commits)
@@ -79,7 +81,7 @@ function Stage.build(ctx)
 	-- SPEND exit (path A): no fanfare — the indifference is the point
 	sanctum.doorTouchA.Touched:Connect(function(hit)
 		local player = Players:GetPlayerFromCharacter(hit.Parent)
-		if not player or h.committed ~= "spent" or h.escaped[player.UserId] then
+		if not player or player ~= Players:GetPlayers()[1] or h.committed ~= "spent" or h.escaped[player.UserId] then
 			return
 		end
 		h.escaped[player.UserId] = true
@@ -93,10 +95,17 @@ function Stage.build(ctx)
 	-- CROSS exit (path B): you kept it, and you carry the crossing's cost out
 	sanctum.doorTouchB.Touched:Connect(function(hit)
 		local player = Players:GetPlayerFromCharacter(hit.Parent)
-		if not player or h.escaped[player.UserId] then
+		if
+			not player
+			or player ~= Players:GetPlayers()[1]
+			or h.escaped[player.UserId]
+			or h.committed == "spent"
+			or h.committed == "spending"
+			or h.blackedOut -- can't drift into the exit mid-blackout
+		then
 			return
 		end
-		h.committed = h.committed or "crossed"
+		h.committed = "crossed"
 		h.escaped[player.UserId] = true
 		ctx.send(player, { kind = "banner", text = "YOU KEPT IT. IT STILL HUMS BEHIND YOU." })
 		task.delay(tuning.ESCAPED_SECONDS, function()
@@ -114,8 +123,10 @@ function Stage.onPlayerEnter(h, ctx, player)
 	if char and char.PrimaryPart then
 		char:PivotTo(CFrame.lookAt(h.sanctum.spawn, h.sanctum.spawn + Vector3.new(1, 0, 0)))
 	end
-	if not h.taught then
-		h.taught = true
+	local uid = player.UserId
+	h.escaped[uid] = nil -- re-arm the exits for a rejoining player
+	if not h.taught[uid] then
+		h.taught[uid] = true
 		ctx.send(player, { kind = "rules", lines = RULES })
 	end
 	ctx.send(player, { kind = "objective", text = "FIND THE WAY OUT. IT NEEDS LIGHT." })
@@ -145,17 +156,28 @@ function Stage.update(h, dt)
 	if inPassage(s.passage, pos) then
 		s.socketPrompt.Enabled = false
 		-- the companion cannot follow into the dark; it waits at the mouth. The shape BREATHES: a safe window to
-		-- move, then an EXHALE when any movement draws it. During the exhale the companion FLARES (the learned
-		-- flare = danger grammar from the save) — move then and it takes you; be still and it passes.
+		-- move, then an EXHALE when any movement draws it. A facing-independent COUNTDOWN warns first — the dread
+		-- ramps and the hum swells BEFORE the exhale (the mouth flare is behind a +Z-facing crosser, so it cannot
+		-- be the only tell). Move on the exhale and it takes you; be still and it passes.
 		s.orb.Position = s.orb.Position:Lerp(s.passageMouth, 1 - math.exp(-tuning.MORAL_ORB_FOLLOW * step))
 		h.exhaleT += step
 		if h.exhaleT >= tuning.MORAL_EXHALE_PERIOD then
 			h.exhaleT -= tuning.MORAL_EXHALE_PERIOD
 		end
 		local exhaling = h.exhaleT >= tuning.MORAL_EXHALE_SAFE
+		local warnStart = tuning.MORAL_EXHALE_SAFE - tuning.MORAL_EXHALE_WARN
+		local warn = math.clamp((h.exhaleT - warnStart) / tuning.MORAL_EXHALE_WARN, 0, 1)
+		local intensity = exhaling and 1 or warn
 		s.orbGlow.Brightness = exhaling and 4.5 or 0.5
-		local moving = Vector3.new(root.AssemblyLinearVelocity.X, 0, root.AssemblyLinearVelocity.Z).Magnitude
-			> tuning.MORAL_MOVE_THRESH
+		if s.hum then
+			s.hum.Volume = 0.5 + 0.4 * intensity -- the hum swells as the countdown (omnidirectional)
+			s.hum.PlaybackSpeed = 0.6 + 0.25 * intensity
+		end
+		-- movement from a SERVER-sampled position delta (client-owned AssemblyLinearVelocity is spoofable)
+		local moving = h.lastPassagePos ~= nil
+			and Vector3.new(pos.X - h.lastPassagePos.X, 0, pos.Z - h.lastPassagePos.Z).Magnitude / step
+				> tuning.MORAL_MOVE_THRESH
+		h.lastPassagePos = pos
 		if exhaling and moving then
 			h.danger += step
 			if not h.taughtExhale then
@@ -163,27 +185,50 @@ function Stage.update(h, dt)
 				h.ctx.send(player, { kind = "banner", text = "IT EXHALES. BE STILL." })
 			end
 			if h.danger > tuning.MORAL_PASSAGE_DANGER then
-				-- it takes you: blackout, back into the room, the choice still open
+				-- it takes you: FREEZE the player for the blackout, then return them to the room, choice still open
 				h.blackedOut = true
 				h.danger = 0
+				local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+				if humanoid then
+					humanoid.WalkSpeed = 0
+				end
+				root.Anchored = true
 				h.ctx.send(player, { kind = "blackout", seconds = tuning.MORAL_BLACKOUT })
 				task.delay(tuning.MORAL_BLACKOUT, function()
 					if root.Parent then
+						root.Anchored = false
+						root.AssemblyLinearVelocity = Vector3.zero
 						root.CFrame = CFrame.new(12, 3.5, 10) -- back inside the exit room, at the mouth
 					end
+					if humanoid and humanoid.Parent then
+						humanoid.WalkSpeed = 16
+					end
+					h.exhaleT = 0 -- retry begins in a safe window, not mid-exhale
 					h.blackedOut = false
 				end)
 			end
 		else
 			h.danger = math.max(0, h.danger - step * 2)
 		end
-		h.ctx.send(player, { kind = "danger", level = exhaling and 0.75 or 0.1 })
+		local level = exhaling and 0.75 or (0.1 + 0.4 * warn)
+		if level ~= h.lastDanger then
+			h.lastDanger = level
+			h.ctx.send(player, { kind = "danger", level = level })
+		end
 		return
 	end
 
 	-- in the light: the companion follows (ahead + up, where you look), and drifts to the socket when you bring
 	-- it close — a last-chance hover, reversible, never a commit (the socket prompt is the only commit)
-	h.ctx.send(player, { kind = "danger", level = 0 })
+	h.lastPassagePos = nil -- left the passage; the movement sampler resets so re-entry starts fresh
+	if s.hum then
+		s.hum.Volume = 0.5
+		s.hum.PlaybackSpeed = 0.6
+	end
+	if h.lastDanger ~= 0 then
+		h.lastDanger = 0
+		h.ctx.send(player, { kind = "danger", level = 0 })
+	end
 	s.orbGlow.Brightness = 2.2
 	local nearSocket = (pos - s.socketPos).Magnitude < 11
 	s.socketPrompt.Enabled = nearSocket
