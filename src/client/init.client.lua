@@ -1,6 +1,6 @@
--- Encounter One client: objective line, note popups, end card, and a slow red vignette that breathes in while
--- the file wall reveals in the annex (the violation, felt at the screen edge). The file itself lives in the
--- world — this UI only frames it. The client renders and requests; the server decides — this script LISTENS only.
+-- MVP client UI: the stated objective, the title card, the caught blackout, the escape card, and a red edge
+-- vignette that intensifies as the Watcher closes (feel, don't read — no distance meter). The client renders
+-- and requests; the server decides — this script only LISTENS.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -19,111 +19,105 @@ print(
 
 local player = Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
-gui.Name = "SliceUI"
+gui.Name = "MvpUI"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 gui.Parent = player:WaitForChild("PlayerGui")
 
-local INK_LIGHT = Color3.fromRGB(228, 222, 208)
+local INK = Color3.fromRGB(228, 222, 208)
 
--- edge vignette (a dark frame with a soft hole) — used for the annex "being watched" pressure
 local vignette = Instance.new("ImageLabel")
 vignette.Size = UDim2.fromScale(1, 1)
 vignette.BackgroundTransparency = 1
-vignette.Image = "rbxasset://textures/ui/Vignette.png" -- built-in; STUB until a bespoke mask is authored
-vignette.ImageColor3 = Color3.fromRGB(120, 0, 0)
+vignette.Image = "rbxasset://textures/ui/Vignette.png"
+vignette.ImageColor3 = Color3.fromRGB(150, 0, 0)
 vignette.ImageTransparency = 1
 vignette.ScaleType = Enum.ScaleType.Stretch
 vignette.Parent = gui
 
 local objective = Instance.new("TextLabel")
-objective.AnchorPoint = Vector2.new(0.5, 0)
-objective.Position = UDim2.new(0.5, 0, 0, 14)
-objective.Size = UDim2.new(0.9, 0, 0, 30)
+objective.AnchorPoint = Vector2.new(0.5, 1)
+objective.Position = UDim2.new(0.5, 0, 1, -24)
+objective.Size = UDim2.new(0.9, 0, 0, 28)
 objective.BackgroundTransparency = 1
 objective.Font = Enum.Font.SpecialElite
-objective.TextSize = 22
-objective.TextColor3 = INK_LIGHT
+objective.TextSize = 20
+objective.TextColor3 = INK
 objective.TextStrokeTransparency = 0.4
 objective.Text = ""
 objective.Parent = gui
 
-local noteFrame = Instance.new("Frame")
-noteFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-noteFrame.Position = UDim2.fromScale(0.5, 0.66)
-noteFrame.Size = UDim2.new(0.7, 0, 0, 120)
-noteFrame.BackgroundColor3 = Color3.fromRGB(14, 13, 12)
-noteFrame.BackgroundTransparency = 0.2
-noteFrame.BorderSizePixel = 0
-noteFrame.Visible = false
-noteFrame.Parent = gui
+local title = Instance.new("TextLabel")
+title.AnchorPoint = Vector2.new(0.5, 0.5)
+title.Position = UDim2.fromScale(0.5, 0.42)
+title.Size = UDim2.new(0.9, 0, 0, 60)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.SpecialElite
+title.TextSize = 52
+title.TextColor3 = INK
+title.TextTransparency = 1
+title.Text = ""
+title.Parent = gui
 
-local noteText = Instance.new("TextLabel")
-noteText.Size = UDim2.fromScale(0.94, 0.94)
-noteText.Position = UDim2.fromScale(0.03, 0.03)
-noteText.BackgroundTransparency = 1
-noteText.Font = Enum.Font.SpecialElite
-noteText.TextSize = 26
-noteText.TextColor3 = INK_LIGHT
-noteText.TextWrapped = true
-noteText.Text = ""
-noteText.Parent = noteFrame
+local fullCard = Instance.new("Frame")
+fullCard.Size = UDim2.fromScale(1, 1)
+fullCard.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+fullCard.BackgroundTransparency = 1
+fullCard.BorderSizePixel = 0
+fullCard.Visible = false
+fullCard.Parent = gui
 
-local endCard = Instance.new("Frame")
-endCard.Size = UDim2.fromScale(1, 1)
-endCard.BackgroundColor3 = Color3.fromRGB(6, 6, 6)
-endCard.BackgroundTransparency = 0.05
-endCard.BorderSizePixel = 0
-endCard.Visible = false
-endCard.Parent = gui
+local cardText = Instance.new("TextLabel")
+cardText.AnchorPoint = Vector2.new(0.5, 0.5)
+cardText.Position = UDim2.fromScale(0.5, 0.5)
+cardText.Size = UDim2.new(0.9, 0, 0, 60)
+cardText.BackgroundTransparency = 1
+cardText.Font = Enum.Font.SpecialElite
+cardText.TextSize = 46
+cardText.TextColor3 = INK
+cardText.Text = ""
+cardText.Parent = fullCard
 
-local endLines = {}
-for index = 1, 3 do
-	local line = Instance.new("TextLabel")
-	line.AnchorPoint = Vector2.new(0.5, 0.5)
-	line.Position = UDim2.fromScale(0.5, 0.36 + index * 0.09)
-	line.Size = UDim2.new(0.9, 0, 0, 40)
-	line.BackgroundTransparency = 1
-	line.Font = Enum.Font.SpecialElite
-	line.TextSize = index == 1 and 44 or 26
-	line.TextColor3 = INK_LIGHT
-	line.Text = ""
-	line.Parent = endCard
-	endLines[index] = line
+local function showCard(text, color)
+	cardText.Text = text
+	fullCard.BackgroundColor3 = color
+	fullCard.Visible = true
+	fullCard.BackgroundTransparency = 1
+	cardText.TextTransparency = 1
+	TweenService:Create(fullCard, TweenInfo.new(0.35), { BackgroundTransparency = 0.05 }):Play()
+	TweenService:Create(cardText, TweenInfo.new(0.5), { TextTransparency = 0 }):Play()
 end
 
-local noteHideThread
+local function hideCard()
+	TweenService:Create(fullCard, TweenInfo.new(0.5), { BackgroundTransparency = 1 }):Play()
+	TweenService:Create(cardText, TweenInfo.new(0.4), { TextTransparency = 1 }):Play()
+	task.delay(0.5, function()
+		fullCard.Visible = false
+	end)
+end
 
-local uiRemote = ReplicatedStorage:WaitForChild("SliceUI")
+local uiRemote = ReplicatedStorage:WaitForChild("MvpUI")
 uiRemote.OnClientEvent:Connect(function(payload)
 	if typeof(payload) ~= "table" then
 		return
 	end
 	if payload.kind == "objective" then
-		endCard.Visible = false
 		objective.Text = payload.text or ""
-		-- the annex hold beat brings the watched-pressure vignette in; anything else clears it
-		if payload.text == "DON'T MOVE." then
-			TweenService:Create(vignette, TweenInfo.new(3), { ImageTransparency = 0.35 }):Play()
-		else
-			TweenService:Create(vignette, TweenInfo.new(1.5), { ImageTransparency = 1 }):Play()
-		end
-	elseif payload.kind == "note" then
-		noteText.Text = payload.text or ""
-		noteFrame.Visible = true
-		if noteHideThread then
-			task.cancel(noteHideThread)
-		end
-		noteHideThread = task.delay(tuning.NOTE_POPUP_SECONDS, function()
-			noteFrame.Visible = false
-			noteHideThread = nil
-		end)
-	elseif payload.kind == "endcard" then
-		noteFrame.Visible = false
-		TweenService:Create(vignette, TweenInfo.new(1), { ImageTransparency = 1 }):Play()
-		for index, line in endLines do
-			line.Text = (payload.lines and payload.lines[index]) or ""
-		end
-		endCard.Visible = true
+	elseif payload.kind == "title" then
+		hideCard()
+		title.Text = payload.title or ""
+		title.TextTransparency = 0
+		TweenService
+			:Create(title, TweenInfo.new(tuning.TITLE_SECONDS, Enum.EasingStyle.Quint), { TextTransparency = 1 })
+			:Play()
+	elseif payload.kind == "danger" then
+		local lvl = math.clamp(tonumber(payload.level) or 0, 0, 1)
+		TweenService:Create(vignette, TweenInfo.new(0.2), { ImageTransparency = 1 - lvl * 0.72 }):Play()
+	elseif payload.kind == "caught" then
+		TweenService:Create(vignette, TweenInfo.new(0.15), { ImageTransparency = 0.2 }):Play()
+		showCard("IT REACHED YOU.", Color3.fromRGB(20, 0, 0))
+	elseif payload.kind == "escaped" then
+		TweenService:Create(vignette, TweenInfo.new(0.6), { ImageTransparency = 1 }):Play()
+		showCard("YOU GOT OUT.", Color3.fromRGB(4, 6, 8))
 	end
 end)
