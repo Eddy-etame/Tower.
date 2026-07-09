@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 16,
-	patch = 2,
-	stage = "companion-orb-client-smoothing",
+	patch = 3,
+	stage = "dead-code-cleanup+intro-outro-atmosphere",
 }

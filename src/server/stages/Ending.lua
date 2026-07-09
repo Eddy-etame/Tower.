@@ -10,7 +10,8 @@ Ending.title = "YOU MADE IT OUT"
 function Ending.build(ctx)
 	local folder = ctx.folder
 	BuildKit.room(folder, { minX = 0, maxX = 34, minZ = -12, maxZ = 12 })
-	BuildKit.pool(folder, 17, 10.5, 0, Color3.fromRGB(255, 240, 214), 2.4, 34)
+	-- warm but DIM: relief, carrying weight — not a bright reward room. You made it out; you'll remember.
+	BuildKit.pool(folder, 17, 10.5, -3, Color3.fromRGB(236, 220, 192), 1.3, 28)
 	BuildKit.sign(
 		folder,
 		CFrame.lookAt(Vector3.new(17, 5, -11.4), Vector3.new(17, 5, 0)),

@@ -10,7 +10,8 @@ Beginning.title = "THE THRESHOLD"
 function Beginning.build(ctx)
 	local folder = ctx.folder
 	BuildKit.room(folder, { minX = 0, maxX = 34, minZ = -12, maxZ = 12 })
-	BuildKit.pool(folder, 17, 10.5, 0, Color3.fromRGB(255, 236, 205), 1.8, 32)
+	-- cold + dim: The Threshold is indifferent, never warm. One pale light on the question; the rest holds the dark
+	BuildKit.pool(folder, 17, 10.5, -3, Color3.fromRGB(150, 168, 196), 0.95, 24)
 	BuildKit.sign(
 		folder,
 		CFrame.lookAt(Vector3.new(17, 5, -11.4), Vector3.new(17, 5, 0)),
