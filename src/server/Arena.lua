@@ -226,6 +226,29 @@ function Arena.build(tuning)
 	rl.Text = "STEP HERE\nTO GO AGAIN"
 	rl.Parent = rg
 
+	-- ambient bed (STUB rbxasset, low + looped): makes SILENCE meaningful, so the Watcher's move sound spikes
+	local ambient = Instance.new("Sound")
+	ambient.SoundId = tuning.AMBIENT_SOUND
+	ambient.PlaybackSpeed = tuning.AMBIENT_SPEED
+	ambient.Volume = tuning.AMBIENT_VOLUME
+	ambient.Looped = true
+	ambient.Parent = folder
+	ambient:Play()
+
+	-- a chunk sound reused at each breaker on restore
+	handles.breakerSound = Instance.new("Sound")
+	handles.breakerSound.SoundId = tuning.BREAKER_SOUND
+	handles.breakerSound.PlaybackSpeed = tuning.BREAKER_SPEED
+	handles.breakerSound.Volume = 0.7
+	handles.breakerSound.Parent = folder
+
+	-- the escape relief sting (STUB), played in the safe chamber
+	handles.escapeSound = Instance.new("Sound")
+	handles.escapeSound.SoundId = tuning.ESCAPE_SOUND
+	handles.escapeSound.PlaybackSpeed = tuning.ESCAPE_SPEED
+	handles.escapeSound.Volume = 0.6
+	handles.escapeSound.Parent = safeBulb
+
 	handles.entrance = Vector3.new(-4, 3.5, 0)
 	handles.safeSpot = Vector3.new(70, 3.5, 0)
 
@@ -245,6 +268,11 @@ function Arena.restoreBreaker(handles, index)
 	b.light.Enabled = true
 	b.bulb.Color = Color3.fromRGB(255, 236, 205)
 	b.bulb.Material = Enum.Material.Neon
+	-- the juiced reward beat: a heavy chunk at the breaker (STUB audio)
+	if handles.breakerSound then
+		handles.breakerSound.Parent = b.lamp
+		handles.breakerSound:Play()
+	end
 	return true
 end
 

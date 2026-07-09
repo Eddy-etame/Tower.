@@ -68,6 +68,33 @@ function Threat.build(parentFolder)
 	return { model = model, root = root, spawn = CFrame.new(SPAWN + Vector3.new(0, 0.2, 0)) }
 end
 
+-- the Watcher's spatial move sound: attached to it, plays ONLY while advancing, silent while frozen.
+-- This is the fair-fear tell (2026 watch) — the ear hears it closing behind you with your light pointed away.
+function Threat.attachSound(handle, tuning)
+	local s = Instance.new("Sound")
+	s.SoundId = tuning.WATCHER_MOVE_SOUND
+	s.PlaybackSpeed = tuning.WATCHER_MOVE_SPEED
+	s.Volume = tuning.WATCHER_MOVE_VOLUME
+	s.Looped = true
+	s.RollOffMode = Enum.RollOffMode.InverseTapered
+	s.RollOffMinDistance = 8
+	s.RollOffMaxDistance = 70
+	s.Parent = handle.root
+	handle.moveSound = s
+end
+
+local function setMoving(handle, moving)
+	if not handle.moveSound or handle.wasMoving == moving then
+		return
+	end
+	handle.wasMoving = moving
+	if moving then
+		handle.moveSound:Play()
+	else
+		handle.moveSound:Stop()
+	end
+end
+
 local function observedBy(character, threatPos, tuning)
 	local head = character:FindFirstChild("Head")
 	local hrp = character.PrimaryPart
@@ -92,16 +119,18 @@ local function observedBy(character, threatPos, tuning)
 		or hit.Instance:IsDescendantOf(character.Parent and character.Parent:FindFirstChild("Watcher") or character)
 end
 
--- returns the player it catches this step, or nil
-function Threat.step(handle, dt, players, tuning)
+-- returns the player it catches this step, or nil. breakersDone escalates its speed (the tension curve).
+function Threat.step(handle, dt, players, tuning, breakersDone)
 	local pos = handle.root.Position
 	local aim = pos + Vector3.new(0, 3, 0) -- body-center, so "looking at it" reads reliably
+	local speed = tuning.ADVANCE_SPEED + (breakersDone or 0) * tuning.ADVANCE_SPEED_PER_BREAKER
 
 	-- frozen if ANY living player is observing it
 	for _, player in players do
 		local char = player.Character
 		if char and char.PrimaryPart and observedBy(char, aim, tuning) then
-			return nil -- held
+			setMoving(handle, false) -- frozen: cut to silence (the audio teaches the rule)
+			return nil
 		end
 	end
 
@@ -120,17 +149,20 @@ function Threat.step(handle, dt, players, tuning)
 		end
 	end
 	if not target then
+		setMoving(handle, false)
 		return nil
 	end
 
 	if best <= tuning.CATCH_DISTANCE then
+		setMoving(handle, false)
 		return Threat.playerOf(players, target)
 	end
 
+	setMoving(handle, true) -- advancing: the move sound plays (it is coming)
 	local dir = Vector3.new(target.Position.X - pos.X, 0, target.Position.Z - pos.Z)
 	if dir.Magnitude > 0.1 then
 		dir = dir.Unit
-		local newPos = pos + dir * tuning.ADVANCE_SPEED * dt
+		local newPos = pos + dir * speed * dt
 		handle.model:PivotTo(
 			CFrame.lookAt(
 				Vector3.new(newPos.X, pos.Y, newPos.Z),
@@ -151,6 +183,7 @@ function Threat.playerOf(players, root)
 end
 
 function Threat.reset(handle)
+	setMoving(handle, false)
 	handle.model:PivotTo(handle.spawn)
 end
 

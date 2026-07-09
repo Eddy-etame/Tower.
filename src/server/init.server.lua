@@ -25,6 +25,7 @@ uiRemote.Parent = ReplicatedStorage
 
 local arena = Arena.build(tuning)
 local watcher = Threat.build(arena.folder)
+Threat.attachSound(watcher, tuning)
 
 local powered = false
 local escaped = {} -- [userId] = true once out of the room (safe; no catch, no re-death)
@@ -84,6 +85,7 @@ arena.doorTouch.Touched:Connect(function(hit)
 		return
 	end
 	escaped[player.UserId] = true
+	arena.escapeSound:Play()
 	send(player, { kind = "escaped" })
 	send(player, { kind = "objective", text = "YOU'RE OUT. STEP ON THE PAD TO GO AGAIN." })
 end)
@@ -137,7 +139,7 @@ RunService.Heartbeat:Connect(function(dt)
 	if os.clock() < holdUntil then
 		return
 	end
-	local caught = Threat.step(watcher, step, Players:GetPlayers(), tuning)
+	local caught = Threat.step(watcher, step, Players:GetPlayers(), tuning, Arena.activeCount(arena))
 	if caught and not caughtCooldown[caught.UserId] and not escaped[caught.UserId] then
 		caughtCooldown[caught.UserId] = true
 		holdUntil = os.clock() + tuning.RULES_SECONDS + tuning.CAUGHT_SECONDS
