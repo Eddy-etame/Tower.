@@ -18,7 +18,9 @@ local EYE_HOT = Color3.fromRGB(235, 40, 40)
 local REST = {
 	torso = CFrame.new(0, 3, 0.1) * CFrame.Angles(math.rad(-8), 0, 0),
 	chest = CFrame.new(0, 6.4, -0.3),
-	head = CFrame.new(0, 7.7, -0.55) * CFrame.Angles(math.rad(14), 0, 0),
+	-- head rest is UNTILTED (faces straight -Z): the gaze fully owns where the head points, so any rest tilt
+	-- would just make it aim off the player by that angle
+	head = CFrame.new(0, 7.7, -0.55),
 	armL = CFrame.new(-1.1, 4.5, 0.3) * CFrame.Angles(math.rad(6), 0, math.rad(-4)),
 	armR = CFrame.new(1.1, 4.5, 0.3) * CFrame.Angles(math.rad(6), 0, math.rad(4)),
 	legL = CFrame.new(-0.5, 1.3, 0),
@@ -29,6 +31,8 @@ local REST = {
 
 local SPINE_PIVOT = CFrame.new(0, 4.6, 0) -- the waist: breath/sway/lean rotate the upper body about here
 local NECK_PIVOT = CFrame.new(0, 7, -0.4) -- base of the head: the gaze rotates the head about here
+local SPINE_PIVOT_INV = SPINE_PIVOT:Inverse() -- hoisted (these are constant; never recompute per frame)
+local NECK_PIVOT_INV = NECK_PIVOT:Inverse()
 
 local function makePart(size, color, material, name)
 	local p = Instance.new("Part")
@@ -76,10 +80,10 @@ function WatcherRig.pose(h, renderCF, p)
 	-- spine transform (breath rise + sway/lean pitch + sway roll) about the waist pivot
 	local spineX = CFrame.new(0, p.breathRise or 0, 0)
 		* CFrame.Angles((p.spinePitch or 0) + (p.lean or 0), 0, p.spineRoll or 0)
-	local spineM = renderCF * SPINE_PIVOT * spineX * SPINE_PIVOT:Inverse()
+	local spineM = renderCF * SPINE_PIVOT * spineX * SPINE_PIVOT_INV
 	-- neck transform (gaze) about the neck pivot, composed on top of the spine
 	local neckX = CFrame.Angles(p.neckPitch or 0, p.neckYaw or 0, 0)
-	local neckM = spineM * NECK_PIVOT * neckX * NECK_PIVOT:Inverse()
+	local neckM = spineM * NECK_PIVOT * neckX * NECK_PIVOT_INV
 
 	-- rigid lower body rides the render root directly
 	h.torso.CFrame = renderCF * REST.torso

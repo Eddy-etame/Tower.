@@ -1,8 +1,11 @@
 -- The Watcher — SERVER BRAIN. The server owns exactly ONE invisible, anchored LogicRoot: its position, whether
 -- it is frozen (observed+lit) or advancing, and the catch. Everything the freeze/catch measure is this root, so
--- it is unexploitable — the client never decides whether the Watcher is frozen. The VISIBLE body lives only on
--- the client (WatcherRig + Watcher.client.lua), following this root; nothing here is a body part, so there is
--- provably nothing for a client to spoof into the observation math.
+-- the VISIBLE body lives only on the client (WatcherRig + Watcher.client.lua), following this root, so a client
+-- CANNOT move/hide/spoof the body to dodge the catch (there is no Watcher body on the server to spoof).
+-- KNOWN CEILING (bounded, not a win-grant): the freeze reads the PLAYER's own client-owned Head look as the gaze
+-- proxy, which an executor could aim at the Watcher while running/looking away to hold it frozen — but freezing
+-- never advances the stage (only server-validated breaker restores + the door do) and the server drains the
+-- battery, so it only makes the game EASIER for that one cheater.
 --
 -- The rule, enforced here and never lied about (Trust pillar): while a player has it in view + line of sight +
 -- close enough for their light to reach, it cannot move; the instant that breaks, it advances. The client reads
@@ -13,13 +16,15 @@ local CollectionService = game:GetService("CollectionService")
 local Threat = {}
 
 local SPAWN = Vector3.new(46, 0, 12) -- starts deep in the room, off the direct entrance->objective line
+-- face the throat/entrance (-X, where players arrive) at rest, so the common approach needs little reorient
+local SPAWN_CF = CFrame.lookAt(SPAWN + Vector3.new(0, 0.2, 0), SPAWN + Vector3.new(-1, 0.2, 12))
 local TAG = "WatcherLogicRoot"
 
 function Threat.build(parentFolder)
 	local root = Instance.new("Part")
 	root.Name = "WatcherLogicRoot"
 	root.Size = Vector3.new(2.4, 0.2, 2.4)
-	root.CFrame = CFrame.new(SPAWN + Vector3.new(0, 0.2, 0))
+	root.CFrame = SPAWN_CF
 	root.Anchored = true
 	root.Locked = true
 	root.CanCollide = false
@@ -30,7 +35,7 @@ function Threat.build(parentFolder)
 	root:SetAttribute("Snap", 0) -- bumped on build/reset so the client hard-snaps instead of sliding across the room
 	root.Parent = parentFolder
 	CollectionService:AddTag(root, TAG)
-	return { root = root, spawn = CFrame.new(SPAWN + Vector3.new(0, 0.2, 0)) }
+	return { root = root, spawn = SPAWN_CF }
 end
 
 -- the Watcher's spatial move sound: attached to the (true) LogicRoot, plays ONLY while advancing, silent while
@@ -70,7 +75,7 @@ local function setState(handle, state)
 	end
 end
 
-local function observedBy(character, threatPos, tuning)
+local function observedBy(character, threatPos, tuning, excludeChars)
 	local head = character:FindFirstChild("Head")
 	local hrp = character.PrimaryPart
 	if not head or not hrp then
@@ -87,11 +92,12 @@ local function observedBy(character, threatPos, tuning)
 	end
 	local params = RaycastParams.new()
 	params.FilterType = Enum.RaycastFilterType.Exclude
-	params.FilterDescendantsInstances = { character }
+	-- exclude ALL player characters (not just the observer) so only STATIC geometry can occlude — a teammate
+	-- standing on the line of sight must not block the freeze
+	params.FilterDescendantsInstances = excludeChars
 	local hit = workspace:Raycast(head.Position, to, params)
 	-- the LogicRoot is CanQuery=false and there is no visible body on the server, so a CLEAR ray (hit == nil)
-	-- means nothing but the Watcher is between eye and it = observed = frozen; any hit is world geometry
-	-- occluding it (a pillar, a wall) = not observed
+	-- means only a wall/pillar could occlude it; clear = observed = frozen
 	return hit == nil
 end
 
@@ -113,10 +119,18 @@ function Threat.step(handle, dt, players, tuning, breakersDone, lighting)
 		handle.root:SetAttribute("Boldness", breakersDone or 0)
 	end
 
+	-- every player character occludes the observation ray for EVERYONE unless excluded; build the exclude set once
+	local exclude = {}
+	for _, player in players do
+		if player.Character then
+			exclude[#exclude + 1] = player.Character
+		end
+	end
+
 	-- frozen if ANY living player is both LIGHTING it and observing it
 	for _, player in players do
 		local char = player.Character
-		if char and char.PrimaryPart and lighting[player.UserId] and observedBy(char, aim, tuning) then
+		if char and char.PrimaryPart and lighting[player.UserId] and observedBy(char, aim, tuning, exclude) then
 			setMoving(handle, false) -- frozen: cut to silence (the audio teaches the rule)
 			setState(handle, "frozen")
 			handle.unlitFor = 0
@@ -134,13 +148,13 @@ function Threat.step(handle, dt, players, tuning, breakersDone, lighting)
 		return nil
 	end
 
-	-- advance toward the nearest player STILL INSIDE THE ROOM (x <= 64: past the door they are safe,
+	-- advance toward the nearest player STILL INSIDE THE ROOM (past the door = out of range and safe;
 	-- the Watcher never leaves the room, so it can never catch someone who already escaped)
 	local target, best
 	for _, player in players do
 		local char = player.Character
 		local root = char and char.PrimaryPart
-		if root and root.Position.X <= 64 then
+		if root and root.Position.X <= tuning.ROOM_MAX_X then
 			local d = (root.Position - pos).Magnitude
 			if not best or d < best then
 				best = d
@@ -155,19 +169,41 @@ function Threat.step(handle, dt, players, tuning, breakersDone, lighting)
 	end
 
 	if best <= tuning.CATCH_DISTANCE then
+		setMoving(handle, false) -- caught: cut the move loop + stop broadcasting "advancing" under the caught screen
+		setState(handle, "idle")
 		return Threat.playerOf(players, target)
 	end
 
-	setState(handle, surging and "surge" or "advancing")
-	local dir = Vector3.new(target.Position.X - pos.X, 0, target.Position.Z - pos.Z)
-	if dir.Magnitude > 0.1 then
-		dir = dir.Unit
-		local newPos = pos + dir * speed * dt
-		-- move the authoritative root only; the client smoothly follows it (no PivotTo — there is no body here)
-		handle.root.CFrame = CFrame.lookAt(
-			Vector3.new(newPos.X, pos.Y, newPos.Z),
-			Vector3.new(target.Position.X, pos.Y, target.Position.Z)
-		)
+	-- surge lunge: the FIRST time it actually starts closing during a surge it COILS — gathers in place for a beat
+	-- (the client leans it back), THEN releases. Driven by one server state ("coil") so the visual can't desync
+	-- into a back-leaning skid. Coils once per surge (handle.coiled), aligned to the real lunge start regardless
+	-- of how long the player kept it frozen after the power blew.
+	local moving = true
+	if surging then
+		if not handle.coiled then
+			handle.coiled = true
+			handle.coilUntil = os.clock() + tuning.WATCHER_COIL_SECS
+		end
+		if handle.coilUntil and os.clock() < handle.coilUntil then
+			setState(handle, "coil")
+			moving = false
+		else
+			setState(handle, "surge")
+		end
+	else
+		setState(handle, "advancing")
+	end
+	if moving then
+		local dir = Vector3.new(target.Position.X - pos.X, 0, target.Position.Z - pos.Z)
+		if dir.Magnitude > 0.1 then
+			dir = dir.Unit
+			local newPos = pos + dir * speed * dt
+			-- move the authoritative root only; the client smoothly follows it (no PivotTo — there is no body here)
+			handle.root.CFrame = CFrame.lookAt(
+				Vector3.new(newPos.X, pos.Y, newPos.Z),
+				Vector3.new(target.Position.X, pos.Y, target.Position.Z)
+			)
+		end
 	end
 	return nil
 end
@@ -181,15 +217,19 @@ function Threat.playerOf(players, root)
 	return nil
 end
 
--- the power-restored lunge: for a short window the Watcher moves faster (Threat.step reads surgeUntil)
+-- the power-restored lunge: for a short window the Watcher moves faster (Threat.step reads surgeUntil). handle.coiled
+-- is cleared so the next time it actually starts closing it gathers (the "coil" state) once before releasing.
 function Threat.surge(handle, tuning)
 	handle.surgeUntil = os.clock() + tuning.SURGE_SECONDS
+	handle.coiled = false
 end
 
 function Threat.reset(handle)
 	setMoving(handle, false)
 	handle.unlitFor = 0
 	handle.surgeUntil = nil
+	handle.coiled = false
+	handle.coilUntil = nil
 	handle.root.CFrame = handle.spawn
 	setState(handle, "idle")
 	-- bump the Snap token so clients hard-snap the visual to spawn instead of lerping the body across the room

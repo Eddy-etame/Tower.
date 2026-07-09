@@ -38,12 +38,23 @@ function Stage.build(ctx)
 		accum = 0,
 		revealed = false, -- the entry reveal beat plays once, not on every caught-retry
 		flashOn = {}, -- [userId] = client's reported light on/off (the freeze intent)
+		flashAt = {}, -- [userId] = last accepted report time (coalesces redundant spam)
 		battery = {}, -- [userId] = 0..1, server-owned (the light-rationing anti-camp)
 	}
 
-	-- the client reports its light on/off; the server owns the battery and gates the freeze on it
+	-- the client reports its light on/off; the server owns the battery and gates the freeze on it. Validate type
+	-- and coalesce redundant same-value spam (min-law rate validation), but NEVER drop a real change — dropping a
+	-- toggle-off would leave the server draining/holding a light the player actually turned off.
 	h.flashConn = ctx.flashlightRemote.OnServerEvent:Connect(function(player, on)
-		h.flashOn[player.UserId] = on == true
+		if typeof(on) ~= "boolean" then
+			return
+		end
+		local uid, now = player.UserId, os.clock()
+		if h.flashOn[uid] == on and now - (h.flashAt[uid] or 0) < tuning.FLASH_MIN_INTERVAL then
+			return
+		end
+		h.flashAt[uid] = now
+		h.flashOn[uid] = on
 	end)
 
 	for index, breaker in arena.breakers do

@@ -5,7 +5,9 @@
 -- the Watcher's ground, so which three (and in what order) is a judgment call, not a checklist (Choice pillar).
 -- Blockout on purpose (Bible: prototypes are fast/cheap) but shaped so the ARCHITECTURE itself feels wrong.
 local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BuildKit = require(script.Parent.BuildKit)
+local SliceTuning = require(ReplicatedStorage.Shared.SliceTuning)
 
 local Arena = {}
 
@@ -18,12 +20,15 @@ local GREEN = BuildKit.GREEN
 local OFF_BULB = Color3.fromRGB(26, 28, 32) -- a dead fixture: near-black until its breaker gives it power
 local ON_BULB = Color3.fromRGB(255, 236, 205)
 
-Arena.ROOM_MAX_X = 64 -- past this (through the door) the player is out of the room and safe
+-- past this (through the door) the player is out of the room and safe — ONE source, shared with Threat.step and
+-- the danger vignette (SliceTuning.ROOM_MAX_X), and it IS the east-wall/door x below, so geometry can't drift
+-- from gameplay
+Arena.ROOM_MAX_X = SliceTuning.ROOM_MAX_X
 Arena.REQUIRED = 3 -- breakers needed to open the door (of the FOUR present — the fourth is the choice)
 
 local ROOM_H = 12 -- the room is TALL...
 local HALL_H = 7 -- ...and the throat you enter through is LOW: the contrast IS the reveal of scale
-local MINX, MAXX, MINZ, MAXZ = 2, 64, -20, 20
+local MINX, MAXX, MINZ, MAXZ = 2, SliceTuning.ROOM_MAX_X, -20, 20
 
 -- FOUR breakers; you need three. Three sit on safer ground; the fourth (B4) is deep in the Watcher's corner,
 -- a tempting shortcut when another is contested. Each powers a nearby ceiling pool when restored.

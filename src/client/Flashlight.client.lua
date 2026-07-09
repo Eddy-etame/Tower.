@@ -99,7 +99,9 @@ local function build(character)
 	light.Range = CONE_RANGE
 	light.Brightness = CONE_BRIGHTNESS
 	light.Color = CONE_COLOR
-	light.Shadows = true
+	-- the cone is the ONLY dynamic shadow-caster in the scene and it re-CFrames every frame; on mobile that
+	-- re-renders the shadow map over ~40 room casters each frame, so gate it off on touch (keep it on desktop)
+	light.Shadows = not isMobile
 	light.Enabled = enabled
 	light.Parent = anchor
 

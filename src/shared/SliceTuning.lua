@@ -55,7 +55,11 @@ return {
 	-- breathes/sways/gazes while advancing and snaps taut-dead-still the instant it is lit (weeping-angel), so
 	-- the motion is the visual twin of the move-sound for the muted-mobile majority. No new assets — pure CFrame.
 	WATCHER_FOLLOW_K = 12, -- render-base catch-up rate (1-exp(-k*dt), ~90ms) — hides the 10Hz server steps at 60fps
-	WATCHER_SNAP_CLAMP = 1.5, -- studs: hard-snap the visual to the true hitbox beyond this (catch fairness + surge gaps)
+	-- studs: hard-snap the visual to the true hitbox beyond this. MUST exceed the max per-tick server step
+	-- (~2.1st during the surge = 16.2*1.3*0.1) or the clamp fires every tick and STROBES the surge; 2.8 lets the
+	-- lerp survive while still bounding the visual trail well under CATCH_DISTANCE (4) for catch fairness.
+	WATCHER_SNAP_CLAMP = 2.8,
+	WATCHER_TURN_RATE = math.rad(300), -- max body re-face rate (~0.6s for 180deg) so a large reorient never whip-spins
 	WATCHER_CULL_DIST = 80, -- studs: skip the whole articulation block when far/off-screen (mobile frame budget)
 	WATCHER_YAW = math.rad(70), -- head-track yaw clamp; at the limit the head HOLDS (wants to keep looking, cannot)
 	WATCHER_PITCH_UP = math.rad(30),
@@ -63,12 +67,13 @@ return {
 	WATCHER_HEAD_K = 170, -- idle head spring stiffness — a living lock with micro-overshoot, not a servo
 	WATCHER_HEAD_RATIO = 0.7, -- damping ratio (<1 = slight organic overshoot)
 	WATCHER_HEAD_K_SNAP = 380, -- notice-beat stiffness spike (frozen->waking): a fast, SILENT head snap
-	WATCHER_NOTICE_RATIO = 0.55,
+	WATCHER_NOTICE_RATIO = 0.8, -- near-critical so the snap LOCKS without rebounding past the yaw clamp (weeping-angel)
 	WATCHER_NOTICE_SECS = 0.4,
+	WATCHER_NOTICE_ARM_SECS = 0.7, -- must be HELD frozen this long before a look-away re-arms the notice snap/flare
+	WATCHER_NOTICE_COOLDOWN = 2, -- and this long between flares — so flicking your light can never strobe the eyes
 	WATCHER_BREATH_HZ = 0.2, -- ~12 breaths/min — predatory-slow patience; proves it is not a statue
 	WATCHER_BREATH_RISE = 0.06, -- studs the chest heaves (kept sub-perceptual — restraint)
 	WATCHER_BREATH_PITCH = math.rad(2),
-	WATCHER_BREATH_HEAD_COUNTER = 0.4, -- fraction of chest pitch subtracted from the head so the gaze stays level
 	WATCHER_SWAY_A = 0.37, -- incommensurate weight-shift freqs (Hz) => quasi-non-repeating (anti-metronome)
 	WATCHER_SWAY_B = 0.5,
 	WATCHER_SWAY_PITCH = math.rad(1.5),
@@ -77,15 +82,19 @@ return {
 	WATCHER_ALIVE_RAMP = 0.2, -- s to bring life back when it advances
 	WATCHER_LEAN_K = 90, -- lean spring stiffness (grace forward-lean / surge coil-release)
 	WATCHER_GRACE_LEAN = math.rad(8), -- forward lean on the grace window — the muted-mobile twin of the move-sound
-	WATCHER_SURGE_LEAN = math.rad(18), -- the released lunge lean
+	WATCHER_SURGE_LEAN = math.rad(12), -- the released lunge lean (kept modest so the chest doesn't fold over the hips)
 	WATCHER_COIL = math.rad(-12), -- the pre-lunge coil (leans BACK first — the fair telegraph)
-	WATCHER_COIL_SECS = 0.22, -- how long it coils before releasing into the lunge
+	WATCHER_COIL_SECS = 0.22, -- how long it coils (holding ground) before releasing into the lunge
 	WATCHER_EYE_LO = 0.22, -- resting eye glow (dim points you can just find in the dark)
 	WATCHER_EYE_HI = 0.95, -- eye glow on the notice pulse
+	WATCHER_EYE_DECAY = 0.45, -- s for the notice eye-flare to fall back to the rest glow
+	WATCHER_BOLD_SCALE = 0.12, -- extra breath/sway amplitude per restored breaker (it grows bolder as power returns)
 
 	-- the objective
+	ROOM_MAX_X = 64, -- x of the door line; past it the player is safe. ONE source (Threat.step + Arena + vignette)
 	LEVER_HOLD = 0.6, -- ProximityPrompt hold to throw the lever
 	DOOR_TOUCH_WIN = true,
+	FLASH_MIN_INTERVAL = 0.1, -- s: coalesce redundant same-value flashlight remote spam (min-law rate validation)
 
 	-- UI timings
 	CAUGHT_SECONDS = 2.4,
