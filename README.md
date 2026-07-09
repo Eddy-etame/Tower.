@@ -12,6 +12,28 @@ The prototype exists to prove one thing: *can we create encounters so memorable 
 > are the operating manual for any LLM: the non-negotiables, who's who, and how to launch. An AI should
 > run the bootstrap for you; you shouldn't install anything by hand.
 
+## Current state — pick up here (2026-07-09, ~40% of the first MVP)
+
+**The complete loop is built and playable:** Beginning → **I The Watcher** (living creature: gaze-tracks
+you, freezes in your light; light-rationing battery; the power-surge climax) → **II The Violent Rhythm**
+(fixed-period surge; stand on a mark; the witnessed price) → **III The Hidden Presence** (a paced silence
+you read by dead lamps; the tape plays the second footsteps) → **IV The Moral Collapse** (spend the
+companion light or cross the dark; the aftermath follows you into the Ending) → Ending → loops.
+Server-authoritative throughout; hardened by **three adversarial review passes** (~50 verified bugs fixed,
+incl. P0 softlocks); `stylua`+`selene` clean; every tuning number in `src/shared/SliceTuning.lua`.
+
+**⚠️ The work lives on branch `dev/eddy` — `main` is the OLD Horror Castle archive.** Base your branch on
+`origin/dev/eddy`, never on main.
+
+**What the ~40% means (the gap is work, not testing):**
+1. **Playtest + tune** — nothing has been render-tested; walk **[PLAYTEST.md](PLAYTEST.md)** (per-encounter
+   verify checks + the exact tuning knobs). This is the immediate next step.
+2. **Real audio foley** (everything is a labeled stub on built-in samples) and **environment art / creature
+   meshes** (all blockout) — department work.
+3. Deferred design elements + open head decisions — see the 2026-07-09 entries in
+   **[design/decisions.md](design/decisions.md)** (notably: Encounter I vs the Silent Witness doc needs a
+   head ruling; LockFirstPerson + the IV flashlight suppression are flagged for veto).
+
 ## Get running — ONE command (zero-touch)
 
 The only prerequisite is **Git** ([git-scm.com](https://git-scm.com/downloads)). Everything else — the
@@ -19,8 +41,10 @@ toolchain **and Roblox Studio itself** — is installed for you, the place is bu
 ready to test:
 
 ```powershell
-git clone <repo-url> project-001
+git clone https://github.com/Eddy-etame/Tower..git project-001    # note: the repo name ends in a dot
 cd project-001
+git switch dev/eddy                                               # the MVP lives here, NOT on main
+git switch -c dev/<yourname>                                      # then work on YOUR branch (see laws)
 powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1     # Windows
 # macOS:  bash scripts/bootstrap.sh
 ```
@@ -72,6 +96,10 @@ src/
 design/
   experiences/  # the four experience docs (T1-T4) — the ONLY source of buildable design
   research/     # teardowns and craft studies (T5) with application plans
+  decisions.md  # the decision log — read the 2026-07-09 entries for the as-built state
+scripts/        # bootstrap.ps1 / bootstrap.sh — the zero-touch install + build + launch
+AGENTS.md       # the operating manual for any LLM working here (read first)
+PLAYTEST.md     # per-encounter verify + tune checklist (the current next step)
 default.project.json  # Rojo mapping: src/ -> Roblox tree (src is the source of truth)
 ```
 
