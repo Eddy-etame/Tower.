@@ -99,6 +99,29 @@ cardText.TextColor3 = INK
 cardText.Text = ""
 cardText.Parent = fullCard
 
+-- a brief text-only banner (no screen-filling background) for good beats like escaping
+local banner = Instance.new("TextLabel")
+banner.AnchorPoint = Vector2.new(0.5, 0.5)
+banner.Position = UDim2.fromScale(0.5, 0.4)
+banner.Size = UDim2.new(0.9, 0, 0, 64)
+banner.BackgroundTransparency = 1
+banner.Font = Enum.Font.SpecialElite
+banner.TextSize = 50
+banner.TextColor3 = INK
+banner.TextStrokeTransparency = 0.3
+banner.TextTransparency = 1
+banner.Text = ""
+banner.Parent = gui
+
+local function showBanner(text)
+	banner.Text = text
+	banner.TextTransparency = 1
+	TweenService:Create(banner, TweenInfo.new(0.4), { TextTransparency = 0 }):Play()
+	task.delay(1.8, function()
+		TweenService:Create(banner, TweenInfo.new(0.9), { TextTransparency = 1 }):Play()
+	end)
+end
+
 local function showCard(text, color)
 	cardText.Text = text
 	fullCard.BackgroundColor3 = color
@@ -170,7 +193,6 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		showCard("IT REACHED YOU.", Color3.fromRGB(20, 0, 0))
 	elseif payload.kind == "escaped" then
 		TweenService:Create(vignette, TweenInfo.new(0.6), { ImageTransparency = 1 }):Play()
-		showCard("YOU GOT OUT.", Color3.fromRGB(4, 6, 8))
-		task.delay(2.6, hideCard) -- fade so the safe chamber + replay pad are visible
+		showBanner("YOU GOT OUT.") -- brief text, no screen-fill, so the safe chamber is visible immediately
 	end
 end)

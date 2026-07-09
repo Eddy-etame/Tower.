@@ -75,29 +75,46 @@ function Arena.build(tuning)
 	slab((MINX + MAXX) / 2, 0.55, MINZ + 0.4, MAXX - MINX, 0.9, 0.5, TRIM, Enum.Material.WoodPlanks, "Baseboard")
 	slab((MINX + MAXX) / 2, 0.55, MAXZ - 0.4, MAXX - MINX, 0.9, 0.5, TRIM, Enum.Material.WoodPlanks, "Baseboard")
 
-	-- sparse cold ceiling pools, dark gaps between
-	for _, fx in { { 14, 0 }, { 34, -12 }, { 52, 8 } } do
+	local handles = { folder = folder, breakers = {} }
+
+	-- faint red emergency light at the entrance: a readability floor so the pitch-black start is navigable
+	-- (research/Bible: never pure black — mobile crushes it) while the room itself stays dark until powered
+	local emerg = part({
+		Size = Vector3.new(1.2, 0.3, 1.2),
+		CFrame = CFrame.new(0, WALL_H - 0.5, 0),
+		Color = Color3.fromRGB(120, 50, 50),
+		Material = Enum.Material.Neon,
+		Name = "EmergencyLight",
+	}, folder)
+	local el = Instance.new("PointLight")
+	el.Range = 24
+	el.Brightness = 0.85
+	el.Color = Color3.fromRGB(150, 84, 76)
+	el.Parent = emerg
+
+	-- THE ROOM STARTS DARK (unpowered). Each breaker powers a ceiling light zone, so restoring power turns
+	-- the lights ON section by section — that IS "restore the power", made visible and satisfying.
+	local FIXTURE_POS = { { 16, -10 }, { 44, 10 }, { 54, -2 } }
+	for i, b in BREAKERS do
+		-- the zone fixture, built OFF (dark bulb, disabled light)
 		local bulb = part({
-			Size = Vector3.new(1.6, 0.3, 1.6),
-			CFrame = CFrame.new(fx[1], WALL_H - 0.5, fx[2]),
-			Color = Color3.fromRGB(212, 224, 240),
-			Material = Enum.Material.Neon,
-			Name = "Fixture",
+			Size = Vector3.new(1.8, 0.3, 1.8),
+			CFrame = CFrame.new(FIXTURE_POS[i][1], WALL_H - 0.5, FIXTURE_POS[i][2]),
+			Color = Color3.fromRGB(26, 28, 32),
+			Material = Enum.Material.SmoothPlastic,
+			Name = "Fixture" .. i,
 		}, folder)
 		local sl = Instance.new("SpotLight")
 		sl.Face = Enum.NormalId.Bottom
-		sl.Angle = 70
-		sl.Range = 26
-		sl.Brightness = 1.3
-		sl.Color = bulb.Color
+		sl.Angle = 80
+		sl.Range = 30
+		sl.Brightness = 2.4
+		sl.Color = Color3.fromRGB(255, 236, 205)
 		sl.Shadows = false
+		sl.Enabled = false
 		sl.Parent = bulb
-	end
 
-	local handles = { folder = folder, breakers = {} }
-
-	-- the three breakers: wall-mounted boxes with a red indicator + hold-to-throw prompt
-	for i, b in BREAKERS do
+		-- the breaker box with a red indicator (a beacon in the dark) + hold-to-restore prompt
 		local box = part({
 			Size = Vector3.new(2, 2.6, 1.2),
 			CFrame = CFrame.new(b.x, 3, b.z),
@@ -124,7 +141,7 @@ function Arena.build(tuning)
 		prompt.MaxActivationDistance = 7
 		prompt.RequiresLineOfSight = false
 		prompt.Parent = box
-		table.insert(handles.breakers, { prompt = prompt, lamp = lamp, active = false })
+		table.insert(handles.breakers, { prompt = prompt, lamp = lamp, active = false, bulb = bulb, light = sl })
 	end
 
 	-- the exit door (locked until all breakers are restored)
@@ -224,6 +241,10 @@ function Arena.restoreBreaker(handles, index)
 	b.active = true
 	b.lamp.Color = GREEN
 	b.lamp.PointLight.Color = GREEN
+	-- power restored: this zone's lights come ON (the visible payoff of "restore the power")
+	b.light.Enabled = true
+	b.bulb.Color = Color3.fromRGB(255, 236, 205)
+	b.bulb.Material = Enum.Material.Neon
 	return true
 end
 
@@ -251,6 +272,10 @@ function Arena.reset(handles)
 		b.active = false
 		b.lamp.Color = RED
 		b.lamp.PointLight.Color = RED
+		-- power cut again: the zone goes dark
+		b.light.Enabled = false
+		b.bulb.Color = Color3.fromRGB(26, 28, 32)
+		b.bulb.Material = Enum.Material.SmoothPlastic
 	end
 end
 
