@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 12,
-	patch = 0,
-	stage = "watcher-room-threshold+light-rationing",
+	patch = 1,
+	stage = "watcher-surge-peak+fair-teach",
 }

@@ -273,6 +273,13 @@ function Arena.build(tuning, parentFolder)
 	handles.escapeSound.Volume = 0.6
 	handles.escapeSound.Parent = safeBulb
 
+	-- the surge sting (STUB): a non-positional room-wide hit when the power dies (parented to the folder = 2D)
+	handles.surgeSound = Instance.new("Sound")
+	handles.surgeSound.SoundId = tuning.SURGE_SOUND
+	handles.surgeSound.PlaybackSpeed = tuning.SURGE_SOUND_SPEED
+	handles.surgeSound.Volume = 0.85
+	handles.surgeSound.Parent = folder
+
 	handles.entrance = Vector3.new(-14, 3.5, 0) -- inside the throat, facing the room
 	handles.safeSpot = Vector3.new(70, 3.5, 0)
 
@@ -335,6 +342,22 @@ function Arena.openDoor(handles)
 	handles.doorLamp.PointLight.Color = GREEN
 end
 
+-- THE SURGE: restoring the last breaker opens the door — but the lights you fought for BLOW OUT and a sting
+-- hits. The room drops to just the dim emergency red + your flashlight, and now it is a sprint (Threat.surge
+-- gives the Watcher its lunge). The peak of the encounter, not a quiet win.
+function Arena.surge(handles)
+	Arena.openDoor(handles)
+	for _, b in handles.breakers do
+		b.light.Enabled = false
+		b.bulb.Color = OFF_BULB
+		b.bulb.Material = Enum.Material.SmoothPlastic
+		b.prompt.Enabled = false -- power is done; no live "Restore" prompt left dangling during the escape
+	end
+	if handles.surgeSound then
+		handles.surgeSound:Play()
+	end
+end
+
 function Arena.reset(handles)
 	handles.door.CFrame = handles.doorClosed
 	handles.doorLamp.Color = RED
@@ -346,6 +369,7 @@ function Arena.reset(handles)
 		b.light.Enabled = false
 		b.bulb.Color = OFF_BULB
 		b.bulb.Material = Enum.Material.SmoothPlastic
+		b.prompt.Enabled = true -- a fresh attempt: the breakers are live again
 	end
 end
 

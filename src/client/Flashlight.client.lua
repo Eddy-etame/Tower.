@@ -37,10 +37,11 @@ gui.Name = "FlashlightUI"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 gui.Parent = player:WaitForChild("PlayerGui")
+-- bottom-LEFT, clear of the right-side LIGHT button (mobile: never stack the resource meter under the control)
 local barBack = Instance.new("Frame")
-barBack.AnchorPoint = Vector2.new(1, 0.5)
-barBack.Position = UDim2.new(1, -30, 0.5, 44)
-barBack.Size = UDim2.fromOffset(120, 12)
+barBack.AnchorPoint = Vector2.new(0, 1)
+barBack.Position = UDim2.new(0, 24, 1, -26)
+barBack.Size = UDim2.fromOffset(150, 14)
 barBack.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
 barBack.BackgroundTransparency = 0.25
 barBack.BorderSizePixel = 0
@@ -51,6 +52,17 @@ barFill.Size = UDim2.fromScale(1, 1)
 barFill.BackgroundColor3 = Color3.fromRGB(232, 238, 248)
 barFill.BorderSizePixel = 0
 barFill.Parent = barBack
+local barLabel = Instance.new("TextLabel")
+barLabel.AnchorPoint = Vector2.new(0, 1)
+barLabel.Position = UDim2.fromOffset(0, -2)
+barLabel.Size = UDim2.fromOffset(150, 16)
+barLabel.BackgroundTransparency = 1
+barLabel.Font = Enum.Font.SpecialElite
+barLabel.TextSize = 13
+barLabel.TextXAlignment = Enum.TextXAlignment.Left
+barLabel.TextColor3 = Color3.fromRGB(150, 143, 128)
+barLabel.Text = "LIGHT"
+barLabel.Parent = barBack
 
 local function applyLight()
 	if not light then

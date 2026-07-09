@@ -73,11 +73,12 @@ local function rulesLine(text, yScale, size, color)
 end
 
 local rulesParts = {
-	rulesLine("THE WATCHER", 0.32, 54, INK),
-	rulesLine("KEEP IT IN YOUR LIGHT.", 0.46, 30, INK),
-	rulesLine("IT MOVES WHEN YOU LOOK AWAY.", 0.53, 30, INK),
-	rulesLine("GET OUT.", 0.66, 40, CRIMSON),
-	rulesLine("[F] LIGHT       [E] LEVER", 0.8, 20, Color3.fromRGB(150, 143, 128)),
+	rulesLine("THE WATCHER", 0.3, 54, INK),
+	rulesLine("KEEP IT IN YOUR LIGHT.", 0.43, 30, INK),
+	rulesLine("IT MOVES WHEN YOU LOOK AWAY.", 0.5, 30, INK),
+	rulesLine("YOUR LIGHT DRAINS — LET IT REST.", 0.59, 26, Color3.fromRGB(206, 190, 150)),
+	rulesLine("RESTORE THE POWER.   GET OUT.", 0.69, 34, CRIMSON),
+	rulesLine("[F] LIGHT       [E] RESTORE", 0.82, 20, Color3.fromRGB(150, 143, 128)),
 }
 
 local fullCard = Instance.new("Frame")
@@ -213,6 +214,11 @@ uiRemote.OnClientEvent:Connect(function(payload)
 	elseif payload.kind == "danger" then
 		local lvl = math.clamp(tonumber(payload.level) or 0, 0, 1)
 		TweenService:Create(vignette, TweenInfo.new(0.2), { ImageTransparency = 1 - lvl * 0.72 }):Play()
+	elseif payload.kind == "surge" then
+		-- the power died: a hard red flash spike (the danger vignette resumes control on the next tick)
+		vignette.ImageTransparency = 0.2
+		TweenService:Create(vignette, TweenInfo.new(0.6), { ImageTransparency = 0.55 }):Play()
+		showBanner("RUN.")
 	elseif payload.kind == "caught" then
 		TweenService:Create(vignette, TweenInfo.new(0.15), { ImageTransparency = 0.2 }):Play()
 		showCard("IT REACHED YOU.", Color3.fromRGB(20, 0, 0))

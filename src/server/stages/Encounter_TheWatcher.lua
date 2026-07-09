@@ -12,7 +12,7 @@ Stage.title = "ENCOUNTER I — THE WATCHER"
 
 local function objectiveText(h)
 	if h.powered then
-		return "THE DOOR IS OPEN. GET OUT."
+		return "THE DOOR IS OPEN — RUN."
 	end
 	return ("RESTORE THE POWER — %d / %d"):format(
 		math.min(Arena.activeCount(h.arena), Arena.REQUIRED),
@@ -53,7 +53,11 @@ function Stage.build(ctx)
 			end
 			if Arena.activeCount(arena) >= Arena.REQUIRED then
 				h.powered = true
-				Arena.openDoor(arena)
+				Arena.surge(arena) -- the peak: lights blow out, door opens, sting
+				Threat.surge(watcher, tuning) -- the Watcher lunges
+				for _, p in ctx.players() do
+					ctx.send(p, { kind = "surge" })
+				end
 			end
 			for _, p in ctx.players() do
 				ctx.send(p, { kind = "objective", text = objectiveText(h) })

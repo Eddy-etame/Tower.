@@ -145,6 +145,9 @@ function Threat.step(handle, dt, players, tuning, breakersDone, lighting)
 	local pos = handle.root.Position
 	local aim = pos + Vector3.new(0, 3, 0) -- body-center, so "looking at it" reads reliably
 	local speed = tuning.ADVANCE_SPEED + (breakersDone or 0) * tuning.ADVANCE_SPEED_PER_BREAKER
+	if handle.surgeUntil and os.clock() < handle.surgeUntil then
+		speed = speed * tuning.SURGE_MULT -- the power-restored lunge (still freezable; the door is open)
+	end
 	lighting = lighting or {}
 
 	-- frozen if ANY living player is both LIGHTING it and observing it
@@ -212,9 +215,15 @@ function Threat.playerOf(players, root)
 	return nil
 end
 
+-- the power-restored lunge: for a short window the Watcher moves faster (Threat.step reads surgeUntil)
+function Threat.surge(handle, tuning)
+	handle.surgeUntil = os.clock() + tuning.SURGE_SECONDS
+end
+
 function Threat.reset(handle)
 	setMoving(handle, false)
 	handle.unlitFor = 0
+	handle.surgeUntil = nil
 	handle.model:PivotTo(handle.spawn)
 end
 

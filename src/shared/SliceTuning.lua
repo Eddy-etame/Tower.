@@ -19,6 +19,12 @@ return {
 	RESET_PAUSE = 1.2,
 	GRACE_SECONDS = 0.35, -- telegraph window: sound starts, but it does not gain ground yet (mobile-fair)
 
+	-- THE SURGE — the signature moment: the instant you restore the last breaker, the lights you fought for BLOW
+	-- OUT, a sting hits, and the Watcher lunges faster for a few seconds while the door opens. Restoring power is
+	-- the peak, not a quiet win (Bible: Pressure -> Decision -> Consequence). Brief + freeze-still-works = fair.
+	SURGE_SECONDS = 2.5, -- how long the Watcher's lunge lasts after power is restored
+	SURGE_MULT = 1.3, -- speed multiplier during the surge (kept modest so it reads as drama, not a cheat)
+
 	-- LIGHT-RATIONING (2026 watch: kill the safe-corner — standing bathing it in light forever must not be a
 	-- stable win. The flashlight both lights your path AND freezes the Watcher, and it runs out.)
 	BATTERY_DRAIN = 0.04, -- per second while ON (~25s of continuous light per full charge)
@@ -40,6 +46,8 @@ return {
 	BREAKER_SPEED = 0.4,
 	ESCAPE_SOUND = "rbxasset://sounds/electronicpingshort.wav",
 	ESCAPE_SPEED = 0.85,
+	SURGE_SOUND = "rbxasset://sounds/electronicpingshort.wav", -- STUB: the power-death sting (Audio dept records real)
+	SURGE_SOUND_SPEED = 0.55,
 
 	-- the objective
 	LEVER_HOLD = 0.6, -- ProximityPrompt hold to throw the lever
