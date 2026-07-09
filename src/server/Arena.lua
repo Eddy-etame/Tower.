@@ -150,7 +150,9 @@ function Arena.build(tuning, parentFolder)
 	handles.revealLight = rv
 	handles.revealSound = Instance.new("Sound")
 	handles.revealSound.SoundId = tuning.AMBIENT_SOUND
-	handles.revealSound.PlaybackSpeed = 0.1 -- a low sub swell (STUB rbxasset; Audio dept records the real sting)
+	-- a low swell (STUB; Audio dept records the real sting). 0.3 not lower: phone speakers cut below ~1kHz,
+	-- so a sub-pitched swell would be INAUDIBLE on the ~70% mobile majority (our own research law)
+	handles.revealSound.PlaybackSpeed = 0.3
 	handles.revealSound.Volume = 0.5
 	handles.revealSound.Parent = revealBulb
 

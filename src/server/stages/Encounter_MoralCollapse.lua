@@ -63,8 +63,8 @@ function Stage.build(ctx)
 				t += task.wait()
 				local a = math.clamp(t / tuning.MORAL_DRAIN_SECONDS, 0, 1)
 				orb.Position = start:Lerp(sanctum.socketPos, math.min(a * 2, 1)) -- settles first, then drains
-				hum.Volume = 0.5 * (1 - a)
-				hum.PlaybackSpeed = 0.6 * (1 - a * 0.75) -- the hum SLOWS (never pitch-tricks) as it fades
+				hum.Volume = tuning.MORAL_HUM_VOLUME * (1 - a)
+				hum.PlaybackSpeed = tuning.MORAL_HUM_SPEED * (1 - a * 0.75) -- the hum SLOWS (never pitch-tricks) as it fades
 			end
 			hum:Stop() -- ...stops.
 			orb:SetAttribute("OrbState", "spent")
@@ -174,8 +174,8 @@ function Stage.update(h, dt)
 		local intensity = exhaling and 1 or warn
 		s.orb:SetAttribute("OrbState", exhaling and "flare" or "gutter") -- the client renders the flare/gutter
 		if s.hum then
-			s.hum.Volume = 0.5 + 0.4 * intensity -- the hum swells as the countdown (omnidirectional)
-			s.hum.PlaybackSpeed = 0.6 + 0.25 * intensity
+			s.hum.Volume = tuning.MORAL_HUM_VOLUME + 0.4 * intensity -- the hum swells as the countdown (omnidirectional)
+			s.hum.PlaybackSpeed = tuning.MORAL_HUM_SPEED + 0.25 * intensity
 		end
 		-- movement from a SERVER-sampled position delta (client-owned AssemblyLinearVelocity is spoofable)
 		local moving = h.lastPassagePos ~= nil
@@ -230,8 +230,8 @@ function Stage.update(h, dt)
 	-- it close — a last-chance hover, reversible, never a commit (the socket prompt is the only commit)
 	h.lastPassagePos = nil -- left the passage; the movement sampler resets so re-entry starts fresh
 	if s.hum then
-		s.hum.Volume = 0.5
-		s.hum.PlaybackSpeed = 0.6
+		s.hum.Volume = tuning.MORAL_HUM_VOLUME
+		s.hum.PlaybackSpeed = tuning.MORAL_HUM_SPEED
 	end
 	if h.lastDanger ~= 0 then
 		h.lastDanger = 0

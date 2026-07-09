@@ -35,19 +35,22 @@ return {
 	-- AUDIO-AS-INFORMATION (2026 watch: the #1 lever for a NO-MUSIC horror MVP — the constraint is our weapon).
 	-- The Watcher's move sound plays ONLY while it advances and cuts to silence the instant your light freezes
 	-- it, so the audio itself teaches the rule and every death is one the player can narrate (a fair tell).
-	-- STUB rbxasset sounds — the Audio dept records/uploads real foley (that is the real fix; system is ready).
-	AMBIENT_SOUND = "rbxasset://sounds/electronicpingshort.wav",
-	AMBIENT_SPEED = 0.12,
+	-- STUB built-in sounds, each event a DISTINCT sample (the old single-sample stub referenced
+	-- electronicpingshort.wav, which no longer EXISTS in current Roblox — the whole game was silent). These
+	-- files are VERIFIED present in <Roblox>/content/sounds of the installed version (2026-07-09). The real
+	-- fix remains Audio-dept foley uploaded as rbxassetid:// — these are placeholders that carry the INFORMATION.
+	AMBIENT_SOUND = "rbxasset://sounds/action_falling.ogg", -- wind loop pitched low = the Threshold's airy bed
+	AMBIENT_SPEED = 0.32,
 	AMBIENT_VOLUME = 0.1,
-	WATCHER_MOVE_SOUND = "rbxasset://sounds/electronicpingshort.wav",
-	WATCHER_MOVE_SPEED = 0.26,
+	WATCHER_MOVE_SOUND = "rbxasset://sounds/action_footsteps_plastic.mp3", -- footsteps: you HEAR it walking
+	WATCHER_MOVE_SPEED = 0.55, -- pitched down = something heavy walking
 	WATCHER_MOVE_VOLUME = 0.6,
-	BREAKER_SOUND = "rbxasset://sounds/electronicpingshort.wav",
-	BREAKER_SPEED = 0.4,
-	ESCAPE_SOUND = "rbxasset://sounds/electronicpingshort.wav",
+	BREAKER_SOUND = "rbxasset://sounds/action_jump_land.mp3", -- a heavy mechanical clunk
+	BREAKER_SPEED = 0.55,
+	ESCAPE_SOUND = "rbxasset://sounds/action_get_up.mp3", -- a rising movement = relief
 	ESCAPE_SPEED = 0.85,
-	SURGE_SOUND = "rbxasset://sounds/electronicpingshort.wav", -- STUB: the power-death sting (Audio dept records real)
-	SURGE_SOUND_SPEED = 0.55,
+	SURGE_SOUND = "rbxasset://sounds/impact_explosion_03.mp3", -- the power-death sting: a deep boom
+	SURGE_SOUND_SPEED = 0.5,
 
 	-- THE LIVING WATCHER (split-brain: the SERVER owns one invisible LogicRoot — freeze/catch/locomotion all
 	-- measure it, unchanged and unexploitable; the visible body is a CLIENT-LOCAL rig that smoothly follows the
@@ -103,10 +106,10 @@ return {
 	RHYTHM_MARK_RADIUS = 4.6, -- studs: how close to a mark's centre counts as "on the mark" (generous — no pixel-perfect)
 	RHYTHM_START_GRACE = 6.3, -- covers the first FULL breath (SAFE+WARN+SURGE): the first surge is witnessed, never lethal
 	-- STUB audio (Audio dept records real foley): the breath — inhale rises, surge roars
-	RHYTHM_INHALE_SOUND = "rbxasset://sounds/electronicpingshort.wav",
-	RHYTHM_INHALE_SPEED = 0.5,
-	RHYTHM_ROAR_SOUND = "rbxasset://sounds/electronicpingshort.wav",
-	RHYTHM_ROAR_SPEED = 0.28,
+	RHYTHM_INHALE_SOUND = "rbxasset://sounds/action_swim.mp3", -- a long drawn swish = the gallery inhaling
+	RHYTHM_INHALE_SPEED = 0.42,
+	RHYTHM_ROAR_SOUND = "rbxasset://sounds/impact_explosion_03.mp3", -- the surge: a deeper, longer boom
+	RHYTHM_ROAR_SPEED = 0.38,
 
 	-- ENCOUNTER III — THE HIDDEN PRESENCE. A real server-side presence PACES you down the corridor, keeping its
 	-- distance; you never see it. It is betrayed by a SILENCE RADIUS — the ambient bed ducks and the lamps dim
@@ -158,7 +161,9 @@ return {
 	RULES_SECONDS = 3.6, -- the 3-second-understanding onboarding: threat + rule + objective, shown then faded
 	RETRY_HOLD = 1.2, -- shorter frozen window on a caught-RETRY (rules already taught — don't re-onboard every death)
 
-	-- STUB placeholder audio (Rule 2): built-in rbxasset until the studio records real foley
-	HEARTBEAT_SOUND = "rbxasset://sounds/electronicpingshort.wav",
-	CATCH_SOUND = "rbxasset://sounds/electronicpingshort.wav",
+	-- the companion's diegetic hum (Encounter IV — ruled SFX, legal under no-music). STUB: a soft airy breath,
+	-- clearly distinct from the low bed; the real creature voice is Audio-dept foley.
+	MORAL_HUM_SOUND = "rbxasset://sounds/action_falling.ogg",
+	MORAL_HUM_SPEED = 0.85,
+	MORAL_HUM_VOLUME = 0.5,
 }

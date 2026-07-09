@@ -142,9 +142,9 @@ function Sanctum.build(tuning, parentFolder)
 	CollectionService:AddTag(orb, "CompanionOrb")
 	handles.orb = orb
 	handles.hum = Instance.new("Sound")
-	handles.hum.SoundId = tuning.AMBIENT_SOUND -- STUB: the diegetic hum (Audio dept records the real creature voice)
-	handles.hum.PlaybackSpeed = 0.6
-	handles.hum.Volume = 0.5
+	handles.hum.SoundId = tuning.MORAL_HUM_SOUND -- STUB: the diegetic hum (Audio dept records the real creature voice)
+	handles.hum.PlaybackSpeed = tuning.MORAL_HUM_SPEED
+	handles.hum.Volume = tuning.MORAL_HUM_VOLUME
 	handles.hum.Looped = true
 	handles.hum.Parent = orb
 	handles.hum:Play()
