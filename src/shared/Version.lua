@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 13,
-	patch = 1,
-	stage = "living-watcher+review-hardening",
+	patch = 2,
+	stage = "encounter-i-logic-flaws",
 }

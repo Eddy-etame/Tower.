@@ -219,6 +219,10 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		vignette.ImageTransparency = 0.2
 		TweenService:Create(vignette, TweenInfo.new(0.6), { ImageTransparency = 0.55 }):Play()
 		showBanner("RUN.")
+	elseif payload.kind == "retry" then
+		-- back in after a catch: clear the caught card + reset the vignette (no rules re-show)
+		hideCard()
+		TweenService:Create(vignette, TweenInfo.new(0.4), { ImageTransparency = 1 }):Play()
 	elseif payload.kind == "caught" then
 		TweenService:Create(vignette, TweenInfo.new(0.15), { ImageTransparency = 0.2 }):Play()
 		showCard("IT REACHED YOU.", Color3.fromRGB(20, 0, 0))

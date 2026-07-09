@@ -100,6 +100,7 @@ return {
 	CAUGHT_SECONDS = 2.4,
 	ESCAPED_SECONDS = 5,
 	RULES_SECONDS = 3.6, -- the 3-second-understanding onboarding: threat + rule + objective, shown then faded
+	RETRY_HOLD = 1.2, -- shorter frozen window on a caught-RETRY (rules already taught — don't re-onboard every death)
 
 	-- STUB placeholder audio (Rule 2): built-in rbxasset until the studio records real foley
 	HEARTBEAT_SOUND = "rbxasset://sounds/electronicpingshort.wav",

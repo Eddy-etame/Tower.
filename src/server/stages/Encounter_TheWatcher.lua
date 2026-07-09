@@ -37,6 +37,7 @@ function Stage.build(ctx)
 		holdUntil = os.clock() + tuning.RULES_SECONDS,
 		accum = 0,
 		revealed = false, -- the entry reveal beat plays once, not on every caught-retry
+		taught = false, -- the rules card + full frozen window happen once, not on every caught-retry
 		flashOn = {}, -- [userId] = client's reported light on/off (the freeze intent)
 		flashAt = {}, -- [userId] = last accepted report time (coalesces redundant spam)
 		battery = {}, -- [userId] = 0..1, server-owned (the light-rationing anti-camp)
@@ -100,10 +101,19 @@ function Stage.onPlayerEnter(h, ctx, player)
 		-- face the player DOWN THE THROAT into the room (+X), not at a side wall, so they meet the space head-on
 		char:PivotTo(CFrame.lookAt(h.arena.entrance, h.arena.entrance + Vector3.new(1, 0, 0)))
 	end
-	h.holdUntil = os.clock() + ctx.tuning.RULES_SECONDS -- Watcher frozen while the rules are on screen
 	h.flashOn[player.UserId] = true
 	h.battery[player.UserId] = 1
-	ctx.send(player, { kind = "rules" })
+	if not h.taught then
+		-- first entry: teach the rules and hold the Watcher for the full read
+		h.taught = true
+		h.holdUntil = os.clock() + ctx.tuning.RULES_SECONDS
+		ctx.send(player, { kind = "rules" })
+	else
+		-- a caught-retry: the player already knows the rules — a brief regroup, then straight back in. This MUST
+		-- dismiss the caught card (only the rules beat used to; skipping rules here would leave it stuck on screen).
+		h.holdUntil = os.clock() + ctx.tuning.RETRY_HOLD
+		ctx.send(player, { kind = "retry" })
+	end
 	ctx.send(player, { kind = "objective", text = objectiveText(h) })
 end
 
@@ -122,17 +132,22 @@ function Stage.update(h, dt)
 	local step = h.accum
 	h.accum = 0
 
-	-- light-rationing: drain while the light is on, recharge while off; send the level; compute who can freeze
+	-- light-rationing: drain while the light is on, recharge while off; send the level; compute who can freeze.
+	-- FROZEN WINDOW (rules card / caught screen): don't drain — the player can't act and the Watcher isn't stepping,
+	-- so charging them for that time is an unfair penalty (fair-learning).
+	local frozenWindow = os.clock() < h.holdUntil
 	local lighting = {}
 	for _, p in Players:GetPlayers() do
 		local uid = p.UserId
 		local b = h.battery[uid] or 1
-		if h.flashOn[uid] then
-			b = math.max(0, b - tuning.BATTERY_DRAIN * step)
-		else
-			b = math.min(1, b + tuning.BATTERY_RECHARGE * step)
+		if not frozenWindow then
+			if h.flashOn[uid] then
+				b = math.max(0, b - tuning.BATTERY_DRAIN * step)
+			else
+				b = math.min(1, b + tuning.BATTERY_RECHARGE * step)
+			end
+			h.battery[uid] = b
 		end
-		h.battery[uid] = b
 		lighting[uid] = h.flashOn[uid] and b > tuning.BATTERY_MIN
 		h.ctx.flashlightRemote:FireClient(p, { managed = true, level = b })
 	end
@@ -158,7 +173,8 @@ function Stage.update(h, dt)
 	local caught = Threat.step(h.watcher, step, Players:GetPlayers(), tuning, Arena.activeCount(h.arena), lighting)
 	if caught and not h.caughtCooldown[caught.UserId] and not h.escaped[caught.UserId] then
 		h.caughtCooldown[caught.UserId] = true
-		h.holdUntil = os.clock() + tuning.RULES_SECONDS + tuning.CAUGHT_SECONDS
+		-- freeze the Watcher for the caught screen; onPlayerEnter then sets the (shorter) post-retry hold
+		h.holdUntil = os.clock() + tuning.CAUGHT_SECONDS
 		h.ctx.send(caught, { kind = "caught" })
 		task.delay(tuning.CAUGHT_SECONDS, function()
 			if not caught.Parent then
@@ -174,8 +190,11 @@ function Stage.update(h, dt)
 		end)
 	end
 
-	-- danger vignette (feel, don't read) — only while still in the room
+	-- danger vignette (feel, don't read) — only while still in the room, and only while it is actually a THREAT.
+	-- When it is frozen/held in your light you are safe, so drop the alarm right down: red must mean "it's closing",
+	-- never "it's near but I've got it" — or the signal lies and stops meaning anything.
 	local wpos = h.watcher.root.Position
+	local threatening = h.watcher.root:GetAttribute("WatcherState") ~= "frozen"
 	for _, p in Players:GetPlayers() do
 		local root = p.Character and p.Character.PrimaryPart
 		if root then
@@ -183,6 +202,9 @@ function Stage.update(h, dt)
 			if root.Position.X <= Arena.ROOM_MAX_X and not h.escaped[p.UserId] then
 				local d = (root.Position - wpos).Magnitude
 				level = math.clamp(1 - (d - tuning.CATCH_DISTANCE) / 26, 0, 1)
+				if not threatening then
+					level = level * 0.2
+				end
 			end
 			h.ctx.send(p, { kind = "danger", level = level })
 		end
