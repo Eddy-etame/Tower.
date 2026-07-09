@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 16,
-	patch = 6,
-	stage = "tape-reveal-heard",
+	patch = 7,
+	stage = "mobile-tier-gate",
 }

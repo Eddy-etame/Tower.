@@ -149,6 +149,14 @@ return {
 	MORAL_PASSAGE_DANGER = 0.6, -- seconds of moving-during-an-exhale it tolerates before it takes you (grace to stop)
 	MORAL_BLACKOUT = 1.5, -- pass-through blackout on a dark-crossing death (the choice stays open)
 
+	-- MOBILE LOW-TIER (the ~70% majority): the heavy fullscreen passes get gated off on touch devices. DoF and
+	-- the volumetric Atmosphere are the expensive ones; when the Atmosphere is removed the classic fog already
+	-- configured in Lighting (FogEnd 90, same near-black color) takes over the SAME occlusion role, near-free.
+	-- ColorCorrection stays everywhere (cheap; it carries the grade).
+	MOBILE_DISABLE_DOF = true,
+	MOBILE_DISABLE_ATMOSPHERE = true, -- classic fog takes over (FogStart/End/Color are set in the place)
+	MOBILE_DISABLE_BLOOM = true,
+
 	-- the objective
 	ROOM_MAX_X = 64, -- x of the door line; past it the player is safe. ONE source (Threat.step + Arena + vignette)
 	LEVER_HOLD = 0.6, -- ProximityPrompt hold to throw the lever
