@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 16,
-	patch = 8,
-	stage = "rhythm-witness-beat",
+	patch = 10,
+	stage = "moral-aftermath-beat",
 }

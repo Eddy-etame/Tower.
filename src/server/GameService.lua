@@ -10,11 +10,13 @@ local GameService = {}
 local stages, tuning, uiRemote, flashlightRemote
 local current, active, activeHandles, activeFolder, activeCtx
 local generation = 0 -- bumped each stage build; a stale delayed clear() from a torn-down stage is ignored
+local session = {} -- cross-stage state for ONE descent (e.g. the moral choice); wiped when the loop restarts
 
 local function ctxFor(folder, gen)
 	return {
 		folder = folder,
 		tuning = tuning,
+		session = session,
 		flashlightRemote = flashlightRemote,
 		send = function(player, payload)
 			uiRemote:FireClient(player, payload)
@@ -72,6 +74,9 @@ end
 function GameService.startStage(index)
 	teardown()
 	generation += 1
+	if index == 1 then
+		table.clear(session) -- a fresh descent: the previous run's choices don't carry (only DataStore would, later)
+	end
 	current = index
 	active = stages[index]
 	activeFolder = Instance.new("Folder")

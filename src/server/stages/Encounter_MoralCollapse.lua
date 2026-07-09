@@ -68,6 +68,7 @@ function Stage.build(ctx)
 			end
 			hum:Stop() -- ...stops.
 			orb:SetAttribute("OrbState", "spent")
+			ctx.session.moralChoice = "spent" -- the aftermath (the Ending) will know what you did
 			sanctum.socketGlow.Brightness = 0.35 -- the warmth is gone
 			-- THE WORLD DOES NOT REACT. one beat of authored nothing, then the door simply opens.
 			task.wait(1.4)
@@ -107,6 +108,7 @@ function Stage.build(ctx)
 			return
 		end
 		h.committed = "crossed"
+		ctx.session.moralChoice = "crossed" -- the aftermath (the Ending) will know what you did
 		h.escaped[player.UserId] = true
 		ctx.send(player, { kind = "banner", text = "YOU KEPT IT. IT STILL HUMS BEHIND YOU." })
 		task.delay(tuning.ESCAPED_SECONDS, function()
