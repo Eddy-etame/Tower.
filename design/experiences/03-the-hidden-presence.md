@@ -4,6 +4,8 @@
 **Designer:** Eddy + Claude · **Date:** 2026-07-06 · **Status:** Stage 2 draft — Gate B verification in progress (Gate A APPROVED by Eddy, 2026-07-06)
 **Target playtest utterance (pass criterion):** *"it was HERE?"* — unprompted, at least once per playtest.
 
+> **AS-BUILT (2026-07-09):** a playable MVP SLICE of this encounter is implemented (server-authoritative, blockout, stub audio) — see the 2026-07-09 entry in [decisions.md](../decisions.md). This doc is the fuller design INTENT; the build is the MVP truth (the tape reveal + paced silence are in; the "presence sits between you and the goal" routing is deferred). Reconcile when render-tuned.
+
 ---
 
 ## STAGE 1 — THE WHITEBOARD

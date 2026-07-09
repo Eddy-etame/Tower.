@@ -4,6 +4,8 @@
 **Designer:** Eddy + Claude · **Date:** 2026-07-06 · **Status:** Stage 2 draft — Gate B verification in progress (Gate A APPROVED by Eddy, 2026-07-06; hum ruled diegetic SFX)
 **Target playtest utterance (pass criterion):** silence, then — *"did I have to do that?"* — unprompted, at least once per playtest.
 
+> **AS-BUILT (2026-07-09):** a playable MVP SLICE of this encounter is implemented (server-authoritative, blockout, stub audio) — see the 2026-07-09 entry in [decisions.md](../decisions.md). The spend-vs-cross choice, the companion (client-smoothed), the drain-to-silence climax, and the exhale-timed dark crossing are in. Deferred: the full Act I/II care-bootstrap "save", and path B's symmetric "your own light dims for the run" cost (built as the crossing's risk only). This doc is the design INTENT; reconcile when render-tuned.
+
 ---
 
 ## STAGE 1 — THE WHITEBOARD
