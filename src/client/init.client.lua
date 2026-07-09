@@ -159,6 +159,111 @@ local function showCard(text, color)
 	TweenService:Create(cardText, TweenInfo.new(0.5), { TextTransparency = 0 }):Play()
 end
 
+-- the pass-through blackout (Encounter III): fade to total black, hold, fade back
+local blackout = Instance.new("Frame")
+blackout.Size = UDim2.fromScale(1, 1)
+blackout.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+blackout.BackgroundTransparency = 1
+blackout.BorderSizePixel = 0
+blackout.ZIndex = 50
+blackout.Visible = false
+blackout.Parent = gui
+
+local function playBlackout(seconds)
+	seconds = tonumber(seconds) or 1.5
+	blackout.Visible = true
+	blackout.BackgroundTransparency = 1
+	TweenService:Create(blackout, TweenInfo.new(0.12), { BackgroundTransparency = 0 }):Play()
+	task.delay(math.max(0.3, seconds - 0.4), function()
+		TweenService:Create(blackout, TweenInfo.new(0.4), { BackgroundTransparency = 1 }):Play()
+		task.delay(0.4, function()
+			blackout.Visible = false
+		end)
+	end)
+end
+
+-- the tape playback reveal (Encounter III): two rows of impulse marks — YOUR steps, and a SECOND set half a beat
+-- behind that keeps going one step after yours stop. The muted player and the stream viewer both READ it.
+local tapePanel
+local function playTape(steps)
+	if tapePanel then
+		tapePanel:Destroy()
+	end
+	steps = math.clamp(tonumber(steps) or 7, 3, 11)
+	local panel = Instance.new("Frame")
+	panel.AnchorPoint = Vector2.new(0.5, 0.5)
+	panel.Position = UDim2.fromScale(0.5, 0.5)
+	panel.Size = UDim2.fromOffset(540, 250)
+	panel.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
+	panel.BackgroundTransparency = 0.06
+	panel.BorderSizePixel = 0
+	panel.ZIndex = 40
+	panel.Parent = gui
+	tapePanel = panel
+
+	local function label(text, y, size, color, x, align)
+		local l = Instance.new("TextLabel")
+		l.Position = UDim2.fromOffset(x or 24, y)
+		l.Size = UDim2.fromOffset(align and 490 or 120, size + 6)
+		l.BackgroundTransparency = 1
+		l.Font = Enum.Font.SpecialElite
+		l.TextSize = size
+		l.TextXAlignment = align or Enum.TextXAlignment.Left
+		l.TextColor3 = color or INK
+		l.Text = text
+		l.ZIndex = 41
+		l.Parent = panel
+	end
+	label("TAPE — PLAYBACK", 16, 24, INK, 24, Enum.TextXAlignment.Center)
+
+	local function dotRow(y, count, color, offsetPx)
+		for i = 1, count do
+			local dot = Instance.new("Frame")
+			dot.Size = UDim2.fromOffset(11, 11)
+			dot.Position = UDim2.fromOffset(150 + offsetPx + (i - 1) * 34, y)
+			dot.BackgroundColor3 = color
+			dot.BorderSizePixel = 0
+			dot.ZIndex = 41
+			local c = Instance.new("UICorner")
+			c.CornerRadius = UDim.new(1, 0)
+			c.Parent = dot
+			dot.Parent = panel
+		end
+	end
+	label("YOU", 96, 22, INK)
+	dotRow(100, steps, Color3.fromRGB(228, 222, 208), 0)
+	label("?", 150, 22, Color3.fromRGB(210, 60, 60))
+	dotRow(154, steps, Color3.fromRGB(150, 150, 150), 17) -- half a beat behind...
+	-- ...and one extra step, after yours stop
+	local extra = Instance.new("Frame")
+	extra.Size = UDim2.fromOffset(11, 11)
+	extra.Position = UDim2.fromOffset(150 + 17 + steps * 34, 154)
+	extra.BackgroundColor3 = Color3.fromRGB(210, 60, 60)
+	extra.BorderSizePixel = 0
+	extra.ZIndex = 41
+	local ec = Instance.new("UICorner")
+	ec.CornerRadius = UDim.new(1, 0)
+	ec.Parent = extra
+	extra.Parent = panel
+	label("there are two sets of footsteps.", 208, 18, Color3.fromRGB(180, 120, 120), 24, Enum.TextXAlignment.Center)
+
+	task.delay(5, function()
+		if tapePanel == panel then
+			TweenService:Create(panel, TweenInfo.new(0.8), { BackgroundTransparency = 1 }):Play()
+			for _, ch in panel:GetDescendants() do
+				if ch:IsA("TextLabel") then
+					TweenService:Create(ch, TweenInfo.new(0.8), { TextTransparency = 1 }):Play()
+				elseif ch:IsA("Frame") then
+					TweenService:Create(ch, TweenInfo.new(0.8), { BackgroundTransparency = 1 }):Play()
+				end
+			end
+			task.delay(0.9, function()
+				panel:Destroy()
+			end)
+		end
+	end)
+end
+
 local function hideCard()
 	TweenService:Create(fullCard, TweenInfo.new(0.5), { BackgroundTransparency = 1 }):Play()
 	TweenService:Create(cardText, TweenInfo.new(0.4), { TextTransparency = 1 }):Play()
@@ -217,6 +322,10 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		end)
 	elseif payload.kind == "banner" then
 		showBanner(payload.text or "")
+	elseif payload.kind == "tape" then
+		playTape(payload.steps)
+	elseif payload.kind == "blackout" then
+		playBlackout(payload.seconds)
 	elseif payload.kind == "danger" then
 		local lvl = math.clamp(tonumber(payload.level) or 0, 0, 1)
 		TweenService:Create(vignette, TweenInfo.new(0.2), { ImageTransparency = 1 - lvl * 0.72 }):Play()

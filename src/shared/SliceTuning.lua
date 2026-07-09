@@ -108,6 +108,21 @@ return {
 	RHYTHM_ROAR_SOUND = "rbxasset://sounds/electronicpingshort.wav",
 	RHYTHM_ROAR_SPEED = 0.28,
 
+	-- ENCOUNTER III — THE HIDDEN PRESENCE. A real server-side presence PACES you down the corridor, keeping its
+	-- distance; you never see it. It is betrayed by a SILENCE RADIUS — the ambient bed ducks and the lamps dim
+	-- where it stands, so absence is a positional signal (visible as a band of dead lamps trailing behind you =
+	-- the muted-player's twin). Walk forward and it stays back; stand still (to use the tape) and it CREEPS in.
+	-- Close the gap twice and you're warned (a lamp dies); a third time it passes through you (blackout, respawn).
+	-- The tape recorder is the reveal: record yourself, play it back, and hear the SECOND set of footsteps.
+	PRESENCE_SPEED = 8, -- studs/s it creeps toward you (half walkspeed — walking forward outpaces it, stillness lets it close)
+	PRESENCE_MAX_GAP = 28, -- it never trails further than this (snaps to keep pace — it is always with you)
+	PRESENCE_CLOSE_DIST = 10, -- gap below this = a close event (a warning, then it yields)
+	PRESENCE_YIELD = 15, -- how far it backs off on a warning
+	PRESENCE_WARNINGS = 2, -- warnings before the third close blacks you out
+	PRESENCE_BLACKOUT = 1.5, -- seconds of sensory blackout on the third close, then respawn at the start
+	PRESENCE_SILENCE_RADIUS = 18, -- studs: lamps within this of the presence dim to the dead-zone low
+	PRESENCE_RECORD_SECONDS = 3, -- stand still this long at the recorder to capture the tape
+
 	-- the objective
 	ROOM_MAX_X = 64, -- x of the door line; past it the player is safe. ONE source (Threat.step + Arena + vignette)
 	LEVER_HOLD = 0.6, -- ProximityPrompt hold to throw the lever
