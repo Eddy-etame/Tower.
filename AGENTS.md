@@ -32,6 +32,20 @@ in Studio open the Rojo panel → **Connect**; edits to `src/` sync live.
 
 **Do not ask the user to install anything or run manual steps — run the bootstrap script for them.**
 
+### Launch-and-confirm protocol (do this every fresh handoff)
+
+After you run the bootstrap and Roblox Studio opens, you MUST **pause and confirm the human is signed
+in before you continue** — use the **AskUserQuestion** tool (a yes/no question), do not just assume.
+Say what you did and what they need to do, e.g.:
+
+> "I've installed the toolchain, built the place, and opened it in Roblox Studio. If this is the first
+> time, **add an account / sign in** in the Studio window, then press **Play** to test. Have you
+> signed in and got it running?"  → options: **Yes, I'm in** / **No / it's not working**
+
+If **Yes** → continue the project work (pick up `git log` on the current `dev/<name>` branch). If
+**No** → help them past the sign-in / install snag (see the README troubleshooting), then ask again.
+Never proceed to build/test claims until they've confirmed Studio is actually up.
+
 ## 2. The non-negotiables (full text in `CLAUDE.md`)
 
 1. **Branch protocol.** On first contact, ask the human's name, then `git switch -c dev/<name>`
