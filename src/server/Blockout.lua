@@ -4,11 +4,24 @@
 
 local Blockout = {}
 
-local WALL_COLOR = Color3.fromRGB(104, 104, 112)
-local CEILING_COLOR = Color3.fromRGB(78, 78, 84)
-local WOOD = Color3.fromRGB(132, 112, 90)
-local PAPER = Color3.fromRGB(216, 210, 196)
-local INK = Color3.fromRGB(40, 38, 34)
+-- Cold, desaturated, sickly palette (research: kill the default flat gray Color3(163,162,165) that IS the
+-- untouched-blockout signature). Darkness comes from Lighting; albedo stays navigable for mobile.
+local WALL_BASE = Color3.fromRGB(94, 97, 92) -- cold concrete
+local FLOOR_BASE = Color3.fromRGB(70, 72, 71)
+local CEIL_BASE = Color3.fromRGB(48, 50, 52) -- darker than walls so the ceiling looms
+local TRIM = Color3.fromRGB(58, 50, 42) -- dark wood baseboard/casing
+local WOOD = Color3.fromRGB(96, 80, 60)
+local PAPER = Color3.fromRGB(214, 208, 194)
+local INK = Color3.fromRGB(34, 32, 28)
+
+-- jitter every architectural surface so no two adjacent parts match: gives light something to grade across
+-- and breaks the "one giant flat card" read (research: the single biggest anti-flatness move)
+local function jitter(base)
+	local function ch(v)
+		return math.clamp(v + math.random(-8, 8), 0, 255)
+	end
+	return Color3.fromRGB(ch(base.R * 255), ch(base.G * 255), ch(base.B * 255))
+end
 
 local function makePart(props, parent)
 	local part = Instance.new("Part")
@@ -16,8 +29,8 @@ local function makePart(props, parent)
 	part.Locked = true
 	part.TopSurface = Enum.SurfaceType.Smooth
 	part.BottomSurface = Enum.SurfaceType.Smooth
-	part.Material = Enum.Material.Slate
-	part.Color = WALL_COLOR
+	part.Material = Enum.Material.Concrete
+	part.Color = WALL_BASE
 	for key, value in props do
 		part[key] = value
 	end
@@ -40,7 +53,7 @@ local function buildWallSegment(folder, layout, wall)
 			size = Vector3.new(length, boxHeight, 1)
 			cframe = CFrame.new((from + to) / 2, y, wall.fixed)
 		end
-		makePart({ Size = size, CFrame = cframe, Name = "Wall" }, folder)
+		makePart({ Size = size, CFrame = cframe, Color = jitter(WALL_BASE), Name = "Wall" }, folder)
 	end
 	if wall.gap then
 		box(wall.from, wall.gap.from, height / 2, height)
@@ -118,34 +131,55 @@ function Blockout.build(layout, tuning)
 		makePart({
 			Size = Vector3.new(width, 0.2, depth),
 			CFrame = CFrame.new(centerX, 0.1, centerZ),
-			Color = space.floorColor,
+			Color = jitter(FLOOR_BASE),
 			Material = Enum.Material.Concrete,
 			Name = (space.id or "Space") .. "_Floor",
 		}, folder)
-		if not space.noCeiling then
+		-- every space is capped now (the sky is killed): darkness is the canvas, no daylight leaks in
+		makePart({
+			Size = Vector3.new(width + 2, 0.5, depth + 2),
+			CFrame = CFrame.new(centerX, layout.WALL_HEIGHT + 0.25, centerZ),
+			Color = jitter(CEIL_BASE),
+			Name = (space.id or "Space") .. "_Ceiling",
+		}, folder)
+		-- baseboard trim along the two long walls: a shadow-catching edge that breaks the flat plane
+		for _, side in { space.minZ, space.maxZ } do
 			makePart({
-				Size = Vector3.new(width + 2, 0.5, depth + 2),
-				CFrame = CFrame.new(centerX, layout.WALL_HEIGHT + 0.25, centerZ),
-				Color = CEILING_COLOR,
-				Name = (space.id or "Space") .. "_Ceiling",
+				Size = Vector3.new(width, 0.9, 0.5),
+				CFrame = CFrame.new(centerX, 0.55, side + (side < centerZ and 0.4 or -0.4)),
+				Color = TRIM,
+				Material = Enum.Material.WoodPlanks,
+				Name = "Baseboard",
 			}, folder)
 		end
-		local relay = makePart({
-			Size = Vector3.new(0.8, 0.8, 0.8),
-			CFrame = CFrame.new(centerX, layout.WALL_HEIGHT - 0.7, centerZ),
-			Color = CEILING_COLOR,
-			Transparency = 0.3,
-			Name = (space.id or "Space") .. "_Relay",
+
+		-- the light POOL: a visible ceiling fixture + a downward cone, dark gaps between spaces (research:
+		-- 60-70% of floor left dark; light is the rare, motivated exception, never a uniform fill)
+		local fixture = makePart({
+			Size = Vector3.new(2, 0.4, 2),
+			CFrame = CFrame.new(centerX, layout.WALL_HEIGHT - 0.5, centerZ),
+			Color = space.lightColor,
+			Material = Enum.Material.Neon,
+			Name = (space.id or "Space") .. "_Fixture",
 		}, folder)
-		local light = Instance.new("PointLight")
-		light.Range = space.noCeiling and 40 or 26 -- interiors are pools of light in darkness; outdoors read wider
-		light.Brightness = space.noCeiling and 1.6 or 0.85
+		local light = Instance.new("SpotLight")
+		light.Face = Enum.NormalId.Bottom
+		light.Angle = 70
+		light.Range = 30
+		light.Brightness = space.bright and 3.2 or 2.2
 		light.Color = space.lightColor
-		light.Parent = relay
+		light.Shadows = false -- shadow budget goes to the flashlight; fixtures stay cheap for mobile
+		light.Parent = fixture
+		local flr = Instance.new("PointLight")
+		flr.Range = 13
+		flr.Brightness = 0.5
+		flr.Color = space.lightColor
+		flr.Shadows = false
+		flr.Parent = fixture
 		if not withRelay then
 			return nil
 		end
-		return { def = space, relay = relay, light = light, baseBrightness = light.Brightness }
+		return { def = space, relay = fixture, light = light, baseBrightness = light.Brightness }
 	end
 
 	for _, space in layout.extraSpaces do

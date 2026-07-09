@@ -69,6 +69,7 @@ MapLayout.rooms = {
 		relay = false,
 		floorColor = Color3.fromRGB(104, 100, 94),
 		lightColor = Color3.fromRGB(255, 214, 170),
+		bright = true, -- the file room is the one readable warm pool (the reveal must read)
 	},
 }
 
@@ -81,8 +82,8 @@ MapLayout.extraSpaces = {
 		minZ = -8,
 		maxZ = 8,
 		floorColor = Color3.fromRGB(168, 164, 156),
-		lightColor = Color3.fromRGB(255, 248, 235),
-		noCeiling = true, -- the lobby sits under open sky; the game begins when you step inside
+		lightColor = Color3.fromRGB(255, 236, 205), -- the one warm, safe pool: the last comfort before the dark
+		bright = true,
 	},
 	{
 		id = "ENDHALL",
@@ -91,8 +92,7 @@ MapLayout.extraSpaces = {
 		minZ = -7,
 		maxZ = 7,
 		floorColor = Color3.fromRGB(180, 176, 168),
-		lightColor = Color3.fromRGB(255, 250, 240),
-		noCeiling = true, -- you leave into daylight
+		lightColor = Color3.fromRGB(214, 226, 240), -- cold: you do not escape into daylight, only into more dark
 	},
 }
 
