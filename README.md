@@ -8,32 +8,49 @@ The prototype exists to prove one thing: *can we create encounters so memorable 
 
 ---
 
-## Get running (clone → play)
+> **Working with an AI on this repo?** Read **[AGENTS.md](AGENTS.md)** (and `CLAUDE.md`) first — they
+> are the operating manual for any LLM: the non-negotiables, who's who, and how to launch. An AI should
+> run the bootstrap for you; you shouldn't install anything by hand.
 
-Prerequisites, one-time per machine:
+## Get running — ONE command (zero-touch)
 
-1. **Git** — [git-scm.com](https://git-scm.com/downloads)
-2. **Rokit** (toolchain manager) — [github.com/rojo-rbx/rokit](https://github.com/rojo-rbx/rokit/releases): download, run the installer, restart your terminal.
-3. **Roblox Studio** — [create.roblox.com](https://create.roblox.com/)
-
-Then:
+The only prerequisite is **Git** ([git-scm.com](https://git-scm.com/downloads)). Everything else — the
+toolchain **and Roblox Studio itself** — is installed for you, the place is built, and Studio opens
+ready to test:
 
 ```powershell
 git clone <repo-url> project-001
 cd project-001
+powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1     # Windows
+# macOS:  bash scripts/bootstrap.sh
+```
+
+Then press **Play (F5)** in Studio. (The one thing no script can skip: Roblox Studio asks you to sign
+in to a Roblox account the first time it opens.) Flags: `-Serve` for a live-sync dev loop,
+`-NoLaunch` to build only.
+
+<details>
+<summary>Manual steps (if you'd rather not run the script)</summary>
+
+Install **Rokit** ([releases](https://github.com/rojo-rbx/rokit/releases)) and **Roblox Studio**
+([create.roblox.com](https://create.roblox.com/)), then:
+
+```powershell
 rokit install          # installs the pinned rojo / wally / selene / stylua
 rojo plugin install    # installs the Rojo plugin into Roblox Studio (once per machine)
 rojo build -o Project001.rbxl   # produces the place file (a build ARTIFACT — never commit it)
 ```
+Open `Project001.rbxl` in Studio and press Play.
+</details>
 
-To play: open `Project001.rbxl` in Roblox Studio and press Play. You should see in Output:
+On Play you should see in Output:
 
 ```
-[Project001][Server] booted — v0.1.0 (scaffold)
-[Project001][Client] booted — v0.1.0 (scaffold)
+[Project001][Server] booted — vX.Y.Z (<stage>)
+[Project001][Client] booted — vX.Y.Z (<stage>)
 ```
 
-Zero red errors in Output is the standard — a single console error means the build is broken.
+(the exact version/stage comes from `src/shared/Version.lua`). Zero red errors in Output is the standard — a single console error means the build is broken.
 
 To develop with live sync instead of rebuilding: run `rojo serve`, then in Studio open the Rojo plugin panel and press **Connect**. Edits to `src/` sync into Studio live.
 

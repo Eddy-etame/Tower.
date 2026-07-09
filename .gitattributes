@@ -1,0 +1,4 @@
+# Shell scripts MUST stay LF or bash breaks on macOS/Linux (a CR in the shebang/commands is fatal).
+*.sh text eol=lf
+# PowerShell is happy either way; keep it CRLF so it looks native on Windows.
+*.ps1 text eol=crlf
