@@ -138,14 +138,14 @@ function Blockout.build(layout, tuning)
 			Name = (space.id or "Space") .. "_Relay",
 		}, folder)
 		local light = Instance.new("PointLight")
-		light.Range = 42
-		light.Brightness = 1.8
+		light.Range = space.noCeiling and 40 or 26 -- interiors are pools of light in darkness; outdoors read wider
+		light.Brightness = space.noCeiling and 1.6 or 0.85
 		light.Color = space.lightColor
 		light.Parent = relay
 		if not withRelay then
 			return nil
 		end
-		return { def = space, relay = relay, light = light }
+		return { def = space, relay = relay, light = light, baseBrightness = light.Brightness }
 	end
 
 	for _, space in layout.extraSpaces do
@@ -242,6 +242,30 @@ function Blockout.build(layout, tuning)
 		leakLight.Color = Color3.fromRGB(255, 200, 130)
 		leakLight.Parent = leak
 	end
+
+	-- the entrance lamp: the last warm light of the lobby, mounted over the first doorway. When the subject
+	-- commits into room one, it dies behind them (Act I — "the room notices you arrive"). Guaranteed, legible.
+	local entranceLamp = makePart({
+		Size = Vector3.new(2.4, 0.5, 2.4),
+		CFrame = CFrame.new(14, layout.WALL_HEIGHT - 0.5, 0),
+		Color = Color3.fromRGB(255, 236, 205),
+		Material = Enum.Material.Neon,
+		Name = "EntranceLamp",
+	}, folder)
+	local entranceLampLight = Instance.new("PointLight")
+	entranceLampLight.Range = 30
+	entranceLampLight.Brightness = 2
+	entranceLampLight.Color = Color3.fromRGB(255, 236, 205)
+	entranceLampLight.Parent = entranceLamp
+	local entranceLampSound = Instance.new("Sound")
+	entranceLampSound.SoundId = tuning.CLICK_SOUND
+	entranceLampSound.PlaybackSpeed = 0.2 -- a low, dull thud as it dies
+	entranceLampSound.Volume = 0.7
+	entranceLampSound.RollOffMaxDistance = 80
+	entranceLampSound.Parent = entranceLamp
+	handles.entranceLamp = entranceLamp
+	handles.entranceLampLight = entranceLampLight
+	handles.entranceLampSound = entranceLampSound
 
 	-- the lobby names the game: the beginning is framed, not implied
 	local titleDef = layout.title
@@ -401,6 +425,43 @@ function Blockout.build(layout, tuning)
 		handles.notes[noteDef.id] = { part = paper, prompt = prompt }
 	end
 
+	-- THE FILE WALL: the climax staged in the room itself. You enter the annex and the south wall — the wall
+	-- you face — is papered with blank sheets that fill, one by one, with observations about YOU.
+	-- The central board types the live line. The room DOES something: it shows you its file on you.
+	handles.filePanels = {}
+	local panelCount = 6
+	local annex = layout.roomById("ANNEX")
+	local wallZ = annex.minZ + 0.3 -- just in front of the annex south wall, facing the entering player (+z)
+	local startX, endX = 66, 82
+	for index = 1, panelCount do
+		local px = startX + (endX - startX) * ((index - 1) / (panelCount - 1))
+		local sheet = makePart({
+			Size = Vector3.new(2.4, 3, 0.06),
+			CFrame = CFrame.lookAt(Vector3.new(px, 6.4, wallZ), Vector3.new(px, 6.4, wallZ + 1)),
+			Color = PAPER,
+			Material = Enum.Material.SmoothPlastic,
+			Transparency = 0.15,
+			Name = "FilePanel" .. index,
+		}, folder)
+		local sheetGui = Instance.new("SurfaceGui")
+		sheetGui.Face = Enum.NormalId.Front
+		sheetGui.CanvasSize = Vector2.new(240, 300)
+		sheetGui.Parent = sheet
+		local sheetLabel = Instance.new("TextLabel")
+		sheetLabel.Size = UDim2.fromScale(0.9, 0.9)
+		sheetLabel.Position = UDim2.fromScale(0.05, 0.05)
+		sheetLabel.BackgroundTransparency = 1
+		sheetLabel.Font = Enum.Font.SpecialElite
+		sheetLabel.TextColor3 = INK
+		sheetLabel.TextWrapped = true
+		sheetLabel.TextYAlignment = Enum.TextYAlignment.Top
+		sheetLabel.TextSize = 20
+		sheetLabel.Text = ""
+		sheetLabel.Parent = sheetGui
+		table.insert(handles.filePanels, { part = sheet, label = sheetLabel })
+	end
+
+	-- the central board on the desk: the live line writes here, facing the entering player
 	local boardDef = layout.board
 	handles.board = makePart({
 		Size = Vector3.new(boardDef.width, boardDef.height, 0.4),
@@ -408,34 +469,45 @@ function Blockout.build(layout, tuning)
 			Vector3.new(boardDef.x, boardDef.y, boardDef.z),
 			Vector3.new(boardDef.x, boardDef.y, boardDef.z + 1)
 		),
-		Color = PAPER,
+		Color = Color3.fromRGB(24, 23, 22),
 		Material = Enum.Material.SmoothPlastic,
-		Name = "DossierBoard",
+		Name = "LiveBoard",
 	}, folder)
 	local boardGui = Instance.new("SurfaceGui")
 	boardGui.Face = Enum.NormalId.Front
-	boardGui.CanvasSize = Vector2.new(1200, 600)
+	boardGui.CanvasSize = Vector2.new(1200, 550)
 	boardGui.Parent = handles.board
-	local boardCover = Instance.new("TextLabel")
-	boardCover.Size = UDim2.fromScale(1, 1)
-	boardCover.BackgroundTransparency = 1
-	boardCover.Font = Enum.Font.SpecialElite
-	boardCover.TextColor3 = INK
-	boardCover.TextSize = 44
-	boardCover.Text = "SUBJECT RECORDS"
-	boardCover.Parent = boardGui
-	local boardPrompt = Instance.new("ProximityPrompt")
-	boardPrompt.ActionText = "Read the Record"
-	boardPrompt.ObjectText = "Your File"
-	boardPrompt.MaxActivationDistance = 12
-	boardPrompt.RequiresLineOfSight = false
-	boardPrompt.Parent = handles.board
-	handles.boardPrompt = boardPrompt
+	local boardLabel = Instance.new("TextLabel")
+	boardLabel.Size = UDim2.fromScale(0.92, 0.92)
+	boardLabel.Position = UDim2.fromScale(0.04, 0.04)
+	boardLabel.BackgroundTransparency = 1
+	boardLabel.Font = Enum.Font.SpecialElite
+	boardLabel.TextColor3 = Color3.fromRGB(210, 60, 60)
+	boardLabel.TextWrapped = true
+	boardLabel.TextYAlignment = Enum.TextYAlignment.Bottom
+	boardLabel.TextSize = 40
+	boardLabel.Text = ""
+	boardLabel.Parent = boardGui
+	handles.boardLabel = boardLabel
+
+	-- an overhead lamp over the desk so the file wall reads on entry
+	local annexLamp = makePart({
+		Size = Vector3.new(2, 0.4, 2),
+		CFrame = CFrame.new(boardDef.x, layout.WALL_HEIGHT - 0.6, boardDef.z + 6),
+		Color = Color3.fromRGB(255, 220, 180),
+		Material = Enum.Material.Neon,
+		Name = "AnnexLamp",
+	}, folder)
+	local annexLampLight = Instance.new("PointLight")
+	annexLampLight.Range = 34
+	annexLampLight.Brightness = 2.2
+	annexLampLight.Color = Color3.fromRGB(255, 214, 170)
+	annexLampLight.Parent = annexLamp
 
 	makePart({
 		Size = Vector3.new(10, 3, 2.5),
 		CFrame = CFrame.new(layout.desk.x, 1.5, layout.desk.z),
-		Color = Color3.fromRGB(88, 74, 60),
+		Color = Color3.fromRGB(58, 50, 42),
 		Material = Enum.Material.WoodPlanks,
 		Name = "Desk",
 	}, folder)
@@ -465,6 +537,41 @@ function Blockout.closeDoor(handles)
 	handles.doorPrompt.Enabled = true
 	handles.doorLamp.Color = Color3.fromRGB(200, 40, 40)
 	handles.doorLamp.PointLight.Color = handles.doorLamp.Color
+end
+
+-- Act I: the entrance light dies behind the committed subject.
+function Blockout.killEntranceLamp(handles)
+	handles.entranceLampLight.Enabled = false
+	handles.entranceLamp.Color = Color3.fromRGB(30, 28, 26)
+	handles.entranceLamp.Material = Enum.Material.SmoothPlastic
+	handles.entranceLampSound:Play()
+end
+
+function Blockout.restoreEntranceLamp(handles)
+	handles.entranceLampLight.Enabled = true
+	handles.entranceLamp.Color = Color3.fromRGB(255, 236, 205)
+	handles.entranceLamp.Material = Enum.Material.Neon
+end
+
+-- The climax: fill one file panel with a true observation about the subject.
+function Blockout.fillPanel(handles, index, text)
+	local panel = handles.filePanels[index]
+	if panel then
+		panel.label.Text = text
+		panel.part.Transparency = 0
+	end
+end
+
+function Blockout.setLiveLine(handles, text)
+	handles.boardLabel.Text = text
+end
+
+function Blockout.clearFile(handles)
+	for _, panel in handles.filePanels do
+		panel.label.Text = ""
+		panel.part.Transparency = 0.15
+	end
+	handles.boardLabel.Text = ""
 end
 
 -- A small dark disc after each unobserved move: the second corroborating trace

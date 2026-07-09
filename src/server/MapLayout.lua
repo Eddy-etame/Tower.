@@ -115,7 +115,7 @@ MapLayout.walls = {
 	-- main block
 	{ axis = "z", fixed = 8.5, from = 13, to = 111 }, -- long north wall
 	{ axis = "z", fixed = -8.5, from = 13, to = 62 }, -- south wall, rooms one and two
-	{ axis = "z", fixed = -8.5, from = 62, to = 86, gap = { from = 78, to = 83 } }, -- room three south, annex doorway
+	{ axis = "z", fixed = -8.5, from = 62, to = 86, gap = { from = 74, to = 84 } }, -- room three south: wide annex doorway
 	{ axis = "z", fixed = -8.5, from = 86, to = 111 }, -- south wall, room four
 	{ axis = "x", fixed = 13.5, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } }, -- entrance
 	{ axis = "x", fixed = 38, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } },
@@ -123,9 +123,8 @@ MapLayout.walls = {
 	{ axis = "x", fixed = 86, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } },
 	-- east wall of room four carries THE EXIT DOOR — the goal, visible from the moment you enter R4
 	{ axis = "x", fixed = 110.5, from = -9, to = 9, gap = { from = -DOOR_HALF_WIDTH, to = DOOR_HALF_WIDTH } },
-	-- the fin: breaks the direct sightline into the annex doorway WITHOUT hiding the way around it
-	-- (playtest 3: the entrance must be findable — wide openings both ends, light spilling past both corners)
-	{ axis = "z", fixed = -5, from = 77, to = 83 },
+	-- (no fin: the file panels are blank until the subject enters, so there is nothing to spoil; a wide,
+	-- warmly-lit doorway that cannot be missed beats a concealment that only frustrates — playtests 3 & 4)
 	-- annex shell
 	{ axis = "x", fixed = 63.5, from = -25, to = -9 },
 	{ axis = "x", fixed = 84.5, from = -25, to = -9 },
@@ -150,18 +149,20 @@ MapLayout.doorways = {
 	{ x = 110.5, z = 0 },
 }
 
--- Readable notes: the session log speaking back, and the trail to the record. N4 sits on the fin itself.
+-- Readable notes: the observer speaking to you, in character. N1-N3 sit on tables in rooms one/two/three;
+-- N4 is on the room-three south wall beside the annex doorway, pointing you in.
 MapLayout.notes = {
 	{ id = "N1", x = 20, z = 3, y = 3.5, yaw = 15, onWall = false },
 	{ id = "N2", x = 56, z = -3, y = 3.5, yaw = -25, onWall = false },
-	{ id = "N3", x = 92, z = 4, y = 3.5, yaw = 40, onWall = false },
-	{ id = "N4", x = 80, z = -4.4, y = 4.6, yaw = 0, onWall = true },
+	{ id = "N3", x = 68, z = 4, y = 3.5, yaw = 40, onWall = false },
+	{ id = "N4", x = 70, z = -8.1, y = 4.6, yaw = 0, onWall = true },
 }
 
--- Watchable furniture: reorients strictly while unobserved. ROOM THREE's deviance is absence.
+-- Watchable furniture: turns to face you the instant you stop looking at it. ROOM THREE stays empty
+-- (its deviance is absence + the writing behind the wall). The room-two chair is the staged star of Act II:
+-- it faces AWAY from the entrance, so you meet its back — then it turns to watch you.
 MapLayout.chairs = {
-	{ room = "R1", x = 26, z = -4, faceX = 26, faceZ = 8 },
-	{ room = "R2", x = 50, z = 3, faceX = 38, faceZ = 0 },
+	{ room = "R2", x = 50, z = 0, faceX = 64, faceZ = 0 },
 	{ room = "R4", x = 98, z = -3, faceX = 110, faceZ = 0 },
 }
 MapLayout.paintings = {
@@ -169,26 +170,25 @@ MapLayout.paintings = {
 	{ room = "R2", x = 44, z = 7.7 },
 	{ room = "R4", x = 104, z = 7.7 },
 }
--- Static furniture for density (never moves — the contrast makes the movers readable).
+-- Static furniture for density (never moves — the contrast makes the movers readable). One table under each
+-- freestanding note (N1 room one, N2 room two, N3 room three); room four's chair carries its own weight.
 MapLayout.tables = {
 	{ x = 20, z = 3 },
 	{ x = 56, z = -3 },
-	{ x = 92, z = 4 },
+	{ x = 68, z = 4 },
 }
 
 -- The scratch source: behind room three's south wall, loudest at the annex side (the note-taker at work).
 MapLayout.scratchPoint = { x = 81, y = 4, z = -8.2 }
--- Warm light spilling from the annex doorway AND around both fin corners: the pull must be visible
--- from the open room, not hidden behind its own concealment (playtest 3 fix).
+-- Warm light pouring across the wide annex doorway threshold: the pull, impossible to miss from the quiet room.
 MapLayout.leaks = {
-	{ x = 80.5, z = -8.3, width = 5, depth = 1.6 },
-	{ x = 76.4, z = -6.4, width = 1.4, depth = 3.4 },
-	{ x = 83.6, z = -6.4, width = 1.4, depth = 3.4 },
+	{ x = 79, z = -8.2, width = 10, depth = 2 },
 }
 
 MapLayout.board = { x = 74, y = 4.2, z = -24.4, width = 12, height = 5.5 }
 MapLayout.desk = { x = 74, z = -22.3 }
-MapLayout.resetPad = { x = 66, z = -23.5 }
+-- reset pad lives in the lobby (out of the encounter path, so it can't be stepped on mid-reveal) — dev/replay aid
+MapLayout.resetPad = { x = 4, z = 6 }
 
 -- World bounds for dossier map projection.
 MapLayout.bounds = { minX = 13, maxX = 111, minZ = -26, maxZ = 9 }

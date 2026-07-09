@@ -1,50 +1,45 @@
--- Every balance knob for the Silent Witness slice lives in this one file (one-file tuning law,
+-- Every balance knob for the Silent Witness encounter lives in this one file (one-file tuning law,
 -- carried from the archive autopsy: fair deception is reached by fast iteration, never code archaeology).
 return {
 	-- world sampling
-	SAMPLE_INTERVAL = 0.5, -- seconds between route samples (dossier resolution)
-	CHECK_INTERVAL = 0.25, -- server tick for room / pause / chair checks
-	MAX_SAMPLES = 2400, -- 20 minutes of route history, hard cap
+	SAMPLE_INTERVAL = 0.5, -- seconds between behaviour samples
+	CHECK_INTERVAL = 0.2, -- server tick for room / observation / scratch checks
+	MAX_SAMPLES = 2400,
 
-	-- pause detection (feeds the dossier's "STOOD Ns" lines)
-	PAUSE_SPEED = 1.5, -- studs/second below which the player counts as standing
-	PAUSE_MIN_SECONDS = 3,
+	-- pace / pause detection
+	PAUSE_SPEED = 2, -- studs/second below which the subject counts as still
 
-	-- watchable reorientation (the unobserved-change tell: never seen moving, always seen HAVING moved)
-	CHAIR_COOLDOWN = 6,
-	CHAIR_MIN_ANGLE = 25, -- degrees; skip rotations too small to read at silhouette scale
-	PAINTING_TILT_DEG = 9,
-	PAINTING_SLIDE = 0.7, -- studs toward the door side
+	-- the observer: chairs/paintings turn to face you the instant you stop looking at them
+	VIEW_CONE_DOT = 0.4, -- >0.4 dot with look direction = "the subject is looking at it" (~66deg half-cone)
+	CHAIR_COOLDOWN = 4, -- min seconds between a given watchable's turns
+	CHAIR_MIN_ANGLE = 22, -- degrees; skip turns too small to read
+	PAINTING_TILT_DEG = 10,
+	PAINTING_SLIDE = 0.8,
 
-	-- the click event (audio + light-dip twin, same beat — audio-sibling law)
-	CLICK_DIP = 0.35, -- brightness multiplier during the dip
+	-- the entry click event (audio + light-dip twin)
+	CLICK_DIP = 0.3,
 	CLICK_DIP_SECONDS = 0.12,
 
-	-- the note-taker's scratch behind room three's wall
-	SCRATCH_GAP_MIN = 2.2,
-	SCRATCH_GAP_MAX = 5.5,
-	SCRATCH_RANGE = 30, -- only bothers playing when someone is close enough to hear
-	SCRATCH_SPEED = 0.32,
-	SCRATCH_VOLUME = 0.25,
+	-- Act III: writing behind the quiet room's wall, only while the subject moves nearby
+	SCRATCH_RANGE = 26,
+	SCRATCH_SPEED = 0.3,
+	SCRATCH_VOLUME = 0.4,
 
-	-- MVP loop UI
-	NOTE_POPUP_SECONDS = 4.5,
+	-- Act I: the entrance light dies once the subject is this far past the first doorway
+	COMMIT_X = 24,
+
+	-- the climax reveal (staged in the annex)
+	PANEL_REVEAL_SECONDS = 1.1, -- gap between each file sheet filling in
+	LIVE_LINE_DELAY_SECONDS = 1.6, -- pause before the live line begins typing
+	LIVE_LINE_CHAR_SECONDS = 0.06,
+	POST_REVEAL_SECONDS = 2.5, -- beat after the live line before the door opens
+
+	-- loop UI
+	NOTE_POPUP_SECONDS = 5,
 	ENDCARD_SECONDS = 5,
-	RECORD_OPEN_SECONDS = 6, -- server marks the record read (and opens the door) after this long
-	RECORD_VIEW_SECONDS = 9, -- client keeps the document on screen this long
-	LIVE_LINE_DELAY_SECONDS = 2,
-
-	-- the dossier board
-	MAX_ROUTE_POINTS = 150,
-	MAX_ENTRY_MARKS = 24,
-	MAX_PAUSE_LINES = 6,
-	READ_DETECT_SECONDS = 2, -- facing the board this long triggers the live line
-	READ_RANGE = 18,
-	LIVE_LINE = "SUBJECT IS READING THIS PAGE.",
-	LIVE_LINE_CHAR_SECONDS = 0.07,
 
 	-- STUB placeholder audio (Rule 2): built-in rbxasset until the studio records real foley
 	CLICK_SOUND = "rbxasset://sounds/electronicpingshort.wav",
-	CLICK_SPEED = 0.55, -- pitched down so the ping reads as a dry mechanical click
-	CLICK_VOLUME = 0.7,
+	CLICK_SPEED = 0.5,
+	CLICK_VOLUME = 0.75,
 }
