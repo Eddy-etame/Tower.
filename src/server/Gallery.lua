@@ -116,6 +116,28 @@ function Gallery.build(tuning, parentFolder)
 		end
 	end
 
+	-- THE WITNESS BEAT (the price + the sanctuary, DEMONSTRATED — never told): loose debris that the surge
+	-- visibly tears down the open lane every cycle, and a crate resting on the first mark that survives
+	-- untouched, both cycles. Watched from the safe mezzanine, this teaches everything before it can kill.
+	handles.sweptDebris = BuildKit.part({
+		Size = Vector3.new(2.2, 2.2, 3),
+		CFrame = CFrame.new(MAXX - 2, 1.2, 5.6), -- in the open lane (clears the marks at z<=4.6 and the ribs)
+		Color = Color3.fromRGB(38, 36, 34),
+		Material = Enum.Material.Metal,
+		CanCollide = false, -- a violent prop, never a physics object the player can ride
+		CanQuery = false,
+		Name = "SweptDebris",
+	}, folder)
+	handles.debrisStartX = MAXX - 2
+	handles.debrisEndX = MINX + 2
+	BuildKit.part({
+		Size = Vector3.new(2.4, 2.4, 2.4),
+		CFrame = CFrame.new(MARKS_X[1] + 2.4, 1.9, -2.2), -- on the first mark's plate, off-center
+		Color = Color3.fromRGB(52, 48, 42),
+		Material = Enum.Material.WoodPlanks,
+		Name = "SurvivorCrate",
+	}, folder)
+
 	-- the surge glow: a gallery-filling translucent red volume, off until the surge fires
 	handles.surgeGlow = BuildKit.part({
 		Size = Vector3.new(MAXX - MINX - 2, H - 1, MAXZ - MINZ - 1),
@@ -226,6 +248,22 @@ end
 function Gallery.playInhale(handles)
 	if handles.inhale then
 		handles.inhale:Play()
+	end
+end
+
+-- drive the swept-debris demonstration. During the surge it streaks from the far origin toward the entrance
+-- (the same direction the lamp cascade taught); on the calm it resets far — the gallery drags loose junk down
+-- the lane every breath. Tumbles as it goes so it reads as violence, not a slide.
+function Gallery.updateSweep(handles, phase, p)
+	local d = handles.sweptDebris
+	if not d then
+		return
+	end
+	if phase == "surge" then
+		local x = handles.debrisStartX + (handles.debrisEndX - handles.debrisStartX) * p
+		d.CFrame = CFrame.new(x, 1.2 + math.sin(p * 21) * 0.5, 5.6) * CFrame.Angles(p * 9, p * 13, 0)
+	elseif phase == "safe" then
+		d.CFrame = CFrame.new(handles.debrisStartX, 1.2, 5.6)
 	end
 end
 

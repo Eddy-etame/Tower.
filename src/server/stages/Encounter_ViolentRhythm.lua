@@ -121,6 +121,7 @@ function Stage.update(h, dt)
 		h.phase = phase
 	end
 	Gallery.setLamps(g, phase, p)
+	Gallery.updateSweep(g, phase, p) -- the witness beat: debris torn down the lane, the crate on the mark untouched
 
 	-- sweep + progress + danger vignette, per player
 	local live = os.clock() >= h.graceUntil
