@@ -90,6 +90,24 @@ return {
 	WATCHER_EYE_DECAY = 0.45, -- s for the notice eye-flare to fall back to the rest glow
 	WATCHER_BOLD_SCALE = 0.12, -- extra breath/sway amplitude per restored breaker (it grows bolder as power returns)
 
+	-- ENCOUNTER II — THE VIOLENT RHYTHM. The gallery "breathes" on a FIXED period (determinism is forgiven,
+	-- randomness resented). Each cycle: a SAFE window to move, a WARNING (lamps cascade toward the origin + an
+	-- inhale rises = the countdown), then the SURGE — the open floor is lethal, the raised beat-MARKS are safe
+	-- islands. Rule: be on a mark when it surges; cross mark-to-mark to the door. Speed never saves you — position
+	-- + timing do (the slowest player has the same odds as the fastest). Server-authoritative schedule (the surge
+	-- "entity" does not exist between events). Miss a window = wait one cycle, never a life (bus-timetable law).
+	RHYTHM_PERIOD = 6, -- seconds per full breath
+	RHYTHM_SAFE = 3.6, -- the move window (lamps calm)
+	RHYTHM_WARN = 1.7, -- the cascade + inhale countdown
+	RHYTHM_SURGE = 0.7, -- open floor lethal; marks safe. (SAFE + WARN + SURGE MUST equal PERIOD.)
+	RHYTHM_MARK_RADIUS = 4.6, -- studs: how close to a mark's centre counts as "on the mark" (generous — no pixel-perfect)
+	RHYTHM_START_GRACE = 6.3, -- covers the first FULL breath (SAFE+WARN+SURGE): the first surge is witnessed, never lethal
+	-- STUB audio (Audio dept records real foley): the breath — inhale rises, surge roars
+	RHYTHM_INHALE_SOUND = "rbxasset://sounds/electronicpingshort.wav",
+	RHYTHM_INHALE_SPEED = 0.5,
+	RHYTHM_ROAR_SOUND = "rbxasset://sounds/electronicpingshort.wav",
+	RHYTHM_ROAR_SPEED = 0.28,
+
 	-- the objective
 	ROOM_MAX_X = 64, -- x of the door line; past it the player is safe. ONE source (Threat.step + Arena + vignette)
 	LEVER_HOLD = 0.6, -- ProximityPrompt hold to throw the lever

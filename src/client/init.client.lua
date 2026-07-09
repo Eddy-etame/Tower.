@@ -48,8 +48,8 @@ objective.TextStrokeTransparency = 0.4
 objective.Text = ""
 objective.Parent = gui
 
--- the 3-second-understanding onboarding: threat + rule + objective + control, read at a glance then gone
-local CRIMSON = Color3.fromRGB(200, 60, 60)
+-- the 3-second-understanding onboarding: threat + rule + objective + control, read at a glance then gone.
+-- Data-driven so each encounter sends its own card: kind="rules", lines = { {t=text, y=scale, s=size, c={r,g,b}} }
 local rules = Instance.new("Frame")
 rules.Size = UDim2.fromScale(1, 1)
 rules.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -72,14 +72,17 @@ local function rulesLine(text, yScale, size, color)
 	return l
 end
 
-local rulesParts = {
-	rulesLine("THE WATCHER", 0.3, 54, INK),
-	rulesLine("KEEP IT IN YOUR LIGHT.", 0.43, 30, INK),
-	rulesLine("IT MOVES WHEN YOU LOOK AWAY.", 0.5, 30, INK),
-	rulesLine("YOUR LIGHT DRAINS — LET IT REST.", 0.59, 26, Color3.fromRGB(206, 190, 150)),
-	rulesLine("RESTORE THE POWER.   GET OUT.", 0.69, 34, CRIMSON),
-	rulesLine("[F] LIGHT       [E] RESTORE", 0.82, 20, Color3.fromRGB(150, 143, 128)),
-}
+local rulesParts = {}
+local function buildRules(lines)
+	for _, l in rulesParts do
+		l:Destroy()
+	end
+	rulesParts = {}
+	for _, line in ipairs(lines or {}) do
+		local color = line.c and Color3.fromRGB(line.c[1], line.c[2], line.c[3]) or INK
+		table.insert(rulesParts, rulesLine(line.t, line.y, line.s, color))
+	end
+end
 
 local fullCard = Instance.new("Frame")
 fullCard.Size = UDim2.fromScale(1, 1)
@@ -194,6 +197,7 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		showTitle(payload.title or "")
 	elseif payload.kind == "rules" then
 		hideCard()
+		buildRules(payload.lines)
 		rules.Visible = true
 		rules.BackgroundTransparency = 0.35
 		for _, l in rulesParts do
@@ -211,6 +215,8 @@ uiRemote.OnClientEvent:Connect(function(payload)
 				dismissRules()
 			end
 		end)
+	elseif payload.kind == "banner" then
+		showBanner(payload.text or "")
 	elseif payload.kind == "danger" then
 		local lvl = math.clamp(tonumber(payload.level) or 0, 0, 1)
 		TweenService:Create(vignette, TweenInfo.new(0.2), { ImageTransparency = 1 - lvl * 0.72 }):Play()

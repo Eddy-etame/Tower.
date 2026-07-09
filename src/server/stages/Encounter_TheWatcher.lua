@@ -10,6 +10,15 @@ local Stage = {}
 Stage.name = "TheWatcher"
 Stage.title = "ENCOUNTER I — THE WATCHER"
 
+local RULES = {
+	{ t = "THE WATCHER", y = 0.3, s = 54 },
+	{ t = "KEEP IT IN YOUR LIGHT.", y = 0.43, s = 30 },
+	{ t = "IT MOVES WHEN YOU LOOK AWAY.", y = 0.5, s = 30 },
+	{ t = "YOUR LIGHT DRAINS. LET IT REST.", y = 0.59, s = 26, c = { 206, 190, 150 } },
+	{ t = "RESTORE THE POWER.   GET OUT.", y = 0.69, s = 34, c = { 200, 60, 60 } },
+	{ t = "[F] LIGHT       [E] RESTORE", y = 0.82, s = 20, c = { 150, 143, 128 } },
+}
+
 local function objectiveText(h)
 	if h.powered then
 		return "THE DOOR IS OPEN — RUN."
@@ -107,7 +116,7 @@ function Stage.onPlayerEnter(h, ctx, player)
 		-- first entry: teach the rules and hold the Watcher for the full read
 		h.taught = true
 		h.holdUntil = os.clock() + ctx.tuning.RULES_SECONDS
-		ctx.send(player, { kind = "rules" })
+		ctx.send(player, { kind = "rules", lines = RULES })
 	else
 		-- a caught-retry: the player already knows the rules — a brief regroup, then straight back in. This MUST
 		-- dismiss the caught card (only the rules beat used to; skipping rules here would leave it stuck on screen).
