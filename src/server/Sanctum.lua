@@ -3,6 +3,7 @@
 -- BUILT to spend them; it is routine), a great door that only that light can open, and a dark passage yawning
 -- beside it. A husk by the socket and a dead lantern by the passage state both prices without a word. The
 -- companion orb is the only real light in the dark; everything else is indifferent. Blockout.
+local CollectionService = game:GetService("CollectionService")
 local BuildKit = require(script.Parent.BuildKit)
 
 local Sanctum = {}
@@ -124,25 +125,22 @@ function Sanctum.build(tuning, parentFolder)
 	handles.passage = { minX = 7.5, maxX = 16.5, minZ = 14, maxZ = 70 } -- the shape's domain
 	handles.passageMouth = Vector3.new(12, 4, 15)
 
-	-- the COMPANION ORB — the only thing that ever responded to you
+	-- the COMPANION ORB — the only thing that ever responded to you. SPLIT-BRAIN like the Watcher: the SERVER owns
+	-- an INVISIBLE logic orb (this — its authoritative position at 10Hz + the diegetic hum); the CLIENT
+	-- (Companion.client.lua) renders the visible warm light and follows it at frame rate, so the emotional core
+	-- never reads choppy off the server tick. OrbState tells the client how to render it.
 	local orb = BuildKit.part({
 		Size = Vector3.new(1.3, 1.3, 1.3),
 		CFrame = CFrame.new(-30, 4.5, 0),
-		Shape = Enum.PartType.Ball,
-		Color = WARM,
-		Material = Enum.Material.Neon,
+		Transparency = 1,
+		Material = Enum.Material.SmoothPlastic,
 		CanCollide = false,
 		CanQuery = false,
-		Name = "Companion",
+		Name = "CompanionLogic",
 	}, folder)
-	local oglow = Instance.new("PointLight")
-	oglow.Range = 26
-	oglow.Brightness = 2.2
-	oglow.Color = WARM
-	oglow.Shadows = false
-	oglow.Parent = orb
+	orb:SetAttribute("OrbState", "follow") -- follow | gutter | flare | drain | spent
+	CollectionService:AddTag(orb, "CompanionOrb")
 	handles.orb = orb
-	handles.orbGlow = oglow
 	handles.hum = Instance.new("Sound")
 	handles.hum.SoundId = tuning.AMBIENT_SOUND -- STUB: the diegetic hum (Audio dept records the real creature voice)
 	handles.hum.PlaybackSpeed = 0.6

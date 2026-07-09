@@ -51,22 +51,20 @@ function Stage.build(ctx)
 		end
 		h.committed = "spending"
 		sanctum.socketPrompt.Enabled = false
+		sanctum.orb:SetAttribute("OrbState", "drain") -- the client fades the visual light over the drain
 		task.spawn(function()
-			local orb, glow, hum = sanctum.orb, sanctum.orbGlow, sanctum.hum
+			local orb, hum = sanctum.orb, sanctum.hum
 			local start = orb.Position
 			local t = 0
 			while t < tuning.MORAL_DRAIN_SECONDS do
 				t += task.wait()
 				local a = math.clamp(t / tuning.MORAL_DRAIN_SECONDS, 0, 1)
 				orb.Position = start:Lerp(sanctum.socketPos, math.min(a * 2, 1)) -- settles first, then drains
-				glow.Brightness = 2.2 * (1 - a)
 				hum.Volume = 0.5 * (1 - a)
 				hum.PlaybackSpeed = 0.6 * (1 - a * 0.75) -- the hum SLOWS (never pitch-tricks) as it fades
-				orb.Transparency = a
 			end
 			hum:Stop() -- ...stops.
-			orb.Transparency = 1
-			glow.Brightness = 0
+			orb:SetAttribute("OrbState", "spent")
 			sanctum.socketGlow.Brightness = 0.35 -- the warmth is gone
 			-- THE WORLD DOES NOT REACT. one beat of authored nothing, then the door simply opens.
 			task.wait(1.4)
@@ -159,7 +157,7 @@ function Stage.update(h, dt)
 		-- move, then an EXHALE when any movement draws it. A facing-independent COUNTDOWN warns first — the dread
 		-- ramps and the hum swells BEFORE the exhale (the mouth flare is behind a +Z-facing crosser, so it cannot
 		-- be the only tell). Move on the exhale and it takes you; be still and it passes.
-		s.orb.Position = s.orb.Position:Lerp(s.passageMouth, 1 - math.exp(-tuning.MORAL_ORB_FOLLOW * step))
+		s.orb.Position = s.passageMouth -- set the logic target; the client smooths the visible orb to it
 		h.exhaleT += step
 		if h.exhaleT >= tuning.MORAL_EXHALE_PERIOD then
 			h.exhaleT -= tuning.MORAL_EXHALE_PERIOD
@@ -168,7 +166,7 @@ function Stage.update(h, dt)
 		local warnStart = tuning.MORAL_EXHALE_SAFE - tuning.MORAL_EXHALE_WARN
 		local warn = math.clamp((h.exhaleT - warnStart) / tuning.MORAL_EXHALE_WARN, 0, 1)
 		local intensity = exhaling and 1 or warn
-		s.orbGlow.Brightness = exhaling and 4.5 or 0.5
+		s.orb:SetAttribute("OrbState", exhaling and "flare" or "gutter") -- the client renders the flare/gutter
 		if s.hum then
 			s.hum.Volume = 0.5 + 0.4 * intensity -- the hum swells as the countdown (omnidirectional)
 			s.hum.PlaybackSpeed = 0.6 + 0.25 * intensity
@@ -229,7 +227,7 @@ function Stage.update(h, dt)
 		h.lastDanger = 0
 		h.ctx.send(player, { kind = "danger", level = 0 })
 	end
-	s.orbGlow.Brightness = 2.2
+	s.orb:SetAttribute("OrbState", "follow")
 	local nearSocket = (pos - s.socketPos).Magnitude < 11
 	s.socketPrompt.Enabled = nearSocket
 	local target
@@ -242,7 +240,7 @@ function Stage.update(h, dt)
 			+ Vector3.new(0, tuning.MORAL_ORB_OFFSET_UP, 0)
 			+ cf.RightVector * tuning.MORAL_ORB_OFFSET_SIDE
 	end
-	s.orb.Position = s.orb.Position:Lerp(target, 1 - math.exp(-tuning.MORAL_ORB_FOLLOW * step))
+	s.orb.Position = target -- set the logic target; the client smooths the visible orb toward it at frame rate
 end
 
 return Stage

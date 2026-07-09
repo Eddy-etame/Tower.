@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 16,
-	patch = 1,
-	stage = "encounters-2-3-4-review-hardening",
+	patch = 2,
+	stage = "companion-orb-client-smoothing",
 }
