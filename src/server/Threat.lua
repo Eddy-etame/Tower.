@@ -105,12 +105,13 @@ function Threat.step(handle, dt, players, tuning)
 		end
 	end
 
-	-- otherwise advance toward the nearest player
+	-- otherwise advance toward the nearest player STILL INSIDE THE ROOM (x <= 64: past the door they are safe,
+	-- the Watcher never leaves the room, so it can never catch someone who already escaped)
 	local target, best
 	for _, player in players do
 		local char = player.Character
 		local root = char and char.PrimaryPart
-		if root then
+		if root and root.Position.X <= 64 then
 			local d = (root.Position - pos).Magnitude
 			if not best or d < best then
 				best = d

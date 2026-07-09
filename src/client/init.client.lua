@@ -4,6 +4,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local version = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Version"))
 local tuning = require(ReplicatedStorage.Shared.SliceTuning)
@@ -116,6 +117,25 @@ local function hideCard()
 	end)
 end
 
+-- the rules card clears the instant you move (so it never covers your view), or after RULES_SECONDS
+local rulesConn
+local function dismissRules()
+	if not rules.Visible then
+		return
+	end
+	if rulesConn then
+		rulesConn:Disconnect()
+		rulesConn = nil
+	end
+	TweenService:Create(rules, TweenInfo.new(0.4), { BackgroundTransparency = 1 }):Play()
+	for _, l in rulesParts do
+		TweenService:Create(l, TweenInfo.new(0.4), { TextTransparency = 1 }):Play()
+	end
+	task.delay(0.45, function()
+		rules.Visible = false
+	end)
+end
+
 local uiRemote = ReplicatedStorage:WaitForChild("MvpUI")
 uiRemote.OnClientEvent:Connect(function(payload)
 	if typeof(payload) ~= "table" then
@@ -130,15 +150,17 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		for _, l in rulesParts do
 			l.TextTransparency = 0
 		end
-		-- snap in (understood at a glance), hold, then fade so it never blocks the game
-		task.delay(tuning.RULES_SECONDS - 0.8, function()
-			TweenService:Create(rules, TweenInfo.new(0.8), { BackgroundTransparency = 1 }):Play()
-			for _, l in rulesParts do
-				TweenService:Create(l, TweenInfo.new(0.8), { TextTransparency = 1 }):Play()
+		local shownAt = os.clock()
+		if rulesConn then
+			rulesConn:Disconnect()
+		end
+		rulesConn = RunService.Heartbeat:Connect(function()
+			local char = player.Character
+			local hum = char and char:FindFirstChildOfClass("Humanoid")
+			local moving = hum and hum.MoveDirection.Magnitude > 0.1
+			if moving or (os.clock() - shownAt > tuning.RULES_SECONDS) then
+				dismissRules()
 			end
-			task.delay(0.85, function()
-				rules.Visible = false
-			end)
 		end)
 	elseif payload.kind == "danger" then
 		local lvl = math.clamp(tonumber(payload.level) or 0, 0, 1)
@@ -149,5 +171,6 @@ uiRemote.OnClientEvent:Connect(function(payload)
 	elseif payload.kind == "escaped" then
 		TweenService:Create(vignette, TweenInfo.new(0.6), { ImageTransparency = 1 }):Play()
 		showCard("YOU GOT OUT.", Color3.fromRGB(4, 6, 8))
+		task.delay(2.6, hideCard) -- fade so the safe chamber + replay pad are visible
 	end
 end)

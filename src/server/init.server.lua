@@ -1,6 +1,6 @@
--- Project 001 MVP — "The Watcher". One dark room, one threat, one stated objective, one rule.
--- Server-authoritative: the Watcher's freeze/advance, the catch, the lever, and the door are all decided here.
--- One remote (server -> client) drives UI only; the client renders + requests, never decides.
+-- Project 001 MVP — "The Watcher". One dark room, one threat, one rule (frozen in your light, advancing the
+-- instant it leaves), and a real objective: restore three breakers to power the door, then escape into the
+-- safe chamber. Server-authoritative: freeze/advance/catch, breakers, door, escape, and replay are all here.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -19,9 +19,6 @@ print(
 	)
 )
 
-local OBJ_LEVER = "PULL THE LEVER. OPEN THE DOOR."
-local OBJ_LEAVE = "THE DOOR IS OPEN. GET OUT."
-
 local uiRemote = Instance.new("RemoteEvent")
 uiRemote.Name = "MvpUI"
 uiRemote.Parent = ReplicatedStorage
@@ -29,62 +26,86 @@ uiRemote.Parent = ReplicatedStorage
 local arena = Arena.build(tuning)
 local watcher = Threat.build(arena.folder)
 
-local leverThrown = false
-local holdUntil = os.clock() + tuning.RESET_PAUSE
+local powered = false
+local escaped = {} -- [userId] = true once out of the room (safe; no catch, no re-death)
+local holdUntil = os.clock() + tuning.RULES_SECONDS
 
 local function send(player, payload)
 	uiRemote:FireClient(player, payload)
 end
 
+local function objectiveText()
+	if powered then
+		return "THE DOOR IS OPEN. GET OUT."
+	end
+	return ("RESTORE THE POWER — %d / 3"):format(Arena.activeCount(arena))
+end
+
+local function broadcastObjective()
+	for _, p in Players:GetPlayers() do
+		send(p, { kind = "objective", text = objectiveText() })
+	end
+end
+
 local function beginRun(player)
+	escaped[player.UserId] = nil
 	local char = player.Character
 	if char and char.PrimaryPart then
 		char:PivotTo(CFrame.new(arena.entrance))
 	end
-	-- the Watcher holds still while the rules are on screen, so no one dies before they understand the game
-	holdUntil = os.clock() + tuning.RULES_SECONDS
+	holdUntil = os.clock() + tuning.RULES_SECONDS -- the Watcher freezes while the rules are on screen
 	send(player, { kind = "rules" })
-	send(player, { kind = "objective", text = leverThrown and OBJ_LEAVE or OBJ_LEVER })
+	send(player, { kind = "objective", text = objectiveText() })
 end
 
-local function resetRun()
-	leverThrown = false
+local function resetWorld()
+	powered = false
 	Arena.reset(arena)
 	Threat.reset(watcher)
-	holdUntil = os.clock() + tuning.RESET_PAUSE
+	holdUntil = os.clock() + tuning.RULES_SECONDS
 end
 
-arena.leverPrompt.Triggered:Connect(function()
-	if leverThrown then
-		return
-	end
-	leverThrown = true
-	Arena.throwLever(arena)
-	Arena.openDoor(arena)
-	for _, p in Players:GetPlayers() do
-		send(p, { kind = "objective", text = OBJ_LEAVE })
-	end
-end)
+for index, breaker in arena.breakers do
+	breaker.prompt.Triggered:Connect(function()
+		if powered or not Arena.restoreBreaker(arena, index) then
+			return
+		end
+		if Arena.activeCount(arena) >= #arena.breakers then
+			powered = true
+			Arena.openDoor(arena)
+		end
+		broadcastObjective()
+	end)
+end
 
 arena.doorTouch.Touched:Connect(function(hit)
 	local player = Players:GetPlayerFromCharacter(hit.Parent)
-	if not player or not leverThrown then
+	if not player or not powered or escaped[player.UserId] then
 		return
 	end
+	escaped[player.UserId] = true
 	send(player, { kind = "escaped" })
-	task.delay(tuning.ESCAPED_SECONDS, function()
-		if player.Parent then
-			resetRun()
-			beginRun(player)
-		end
-	end)
+	send(player, { kind = "objective", text = "YOU'RE OUT. STEP ON THE PAD TO GO AGAIN." })
+end)
+
+local replayDebounce = 0
+arena.replayPad.Touched:Connect(function(hit)
+	local player = Players:GetPlayerFromCharacter(hit.Parent)
+	if not player or os.clock() - replayDebounce < 2 then
+		return
+	end
+	replayDebounce = os.clock()
+	resetWorld()
+	for _, p in Players:GetPlayers() do
+		beginRun(p)
+	end
 end)
 
 local function onCaught(player)
 	send(player, { kind = "caught" })
 	task.delay(tuning.CAUGHT_SECONDS, function()
 		if player.Parent then
-			resetRun()
+			resetWorld()
 			beginRun(player)
 		end
 	end)
@@ -100,6 +121,10 @@ Players.PlayerAdded:Connect(function(player)
 	end)
 end)
 
+Players.PlayerRemoving:Connect(function(player)
+	escaped[player.UserId] = nil
+end)
+
 local caughtCooldown = {}
 local accumulator = 0
 RunService.Heartbeat:Connect(function(dt)
@@ -110,30 +135,29 @@ RunService.Heartbeat:Connect(function(dt)
 	local step = accumulator
 	accumulator = 0
 	if os.clock() < holdUntil then
-		return -- fair hold at run start / after a catch
+		return
 	end
 	local caught = Threat.step(watcher, step, Players:GetPlayers(), tuning)
-	if caught and not caughtCooldown[caught.UserId] then
+	if caught and not caughtCooldown[caught.UserId] and not escaped[caught.UserId] then
 		caughtCooldown[caught.UserId] = true
-		holdUntil = os.clock() + tuning.RESET_PAUSE + tuning.CAUGHT_SECONDS
+		holdUntil = os.clock() + tuning.RULES_SECONDS + tuning.CAUGHT_SECONDS
 		onCaught(caught)
 		task.delay(tuning.CAUGHT_SECONDS + 0.5, function()
 			caughtCooldown[caught.UserId] = nil
 		end)
 	end
 
-	-- danger signal: closeness of the Watcher drives the red edge vignette (feel, don't read)
+	-- danger signal drives the red edge vignette (feel, don't read) — only while still in the room
 	local watcherPos = watcher.root.Position
 	for _, p in Players:GetPlayers() do
 		local root = p.Character and p.Character.PrimaryPart
 		if root then
-			local d = (root.Position - watcherPos).Magnitude
-			local level = math.clamp(1 - (d - tuning.CATCH_DISTANCE) / 26, 0, 1)
+			local level = 0
+			if root.Position.X <= Arena.ROOM_MAX_X and not escaped[p.UserId] then
+				local d = (root.Position - watcherPos).Magnitude
+				level = math.clamp(1 - (d - tuning.CATCH_DISTANCE) / 26, 0, 1)
+			end
 			send(p, { kind = "danger", level = level })
 		end
 	end
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-	caughtCooldown[player.UserId] = nil
 end)
