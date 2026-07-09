@@ -1,18 +1,22 @@
 -- The flashlight: a tight cone that follows where you look, in a scene crushed to near-black. It is a MASK —
 -- you see the sliver you point at, the dark hides everything else, and the room sees all of you regardless.
--- Client-side per-player (never server-updated); only scare flickers are server-authoritative (future).
+-- The client owns the cone + on/off and reports on/off to the server; the SERVER owns the battery and gates
+-- whether the light can freeze the Watcher. When power runs low the light flickers; when it's dead it dims to
+-- a floor so you're never fully blind — but it can no longer hold the Watcher.
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local tuning = require(ReplicatedStorage.Shared.SliceTuning)
+local flashlightRemote = ReplicatedStorage:WaitForChild("Flashlight")
 
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
 
--- mobile renders darker + auto-drops local-light shadows; brighten the cone and lift exposure so a phone
--- at ~50% brightness can still navigate (research: never sign off darkness on a PC monitor)
 if isMobile then
 	Lighting.ExposureCompensation = 0.35
 end
@@ -20,11 +24,50 @@ end
 local CONE_ANGLE = isMobile and 48 or 45
 local CONE_RANGE = 55
 local CONE_BRIGHTNESS = isMobile and 6 or 4
-local CONE_COLOR = Color3.fromRGB(232, 238, 248) -- cold-neutral: a light that does not comfort (The Threshold)
+local CONE_COLOR = Color3.fromRGB(232, 238, 248)
 
 local enabled = true
 local lastToggle = 0
+local managed, level = false, 1 -- server-owned battery state (only in the rationing encounter)
 local light, fill, anchor
+
+-- battery bar (shown only while the light is rationed)
+local gui = Instance.new("ScreenGui")
+gui.Name = "FlashlightUI"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
+local barBack = Instance.new("Frame")
+barBack.AnchorPoint = Vector2.new(1, 0.5)
+barBack.Position = UDim2.new(1, -30, 0.5, 44)
+barBack.Size = UDim2.fromOffset(120, 12)
+barBack.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
+barBack.BackgroundTransparency = 0.25
+barBack.BorderSizePixel = 0
+barBack.Visible = false
+barBack.Parent = gui
+local barFill = Instance.new("Frame")
+barFill.Size = UDim2.fromScale(1, 1)
+barFill.BackgroundColor3 = Color3.fromRGB(232, 238, 248)
+barFill.BorderSizePixel = 0
+barFill.Parent = barBack
+
+local function applyLight()
+	if not light then
+		return
+	end
+	local dead = managed and level <= tuning.BATTERY_MIN
+	light.Enabled = enabled
+	fill.Enabled = enabled
+	if not enabled then
+		return
+	end
+	if dead then
+		light.Brightness = CONE_BRIGHTNESS * 0.18 -- a dying floor: you can just barely navigate, cannot freeze
+	else
+		light.Brightness = CONE_BRIGHTNESS
+	end
+end
 
 local function build(character)
 	local head = character:WaitForChild("Head")
@@ -48,7 +91,6 @@ local function build(character)
 	light.Enabled = enabled
 	light.Parent = anchor
 
-	-- near-field fill so the player isn't blind at their own feet on a dark screen
 	fill = Instance.new("PointLight")
 	fill.Range = 8
 	fill.Brightness = 0.4
@@ -56,6 +98,9 @@ local function build(character)
 	fill.Shadows = false
 	fill.Enabled = enabled
 	fill.Parent = anchor
+
+	applyLight()
+	flashlightRemote:FireServer(enabled) -- report initial state
 
 	local smoothed = camera.CFrame
 	local connection
@@ -78,15 +123,54 @@ local function toggle(_, state)
 	end
 	lastToggle = os.clock()
 	enabled = not enabled
-	if light then
-		light.Enabled = enabled
-		fill.Enabled = enabled
-	end
+	applyLight()
+	flashlightRemote:FireServer(enabled)
 end
 
 ContextActionService:BindAction("Flashlight", toggle, true, Enum.KeyCode.F, Enum.KeyCode.ButtonR2)
 ContextActionService:SetTitle("Flashlight", "LIGHT")
 ContextActionService:SetPosition("Flashlight", UDim2.new(1, -140, 0.5, -30))
+
+-- server battery state -> render (bar + low-power flicker + dead-floor dim)
+flashlightRemote.OnClientEvent:Connect(function(payload)
+	if typeof(payload) ~= "table" then
+		return
+	end
+	local wasManaged = managed
+	managed = payload.managed == true
+	level = tonumber(payload.level) or 1
+	barBack.Visible = managed
+	if managed then
+		barFill.Size = UDim2.fromScale(math.clamp(level, 0, 1), 1)
+		barFill.BackgroundColor3 = level <= tuning.BATTERY_LOW and Color3.fromRGB(210, 70, 60)
+			or Color3.fromRGB(232, 238, 248)
+	end
+	-- on the unmanaged reset (fired on entering any stage), re-report our actual on-state so the server's
+	-- freeze logic matches the light the player is actually holding
+	if not managed and wasManaged ~= nil then
+		flashlightRemote:FireServer(enabled)
+	end
+	applyLight()
+end)
+
+-- low-power flicker: a scare beat that also warns you the light is running out
+task.spawn(function()
+	local rng = Random.new()
+	while true do
+		if light and enabled and managed and level > tuning.BATTERY_MIN and level <= tuning.BATTERY_LOW then
+			light.Enabled = false
+			fill.Enabled = false
+			task.wait(rng:NextNumber(0.03, 0.08))
+			if light then
+				light.Enabled = enabled
+				fill.Enabled = enabled
+			end
+			task.wait(rng:NextNumber(0.25, 0.7))
+		else
+			task.wait(0.15)
+		end
+	end
+end)
 
 if player.Character then
 	build(player.Character)

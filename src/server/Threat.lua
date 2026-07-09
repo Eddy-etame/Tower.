@@ -35,20 +35,39 @@ function Threat.build(parentFolder)
 	}, model)
 	model.PrimaryPart = root
 
-	part({ Size = Vector3.new(2, 5, 1), CFrame = CFrame.new(0, 3, 0), Name = "Body" }, model)
-	part({ Size = Vector3.new(1.5, 1.5, 1.4), CFrame = CFrame.new(0, 6.2, 0), Name = "Head" }, model)
-	-- faint eyes: two dim points you can just make out in the dark, so the Watcher is findable to light
-	for _, ex in { -0.35, 0.35 } do
+	-- a tall, gaunt, forward-leaning figure — intentional proportions (not a stubby box). Blockout, but read.
+	part({
+		Size = Vector3.new(1.8, 4, 0.9),
+		CFrame = CFrame.new(0, 3, 0.1) * CFrame.Angles(math.rad(-8), 0, 0),
+		Name = "Torso",
+	}, model)
+	part({ Size = Vector3.new(1.3, 2.2, 0.9), CFrame = CFrame.new(0, 6.4, -0.3), Name = "Chest" }, model)
+	part({
+		Size = Vector3.new(1.2, 1.3, 1.1),
+		CFrame = CFrame.new(0, 7.7, -0.55) * CFrame.Angles(math.rad(14), 0, 0),
+		Name = "Head",
+	}, model)
+	-- long thin limbs hanging
+	for _, side in { -1, 1 } do
+		part({
+			Size = Vector3.new(0.4, 4.4, 0.4),
+			CFrame = CFrame.new(side * 1.1, 4.5, 0.3) * CFrame.Angles(math.rad(6), 0, side * math.rad(4)),
+			Name = "Arm",
+		}, model)
+		part({ Size = Vector3.new(0.5, 3.4, 0.5), CFrame = CFrame.new(side * 0.5, 1.3, 0), Name = "Leg" }, model)
+	end
+	-- deep-set eyes: two dim points you can just make out in the dark, so the Watcher is findable to light
+	for _, ex in { -0.3, 0.3 } do
 		local eye = part({
-			Size = Vector3.new(0.28, 0.28, 0.28),
-			CFrame = CFrame.new(ex, 6.35, -0.7),
-			Color = Color3.fromRGB(180, 30, 30),
+			Size = Vector3.new(0.24, 0.16, 0.2),
+			CFrame = CFrame.new(ex, 7.75, -1.05),
+			Color = Color3.fromRGB(190, 26, 26),
 			Material = Enum.Material.Neon,
 			Name = "Eye",
 		}, model)
 		local g = Instance.new("PointLight")
-		g.Range = 5
-		g.Brightness = 0.5
+		g.Range = 4.5
+		g.Brightness = 0.45
 		g.Color = eye.Color
 		g.Parent = eye
 	end
@@ -120,21 +139,34 @@ local function observedBy(character, threatPos, tuning)
 end
 
 -- returns the player it catches this step, or nil. breakersDone escalates its speed (the tension curve).
-function Threat.step(handle, dt, players, tuning, breakersDone)
+-- lighting[userId] = the player is effectively lighting it (flashlight on AND charged) — only then can they
+-- freeze it; a dead flashlight cannot hold it (the light-rationing anti-camp).
+function Threat.step(handle, dt, players, tuning, breakersDone, lighting)
 	local pos = handle.root.Position
 	local aim = pos + Vector3.new(0, 3, 0) -- body-center, so "looking at it" reads reliably
 	local speed = tuning.ADVANCE_SPEED + (breakersDone or 0) * tuning.ADVANCE_SPEED_PER_BREAKER
+	lighting = lighting or {}
 
-	-- frozen if ANY living player is observing it
+	-- frozen if ANY living player is both LIGHTING it and observing it
 	for _, player in players do
 		local char = player.Character
-		if char and char.PrimaryPart and observedBy(char, aim, tuning) then
+		if char and char.PrimaryPart and lighting[player.UserId] and observedBy(char, aim, tuning) then
 			setMoving(handle, false) -- frozen: cut to silence (the audio teaches the rule)
+			handle.unlitFor = 0
 			return nil
 		end
 	end
 
-	-- otherwise advance toward the nearest player STILL INSIDE THE ROOM (x <= 64: past the door they are safe,
+	-- not observed. GRACE window: the move sound starts AT ONCE (the telegraph), but it does not gain ground
+	-- for a beat — so a momentary look-away is survivable and every death is one the player heard coming (fair
+	-- on mobile, where camera drag is slow). Only after grace does it actually advance.
+	setMoving(handle, true)
+	handle.unlitFor = (handle.unlitFor or 0) + dt
+	if handle.unlitFor < tuning.GRACE_SECONDS then
+		return nil -- waking, telegraphed, not yet closing
+	end
+
+	-- advance toward the nearest player STILL INSIDE THE ROOM (x <= 64: past the door they are safe,
 	-- the Watcher never leaves the room, so it can never catch someone who already escaped)
 	local target, best
 	for _, player in players do
@@ -154,11 +186,9 @@ function Threat.step(handle, dt, players, tuning, breakersDone)
 	end
 
 	if best <= tuning.CATCH_DISTANCE then
-		setMoving(handle, false)
 		return Threat.playerOf(players, target)
 	end
 
-	setMoving(handle, true) -- advancing: the move sound plays (it is coming)
 	local dir = Vector3.new(target.Position.X - pos.X, 0, target.Position.Z - pos.Z)
 	if dir.Magnitude > 0.1 then
 		dir = dir.Unit
@@ -184,6 +214,7 @@ end
 
 function Threat.reset(handle)
 	setMoving(handle, false)
+	handle.unlitFor = 0
 	handle.model:PivotTo(handle.spawn)
 end
 

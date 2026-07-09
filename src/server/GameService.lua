@@ -7,13 +7,14 @@ local RunService = game:GetService("RunService")
 
 local GameService = {}
 
-local stages, tuning, uiRemote
+local stages, tuning, uiRemote, flashlightRemote
 local current, active, activeHandles, activeFolder, activeCtx
 
 local function ctxFor(folder)
 	return {
 		folder = folder,
 		tuning = tuning,
+		flashlightRemote = flashlightRemote,
 		send = function(player, payload)
 			uiRemote:FireClient(player, payload)
 		end,
@@ -40,6 +41,11 @@ local function enterPlayer(player)
 		char:PivotTo(CFrame.new(activeHandles.spawn))
 	end
 	uiRemote:FireClient(player, { kind = "title", title = active.title or active.name or "" })
+	-- reset the flashlight to unmanaged/full on entering any stage; a stage that rations light (the Watcher)
+	-- then takes over with managed battery updates
+	if flashlightRemote then
+		flashlightRemote:FireClient(player, { managed = false, level = 1 })
+	end
 	if active.onPlayerEnter then
 		active.onPlayerEnter(activeHandles, activeCtx, player)
 	end
@@ -77,10 +83,11 @@ function GameService.advance()
 	GameService.startStage(nxt)
 end
 
-function GameService.init(stageList, sliceTuning, remote)
+function GameService.init(stageList, sliceTuning, remote, flashRemote)
 	stages = stageList
 	tuning = sliceTuning
 	uiRemote = remote
+	flashlightRemote = flashRemote
 
 	RunService.Heartbeat:Connect(function(dt)
 		if active and active.update then

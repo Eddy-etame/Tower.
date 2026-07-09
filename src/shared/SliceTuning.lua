@@ -17,6 +17,14 @@ return {
 	ADVANCE_SPEED_PER_BREAKER = 2.4, -- +per restored breaker (9 -> 11.4 -> 13.8 -> 16.2)
 	CATCH_DISTANCE = 4,
 	RESET_PAUSE = 1.2,
+	GRACE_SECONDS = 0.35, -- telegraph window: sound starts, but it does not gain ground yet (mobile-fair)
+
+	-- LIGHT-RATIONING (2026 watch: kill the safe-corner — standing bathing it in light forever must not be a
+	-- stable win. The flashlight both lights your path AND freezes the Watcher, and it runs out.)
+	BATTERY_DRAIN = 0.04, -- per second while ON (~25s of continuous light per full charge)
+	BATTERY_RECHARGE = 0.06, -- per second while OFF (a burst economy: light, then let it breathe)
+	BATTERY_MIN = 0.08, -- below this the light cannot freeze the Watcher and dims to a floor
+	BATTERY_LOW = 0.25, -- below this the light flickers (a scare beat + a warning)
 
 	-- AUDIO-AS-INFORMATION (2026 watch: the #1 lever for a NO-MUSIC horror MVP — the constraint is our weapon).
 	-- The Watcher's move sound plays ONLY while it advances and cuts to silence the instant your light freezes

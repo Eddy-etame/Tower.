@@ -20,6 +20,11 @@ local uiRemote = Instance.new("RemoteEvent")
 uiRemote.Name = "MvpUI"
 uiRemote.Parent = ReplicatedStorage
 
+-- client -> server flashlight toggle intent (server owns the battery) + server -> client light state
+local flashlightRemote = Instance.new("RemoteEvent")
+flashlightRemote.Name = "Flashlight"
+flashlightRemote.Parent = ReplicatedStorage
+
 local stages = {
 	require(script.stages.Beginning),
 	require(script.stages.Encounter_TheWatcher),
@@ -29,4 +34,4 @@ local stages = {
 	require(script.stages.Ending),
 }
 
-GameService.init(stages, tuning, uiRemote)
+GameService.init(stages, tuning, uiRemote, flashlightRemote)
