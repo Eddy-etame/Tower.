@@ -222,8 +222,17 @@ local function playTape(steps)
 	end
 	label("TAPE — PLAYBACK", 16, 24, INK, 24, Enum.TextXAlignment.Center)
 
-	local function dotRow(y, count, color, offsetPx)
-		for i = 1, count do
+	-- the playback is HEARD, not just read: your footsteps play, and a second set walks UNDER them — half a
+	-- beat behind, one step past where yours stop. The dots appear in the same rhythm (the muted player and the
+	-- stream viewer read exactly what the ears hear). STUB sample (verified built-in); Audio dept records real.
+	local STEP_DT = 0.34
+	local OFFSET = 0.17
+
+	local function dotAt(y, i, color, offsetPx, t)
+		task.delay(t, function()
+			if tapePanel ~= panel then
+				return
+			end
 			local dot = Instance.new("Frame")
 			dot.Size = UDim2.fromOffset(11, 11)
 			dot.Position = UDim2.fromOffset(150 + offsetPx + (i - 1) * 34, y)
@@ -234,26 +243,56 @@ local function playTape(steps)
 			c.CornerRadius = UDim.new(1, 0)
 			c.Parent = dot
 			dot.Parent = panel
-		end
+		end)
 	end
-	label("YOU", 96, 22, INK)
-	dotRow(100, steps, Color3.fromRGB(228, 222, 208), 0)
-	label("?", 150, 22, Color3.fromRGB(210, 60, 60))
-	dotRow(154, steps, Color3.fromRGB(150, 150, 150), 17) -- half a beat behind...
-	-- ...and one extra step, after yours stop
-	local extra = Instance.new("Frame")
-	extra.Size = UDim2.fromOffset(11, 11)
-	extra.Position = UDim2.fromOffset(150 + 17 + steps * 34, 154)
-	extra.BackgroundColor3 = Color3.fromRGB(210, 60, 60)
-	extra.BorderSizePixel = 0
-	extra.ZIndex = 41
-	local ec = Instance.new("UICorner")
-	ec.CornerRadius = UDim.new(1, 0)
-	ec.Parent = extra
-	extra.Parent = panel
-	label("there are two sets of footsteps.", 208, 18, Color3.fromRGB(180, 120, 120), 24, Enum.TextXAlignment.Center)
 
-	task.delay(5, function()
+	local function walkSound(speed, volume)
+		local s = Instance.new("Sound")
+		s.SoundId = "rbxasset://sounds/action_footsteps_plastic.mp3" -- verified present in the install
+		s.PlaybackSpeed = speed
+		s.Volume = volume
+		s.Looped = true
+		s.Parent = panel -- GUI-parented = 2D playback; dies with the panel
+		return s
+	end
+	local yourSteps = walkSound(1, 0.55)
+	local otherSteps = walkSound(0.88, 0.4) -- slightly heavier, slightly quieter: UNDER yours
+
+	label("YOU", 96, 22, INK)
+	label("?", 150, 22, Color3.fromRGB(210, 60, 60))
+	local yourEnd = steps * STEP_DT
+	local otherEnd = (steps + 1) * STEP_DT + OFFSET -- one extra beat AFTER yours stop
+	for i = 1, steps do
+		dotAt(100, i, Color3.fromRGB(228, 222, 208), 0, i * STEP_DT)
+		dotAt(154, i, Color3.fromRGB(150, 150, 150), 17, i * STEP_DT + OFFSET)
+	end
+	dotAt(154, steps + 1, Color3.fromRGB(210, 60, 60), 17, otherEnd) -- the extra step, in red
+	task.delay(STEP_DT, function()
+		if tapePanel == panel then
+			yourSteps:Play()
+			otherSteps:Play()
+		end
+	end)
+	task.delay(yourEnd + 0.1, function()
+		yourSteps:Stop() -- yours stop...
+	end)
+	task.delay(otherEnd + 0.1, function()
+		otherSteps:Stop() -- ...it stops one beat late
+	end)
+	task.delay(otherEnd + 0.35, function()
+		if tapePanel == panel then
+			label(
+				"there are two sets of footsteps.",
+				208,
+				18,
+				Color3.fromRGB(180, 120, 120),
+				24,
+				Enum.TextXAlignment.Center
+			)
+		end
+	end)
+
+	task.delay(otherEnd + 3, function() -- relative to playback length: the reveal line always gets its read
 		if tapePanel == panel then
 			TweenService:Create(panel, TweenInfo.new(0.8), { BackgroundTransparency = 1 }):Play()
 			for _, ch in panel:GetDescendants() do

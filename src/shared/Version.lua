@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 16,
-	patch = 5,
-	stage = "audio-actually-audible+distinct",
+	patch = 6,
+	stage = "tape-reveal-heard",
 }
