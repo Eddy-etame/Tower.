@@ -45,7 +45,7 @@ local BREAKERS = {
 	{ x = 58, z = -9 },
 }
 
-function Arena.build(tuning)
+function Arena.build(tuning, parentFolder)
 	local folder = Instance.new("Folder")
 	folder.Name = "Arena"
 
@@ -252,7 +252,7 @@ function Arena.build(tuning)
 	handles.entrance = Vector3.new(-4, 3.5, 0)
 	handles.safeSpot = Vector3.new(70, 3.5, 0)
 
-	folder.Parent = workspace
+	folder.Parent = parentFolder or workspace
 	return handles
 end
 

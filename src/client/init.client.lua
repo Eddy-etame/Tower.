@@ -122,6 +122,29 @@ local function showBanner(text)
 	end)
 end
 
+-- a stage title, shown briefly on entering each stage
+local titleLabel = Instance.new("TextLabel")
+titleLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+titleLabel.Position = UDim2.fromScale(0.5, 0.28)
+titleLabel.Size = UDim2.new(0.92, 0, 0, 50)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.SpecialElite
+titleLabel.TextSize = 34
+titleLabel.TextColor3 = INK
+titleLabel.TextStrokeTransparency = 0.4
+titleLabel.TextTransparency = 1
+titleLabel.Text = ""
+titleLabel.Parent = gui
+
+local function showTitle(text)
+	titleLabel.Text = text
+	titleLabel.TextTransparency = 1
+	TweenService:Create(titleLabel, TweenInfo.new(0.5), { TextTransparency = 0 }):Play()
+	task.delay(2.6, function()
+		TweenService:Create(titleLabel, TweenInfo.new(1), { TextTransparency = 1 }):Play()
+	end)
+end
+
 local function showCard(text, color)
 	cardText.Text = text
 	fullCard.BackgroundColor3 = color
@@ -166,6 +189,8 @@ uiRemote.OnClientEvent:Connect(function(payload)
 	end
 	if payload.kind == "objective" then
 		objective.Text = payload.text or ""
+	elseif payload.kind == "title" then
+		showTitle(payload.title or "")
 	elseif payload.kind == "rules" then
 		hideCard()
 		rules.Visible = true
