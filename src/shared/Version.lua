@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 0,
-	stage = "the-first-door",
+	patch = 1,
+	stage = "doors-everywhere",
 }

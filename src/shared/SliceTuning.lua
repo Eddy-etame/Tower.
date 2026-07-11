@@ -157,6 +157,10 @@ return {
 	MOBILE_DISABLE_ATMOSPHERE = true, -- classic fog takes over (FogStart/End/Color are set in the place)
 	MOBILE_DISABLE_BLOOM = true,
 
+	-- the grind doors (Beginning / Ending): heavy slabs that rise on approach — the game's question made physical
+	DOOR_OPEN_DIST = 11, -- studs: the door starts grinding open when a player is this near
+	DOOR_OPEN_SECONDS = 1.8, -- slow enough to feel heavy, fast enough to never gate the player
+
 	-- the objective
 	ROOM_MAX_X = 64, -- x of the door line; past it the player is safe. ONE source (Threat.step + Arena + vignette)
 	LEVER_HOLD = 0.6, -- ProximityPrompt hold to throw the lever

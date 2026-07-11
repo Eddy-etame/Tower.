@@ -10,12 +10,9 @@ Beginning.name = "Beginning"
 Beginning.title = "THE THRESHOLD"
 
 local DOOR_X = 34 -- the room's east wall (BuildKit.room leaves the z[-3,3] gap + lintel there)
-local OPEN_DIST = 11 -- studs: the door starts grinding open when a player is this near
-local OPEN_SECONDS = 1.8 -- slow enough to feel heavy, fast enough to never gate the player
 
 function Beginning.build(ctx)
 	local folder = ctx.folder
-	local tuning = ctx.tuning
 	BuildKit.room(folder, { minX = 0, maxX = 34, minZ = -12, maxZ = 12 })
 	-- one cold light, ON THE DOOR (the focal point; the rest of the room holds the dark)
 	BuildKit.pool(folder, 29, 10.5, 0, Color3.fromRGB(150, 168, 196), 1.0, 22)
@@ -34,74 +31,15 @@ function Beginning.build(ctx)
 		BuildKit.PAPER
 	)
 
-	-- THE DOOR: heavy, filling the gap, closed until approached
-	local door = BuildKit.part({
-		Size = Vector3.new(1.2, 8.6, 6),
-		CFrame = CFrame.new(DOOR_X, 4.3, 0),
-		Color = Color3.fromRGB(42, 40, 38),
-		Material = Enum.Material.DiamondPlate,
-		Name = "FirstDoor",
-	}, folder)
-
-	-- a short dark vestibule beyond it (you step INTO darkness — the commitment), with the advance zone
-	BuildKit.part({
-		Size = Vector3.new(10, 0.2, 10),
-		CFrame = CFrame.new(39, 0.1, 0),
-		Color = Color3.fromRGB(24, 24, 26),
-		Material = Enum.Material.Concrete,
-		Name = "VestibuleFloor",
-	}, folder)
-	BuildKit.part({
-		Size = Vector3.new(10, 0.5, 12),
-		CFrame = CFrame.new(39, 11.25, 0),
-		Color = Color3.fromRGB(20, 22, 24),
-		Material = Enum.Material.Concrete,
-		Name = "VestibuleCeiling",
-	}, folder)
-	for _, vz in { -5.5, 5.5 } do
-		BuildKit.part({
-			Size = Vector3.new(10, 11, 1),
-			CFrame = CFrame.new(39, 5.5, vz),
-			Color = Color3.fromRGB(30, 31, 33),
-			Material = Enum.Material.Concrete,
-			Name = "VestibuleWall",
-		}, folder)
-	end
-	BuildKit.part({
-		Size = Vector3.new(1, 11, 12),
-		CFrame = CFrame.new(44.5, 5.5, 0),
-		Color = Color3.fromRGB(30, 31, 33),
-		Material = Enum.Material.Concrete,
-		Name = "VestibuleEnd",
-	}, folder)
-	local goZone = BuildKit.part({
-		Size = Vector3.new(3, 10, 10),
-		CFrame = CFrame.new(41, 5, 0),
-		Transparency = 1,
-		CanCollide = false,
-		Name = "ThresholdCrossZone",
-	}, folder)
-
-	-- the grind (STUB sample, verified in-install): a long low rumble while it rises
-	local grind = Instance.new("Sound")
-	grind.SoundId = tuning.SURGE_SOUND
-	grind.PlaybackSpeed = 0.3
-	grind.Volume = 0.4
-	grind.Parent = door
-
 	local h = {
 		ctx = ctx,
 		spawn = Vector3.new(4, 3.5, 0),
-		door = door,
-		doorClosed = door.CFrame,
-		grind = grind,
-		openT = 0, -- 0 closed .. 1 open
-		opening = false,
+		gate = BuildKit.grindDoor(folder, DOOR_X, ctx.tuning.SURGE_SOUND),
 		started = false,
 		accum = 0,
 	}
 
-	goZone.Touched:Connect(function(hit)
+	h.gate.goZone.Touched:Connect(function(hit)
 		local player = Players:GetPlayerFromCharacter(hit.Parent)
 		if player and not h.started then
 			h.started = true
@@ -127,31 +65,7 @@ function Beginning.update(h, dt)
 	end
 	local step = h.accum
 	h.accum = 0
-	if h.openT >= 1 then
-		return
-	end
-
-	-- start the grind when any player comes near; the door never closes again (the invitation stands)
-	if not h.opening then
-		for _, p in Players:GetPlayers() do
-			local root = p.Character and p.Character.PrimaryPart
-			if root and (root.Position - Vector3.new(DOOR_X, 4.3, 0)).Magnitude <= OPEN_DIST then
-				h.opening = true
-				if h.grind then
-					h.grind:Play()
-				end
-				break
-			end
-		end
-		return
-	end
-
-	-- rising into the lintel, heavy and slow
-	h.openT = math.min(1, h.openT + step / OPEN_SECONDS)
-	h.door.CFrame = h.doorClosed + Vector3.new(0, (h.door.Size.Y - 0.4) * h.openT, 0)
-	if h.openT >= 1 and h.grind then
-		h.grind:Stop()
-	end
+	BuildKit.grindDoorUpdate(h.gate, step, h.ctx.tuning.DOOR_OPEN_DIST, h.ctx.tuning.DOOR_OPEN_SECONDS)
 end
 
 return Beginning

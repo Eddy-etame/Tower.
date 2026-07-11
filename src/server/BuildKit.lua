@@ -167,4 +167,89 @@ function BuildKit.pad(folder, position, color)
 	}, folder)
 end
 
+-- THE GRIND DOOR — the game's engine made physical: a heavy slab in a room's east door gap that grinds UPWARD
+-- on its own as a player nears (the Threshold invites; it does not care), with a dark vestibule beyond and a
+-- walk-through zone. Used by the Beginning (enter the descent) and the Ending (descend again).
+-- Returns a handle for BuildKit.grindDoorUpdate; hook `handle.goZone.Touched` for the advance.
+function BuildKit.grindDoor(folder, doorX, grindSoundId)
+	local h = {}
+	h.door = BuildKit.part({
+		Size = Vector3.new(1.2, 8.6, 6),
+		CFrame = CFrame.new(doorX, 4.3, 0),
+		Color = Color3.fromRGB(42, 40, 38),
+		Material = Enum.Material.DiamondPlate,
+		Name = "GrindDoor",
+	}, folder)
+	h.closed = h.door.CFrame
+	h.openT = 0
+	h.opening = false
+
+	-- the dark vestibule beyond (you step INTO darkness — the commitment)
+	BuildKit.part({
+		Size = Vector3.new(10, 0.2, 10),
+		CFrame = CFrame.new(doorX + 5, 0.1, 0),
+		Color = Color3.fromRGB(24, 24, 26),
+		Name = "VestibuleFloor",
+	}, folder)
+	BuildKit.part({
+		Size = Vector3.new(10, 0.5, 12),
+		CFrame = CFrame.new(doorX + 5, 11.25, 0),
+		Color = Color3.fromRGB(20, 22, 24),
+		Name = "VestibuleCeiling",
+	}, folder)
+	for _, vz in { -5.5, 5.5 } do
+		BuildKit.part({
+			Size = Vector3.new(10, 11, 1),
+			CFrame = CFrame.new(doorX + 5, 5.5, vz),
+			Color = Color3.fromRGB(30, 31, 33),
+			Name = "VestibuleWall",
+		}, folder)
+	end
+	BuildKit.part({
+		Size = Vector3.new(1, 11, 12),
+		CFrame = CFrame.new(doorX + 10.5, 5.5, 0),
+		Color = Color3.fromRGB(30, 31, 33),
+		Name = "VestibuleEnd",
+	}, folder)
+	h.goZone = BuildKit.part({
+		Size = Vector3.new(3, 10, 10),
+		CFrame = CFrame.new(doorX + 7, 5, 0),
+		Transparency = 1,
+		CanCollide = false,
+		Name = "ThresholdCrossZone",
+	}, folder)
+
+	h.grind = Instance.new("Sound") -- STUB sample (verified in-install); a long low rumble while it rises
+	h.grind.SoundId = grindSoundId
+	h.grind.PlaybackSpeed = 0.3
+	h.grind.Volume = 0.4
+	h.grind.Parent = h.door
+	return h
+end
+
+-- drive a grind door at the stage's 10Hz tick: starts opening when any player is within openDist, rises over
+-- openSeconds, never closes again (the invitation stands).
+function BuildKit.grindDoorUpdate(h, step, openDist, openSeconds)
+	if h.openT >= 1 then
+		return
+	end
+	if not h.opening then
+		local Players = game:GetService("Players")
+		for _, p in Players:GetPlayers() do
+			local root = p.Character and p.Character.PrimaryPart
+			if root and (root.Position - h.closed.Position).Magnitude <= openDist then
+				h.opening = true
+				h.grind:Play()
+				break
+			end
+		end
+		return
+	end
+	h.openT = math.min(1, h.openT + step / openSeconds)
+	h.door.CFrame = h.closed + Vector3.new(0, (h.door.Size.Y - 0.4) * h.openT, 0)
+	if h.openT >= 1 then
+		h.grind:Stop()
+	end
+end
+
 return BuildKit

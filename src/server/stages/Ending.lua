@@ -1,5 +1,6 @@
 -- The Ending: you made it through all four. A dim warm room; the Bible's memory beat ("you'll remember");
--- a pad to descend again (loops to the Beginning — the "one more" pull comes from the experience, not a grind).
+-- and one more DOOR — "AGAIN?" — that grinds open as you near it (loops to the Beginning — the "one more"
+-- pull comes from the experience, not a grind loop).
 --
 -- THE AFTERMATH (the Moral Collapse's consequence, following you out): a beat after you arrive, the far-off
 -- other one of whatever the companion was CALLS, across a dark gap — a distant glow high on the far wall.
@@ -26,7 +27,9 @@ function Ending.build(ctx)
 		"YOU MADE IT OUT.\n\nBUT YOU'LL\nREMEMBER.",
 		BuildKit.PAPER
 	)
-	local pad = BuildKit.pad(folder, Vector3.new(30, 0.35, 0), BuildKit.GREEN)
+	-- the way down again is a DOOR, like everything here (no game-y pad): it grinds open as you near it
+	local gate = BuildKit.grindDoor(folder, 34, tuning.SURGE_SOUND)
+	BuildKit.sign(folder, CFrame.lookAt(Vector3.new(33.5, 8.6, 0), Vector3.new(0, 8.6, 0)), "AGAIN?", BuildKit.PAPER)
 
 	-- the far glow: the OTHER one, across a dark gap — high in the room's far corner, unlit until it calls
 	local farGlow = BuildKit.part({
@@ -60,7 +63,8 @@ function Ending.build(ctx)
 		end)
 	end
 
-	local h = { spawn = Vector3.new(4, 3.5, 0), done = false, aftermathPlayed = false }
+	local h =
+		{ ctx = ctx, spawn = Vector3.new(4, 3.5, 0), gate = gate, done = false, accum = 0, aftermathPlayed = false }
 
 	-- the aftermath timeline (fires once, a beat after first arrival; silent no-op if IV was somehow skipped)
 	function h.playAftermath()
@@ -104,11 +108,11 @@ function Ending.build(ctx)
 		end)
 	end
 
-	pad.Touched:Connect(function(hit)
+	gate.goZone.Touched:Connect(function(hit)
 		local player = Players:GetPlayerFromCharacter(hit.Parent)
 		if player and not h.done then
 			h.done = true
-			ctx.clear()
+			ctx.clear() -- through the door again: a fresh descent
 		end
 	end)
 	return h
@@ -117,10 +121,20 @@ end
 function Ending.onPlayerEnter(h, ctx, player)
 	local char = player.Character
 	if char and char.PrimaryPart then
-		char:PivotTo(CFrame.lookAt(h.spawn, h.spawn + Vector3.new(1, 0, 0))) -- face the pad (+X), not a blank wall
+		char:PivotTo(CFrame.lookAt(h.spawn, h.spawn + Vector3.new(1, 0, 0))) -- face the door (+X), not a blank wall
 	end
-	ctx.send(player, { kind = "objective", text = "STEP ONTO THE PAD TO DESCEND AGAIN." })
+	ctx.send(player, { kind = "objective", text = "THE DOOR WAITS. DESCEND AGAIN — OR DON'T." })
 	h.playAftermath()
+end
+
+function Ending.update(h, dt)
+	h.accum += dt
+	if h.accum < h.ctx.tuning.CHECK_INTERVAL then
+		return
+	end
+	local step = h.accum
+	h.accum = 0
+	BuildKit.grindDoorUpdate(h.gate, step, h.ctx.tuning.DOOR_OPEN_DIST, h.ctx.tuning.DOOR_OPEN_SECONDS)
 end
 
 return Ending
