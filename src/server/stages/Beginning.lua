@@ -14,8 +14,33 @@ local DOOR_X = 34 -- the room's east wall (BuildKit.room leaves the z[-3,3] gap 
 function Beginning.build(ctx)
 	local folder = ctx.folder
 	BuildKit.room(folder, { minX = 0, maxX = 34, minZ = -12, maxZ = 12 })
-	-- one cold light, ON THE DOOR (the focal point; the rest of the room holds the dark)
-	BuildKit.pool(folder, 29, 10.5, 0, Color3.fromRGB(150, 168, 196), 1.0, 22)
+	-- the door must be VISIBLE FROM SPAWN through the fog (verified in-game: at 1.0 the room read as a black
+	-- void and the room's entire point — you SEE a door — didn't happen). A cold pool overhead + a lamp on the
+	-- door face itself, so the destination reads at 30 studs.
+	BuildKit.pool(folder, 29, 10.5, 0, Color3.fromRGB(150, 168, 196), 2.4, 26)
+	local doorLamp = BuildKit.part({
+		Size = Vector3.new(0.5, 0.5, 2.4),
+		CFrame = CFrame.new(32.9, 9.4, 0),
+		Color = Color3.fromRGB(170, 188, 214),
+		Material = Enum.Material.Neon,
+		Name = "DoorLamp",
+	}, folder)
+	local dl = Instance.new("PointLight")
+	dl.Range = 17
+	dl.Brightness = 1.8
+	dl.Color = doorLamp.Color
+	dl.Shadows = false
+	dl.Parent = doorLamp
+	-- a breadcrumb path: faint floor strips from the spawn to the door — in the dark, the way IS the guide
+	for _, bx in { 10, 16, 22, 28 } do
+		BuildKit.part({
+			Size = Vector3.new(1.6, 0.12, 0.4),
+			CFrame = CFrame.new(bx, 0.28, 0),
+			Color = Color3.fromRGB(96, 112, 138),
+			Material = Enum.Material.Neon,
+			Name = "PathStrip",
+		}, folder)
+	end
 	-- the name, off to the side — read it or don't; the door is the point
 	BuildKit.sign(
 		folder,

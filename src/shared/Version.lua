@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 1,
-	stage = "doors-everywhere",
+	patch = 3,
+	stage = "eyes-on-verification-fixes",
 }

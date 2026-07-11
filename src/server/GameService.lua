@@ -114,7 +114,9 @@ function GameService.init(stageList, sliceTuning, remote, flashRemote)
 
 	Players.PlayerAdded:Connect(function(player)
 		player.CharacterAdded:Connect(function()
-			task.delay(1.2, function()
+			-- fresh characters spawn in the sealed LandingCloset (never in stage geometry — stages get destroyed,
+			-- and respawning over a destroyed stage was a void-fall); a short beat for parts, then the stage takes them
+			task.delay(0.5, function()
 				if player.Parent then
 					enterPlayer(player)
 				end

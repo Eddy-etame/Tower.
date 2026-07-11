@@ -143,6 +143,8 @@ function BuildKit.sign(folder, cframe, text, color)
 	local gui = Instance.new("SurfaceGui")
 	gui.Face = Enum.NormalId.Front
 	gui.CanvasSize = Vector2.new(900, 400)
+	gui.LightInfluence = 0 -- self-lit: signs must stay READABLE in near-black rooms (verified: scene-lit text vanishes)
+	gui.Brightness = 0.6 -- ...but dim, so legibility never becomes glare in a horror scene
 	gui.Parent = board
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(0.92, 0.92)
