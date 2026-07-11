@@ -199,9 +199,11 @@ function Arena.build(tuning, parentFolder)
 		prompt.ActionText = "Restore"
 		prompt.ObjectText = "Breaker " .. i
 		prompt.HoldDuration = tuning.LEVER_HOLD
-		prompt.MaxActivationDistance = 7
+		prompt.MaxActivationDistance = 9 -- generous in a dark room
 		prompt.RequiresLineOfSight = false
-		prompt.Parent = box
+		-- anchored to the LAMP (eye height), not the knee-height box: in locked first person a low anchor can sit
+		-- below the view when you stand close — the prompt must be where you're already looking
+		prompt.Parent = lamp
 		table.insert(handles.breakers, { prompt = prompt, lamp = lamp, active = false, bulb = bulb, light = sl })
 	end
 
