@@ -48,6 +48,24 @@ avoidable, telegraphed) · does the signature **moment** land · what feels off,
 
 ---
 
+## Publishing (make it public so friends can play)
+
+Publish from the OPEN Studio session (publishing captures the current data model — make sure it's the
+latest build: stop Play first).
+
+1. **File → Publish to Roblox As...** → Create new experience. Name: **The Threshold** (working title,
+   per the Bible). Short description: *"Four rooms. Four rules. One question — what's behind the next door?"*
+2. **Game Settings → Basic Info:** Genre **Horror**; devices: **Computer, Phone, Tablet** (the game is
+   built mobile-first; leave Console off — untested).
+3. **Game Settings → Places → (your place) → Edit:** set **Maximum Players = 1**. This is important:
+   every visitor gets their OWN private descent (single-player-first per the Bible), and no shared-server
+   weirdness in the public build.
+4. Complete the **Age Guidelines questionnaire** honestly (fear themes, no gore/violence depictions —
+   expect a 9+ rating; that matches the design's no-gore laws).
+5. **Game Settings → Permissions:** set to **Public**.
+6. Share the experience page link. Updates later: **File → Publish to Roblox** (same place) — players
+   get the new build on their next join.
+
 ## Known gaps to close (not bugs — scoped work)
 - Real audio foley everywhere (currently one stub `.wav` — Audio dept).
 - Environment art + real creature/companion meshes (blockout — Building/Animation dept).
