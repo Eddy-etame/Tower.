@@ -12,10 +12,10 @@
 					"Anchored": true,
 					"Duration": 0,
 					"Neutral": true,
-					"Position": [0, 0.5, 0],
-					"Size": [12, 1, 12],
+					"Position": [4, 0.3, 0],
+					"Size": [6, 0.2, 6],
 					"Transparency": 1,
-					"CanCollide": true
+					"CanCollide": false
 				}
 			}
 		},
