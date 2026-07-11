@@ -176,7 +176,7 @@ function Arena.build(tuning, parentFolder)
 		sl.Enabled = false
 		sl.Parent = bulb
 
-		local box = BuildKit.part({
+		BuildKit.part({
 			Size = Vector3.new(2, 2.6, 1.2),
 			CFrame = CFrame.new(b.x, 1.5, b.z),
 			Color = Color3.fromRGB(70, 72, 76),
