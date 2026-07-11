@@ -349,6 +349,16 @@ uiRemote.OnClientEvent:Connect(function(payload)
 	if payload.kind == "objective" then
 		objective.Text = payload.text or ""
 	elseif payload.kind == "title" then
+		-- stage entry: the world just swapped around us (we crossed through a dark vestibule). Land the swap
+		-- under black and fade in — every transition reads as stepping through darkness into a new place.
+		blackout.Visible = true
+		blackout.BackgroundTransparency = 0
+		TweenService:Create(blackout, TweenInfo.new(0.9, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+			BackgroundTransparency = 1,
+		}):Play()
+		task.delay(0.95, function()
+			blackout.Visible = false
+		end)
 		showTitle(payload.title or "")
 	elseif payload.kind == "rules" then
 		hideCard()
