@@ -1,5 +1,22 @@
 # Project 001 — Decision Log (append-only, dated; higher canon wins on conflict)
 
+## 2026-07-09 — THE TOWER REFRAME (founder direction): Project 001 is a tower of multi-genre experiences
+**Decision (Eddy, above-canon):** the game is NOT horror-only. It is a tower of floors, manhwa-style: what we
+built is FLOOR ONE (the horror floor). Door to door and floor to floor the experience is COMPLETELY different
+(any genre — horror, adventure, comedy, roleplay, engineering...), the player never knows what the next door
+holds, but rooms connect via a THREAD (each room's ending grants something a later room pays off). Floors
+chain into waves; new experiences/waves must stay cheap to add. Backdrop/design per room must be world-class.
+Multiplayer to be analyzed (done — see blueprint §6). No code until the blueprint is pondered and ratified.
+**Grounding:** Master Bible Ch.3 ("Experience Library", "Experience Categories", "Every Door Is A Promise")
+and Ch.6 — this direction is the Master Bible made structural; the Project Bible (001) will need a v2
+amendment (multi-genre floors) once the heads ratify the blueprint.
+**Deliverable:** [blueprint-the-first-descent.md](blueprint-the-first-descent.md) — structure (Tower > Descent
+> Flight > Door), the Keepsake Ledger thread system, Floor One retrofit (document don't rebuild), 4-phase
+multiplayer plan, extensibility model, 8 refusals, and 6 OPEN HEAD DECISIONS (§9) awaiting Eddy/Jefferson.
+**Also logged:** pitch-black-on-entry defect (players can't see/navigate at game start) reported by Eddy —
+top of the fix queue when code resumes; verify whether the published place predates the v0.17.3 lighting
+fixes, then re-verify brightness with eyes-on screenshots either way.
+
 ## 2026-07-09 — Flashlight: whole-loop tool, suppressed ONLY in Encounter IV (flagged for head confirmation)
 **Decision (Claude-advised):** the player's flashlight persists across the whole loop (the research canon's persistent player cone; II/III are designed assuming the player has light), EXCEPT Encounter IV, where the stage declares `suppressFlashlight` and the client turns the cone off for the room. **Why:** IV's entire dilemma — "spend the companion light or cross the dark" — rests on the companion being your only light; a personal range-55 cone makes both costs weightless. Suppression amplifies the approved design (Meaningful Choice), it does not redirect it. **Reversibility:** one line per stage (`Stage.suppressFlashlight`); easy to veto or extend to other rooms.
 
