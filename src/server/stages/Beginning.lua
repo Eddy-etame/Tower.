@@ -31,26 +31,50 @@ function Beginning.build(ctx)
 	dl.Color = doorLamp.Color
 	dl.Shadows = false
 	dl.Parent = doorLamp
-	-- the amber runway from spawn (x 4) to the door (x 34) — same "follow the lit road" language as the Watcher
-	-- room, starting at the player's feet so the way reads the instant you can see. Neon (cull-proof) + glow anchors.
-	local roadX = { 4, 9, 14, 19, 24, 29, 32 }
-	for i, bx in roadX do
-		local strip = BuildKit.part({
-			Size = Vector3.new(2.8, 0.16, 1.1),
-			CFrame = CFrame.new(bx, 0.3, 0),
-			Color = Color3.fromRGB(255, 190, 110),
+	-- the guide: a slim inset amber line down the floor from the player's feet (x 4) to the door (x 34). Was a
+	-- row of garish glowing runway blocks (verified in-game: they dominated the frame and read game-y); now a
+	-- refined recessed light-line — dim amber, low and narrow, dense enough to read as one continuous seam. Neon
+	-- (cull-proof) carries it; ONE soft pool at the door end anchors the destination.
+	for bx = 4, 33, 2 do
+		BuildKit.part({
+			Size = Vector3.new(1.5, 0.08, 0.35),
+			CFrame = CFrame.new(bx, 0.26, 0),
+			Color = Color3.fromRGB(196, 150, 96),
 			Material = Enum.Material.Neon,
 			Name = "PathStrip",
 		}, folder)
-		if i % 3 == 1 then
-			local g = Instance.new("PointLight")
-			g.Range = 8
-			g.Brightness = 0.8
-			g.Color = strip.Color
-			g.Shadows = false
-			g.Parent = strip
-		end
 	end
+
+	-- DUST in the air (atmosphere: the light gets volume, the place breathes). A slow, sparse fall of motes lit by
+	-- the room — cheap, but it turns a flat box into a space that has been sitting here, undisturbed, for a long time.
+	local dustAnchor = BuildKit.part({
+		Size = Vector3.new(30, 1, 20),
+		CFrame = CFrame.new(17, 9, 0),
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		Name = "DustField",
+	}, folder)
+	local dust = Instance.new("ParticleEmitter")
+	dust.Texture = "rbxasset://textures/particles/smoke_main.dds" -- built-in, verified present; a soft round mote
+	dust.Color = ColorSequence.new(Color3.fromRGB(150, 150, 158))
+	dust.LightEmission = 0.35
+	dust.LightInfluence = 1 -- catches the room light, so motes only shine where light falls (volume)
+	dust.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.15, 0.86),
+		NumberSequenceKeypoint.new(0.85, 0.9),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	dust.Size = NumberSequence.new(0.14, 0.28)
+	dust.Lifetime = NumberRange.new(9, 16)
+	dust.Rate = 26
+	dust.Speed = NumberRange.new(0.2, 0.7)
+	dust.SpreadAngle = Vector2.new(180, 180)
+	dust.Acceleration = Vector3.new(0.1, -0.35, 0) -- an almost-still drift + a faint settle
+	dust.Rotation = NumberRange.new(0, 360)
+	dust.RotSpeed = NumberRange.new(-8, 8)
+	dust.Parent = dustAnchor
 	-- the name, off to the side — read it or don't; the door is the point
 	BuildKit.sign(
 		folder,

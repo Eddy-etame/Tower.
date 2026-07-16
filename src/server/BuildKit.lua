@@ -131,20 +131,33 @@ function BuildKit.pool(folder, x, y, z, color, brightness, range)
 	return bulb
 end
 
--- a wall sign (SurfaceGui text) — used for stage titles and stub markers
+-- a wall sign (SurfaceGui text) — used for stage titles and stub markers.
+-- BUG FIXED 2026-07-09: the board was (0.4,4,9) — thin on X — but the SurfaceGui sits on the Front(-Z) face,
+-- which was the 0.4x4 EDGE, so the text rendered on a sliver and the player faced a blank black slab (the
+-- game's own name was invisible). The board is now (9,4,0.4): the -Z face is the big 9x4 plane, and CFrame.lookAt
+-- aims that plane at the reader.
 function BuildKit.sign(folder, cframe, text, color)
 	local board = BuildKit.part({
-		Size = Vector3.new(0.4, 4, 9),
+		Size = Vector3.new(9, 4, 0.4),
 		CFrame = cframe,
-		Color = Color3.fromRGB(24, 23, 22),
-		Material = Enum.Material.SmoothPlastic,
+		Color = Color3.fromRGB(18, 17, 16),
+		Material = Enum.Material.Slate, -- a stone plaque, not plastic — this place is old and does not care
 		Name = "Sign",
 	}, folder)
+	-- a faint emissive frame so the plaque reads as a made thing, not a floating decal (self-lit, dim)
+	local frame = BuildKit.part({
+		Size = Vector3.new(9.5, 4.5, 0.3),
+		CFrame = cframe,
+		Color = Color3.fromRGB(92, 86, 74),
+		Material = Enum.Material.Metal,
+		Name = "SignFrame",
+	}, folder)
+	frame.CFrame = cframe * CFrame.new(0, 0, 0.08) -- sit the board just proud of its frame
 	local gui = Instance.new("SurfaceGui")
 	gui.Face = Enum.NormalId.Front
 	gui.CanvasSize = Vector2.new(900, 400)
 	gui.LightInfluence = 0 -- self-lit: signs must stay READABLE in near-black rooms (verified: scene-lit text vanishes)
-	gui.Brightness = 0.6 -- ...but dim, so legibility never becomes glare in a horror scene
+	gui.Brightness = 0.75 -- ...but dim, so legibility never becomes glare in a horror scene
 	gui.Parent = board
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(0.92, 0.92)

@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 12,
-	stage = "loop-navigable-clean",
+	patch = 13,
+	stage = "beginning-atmosphere-1",
 }
