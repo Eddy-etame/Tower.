@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 3,
-	stage = "eyes-on-verification-fixes",
+	patch = 12,
+	stage = "loop-navigable-clean",
 }

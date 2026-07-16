@@ -198,11 +198,15 @@ function Threat.step(handle, dt, players, tuning, breakersDone, lighting)
 		if dir.Magnitude > 0.1 then
 			dir = dir.Unit
 			local newPos = pos + dir * speed * dt
+			-- STAY IN THE ROOM: the root has no collision (it is a logic point, not a body), so without this it walks
+			-- in a straight line THROUGH walls and out into the throat (Eddy, 2026-07-09: "the watcher moves through
+			-- walls"). Clamp to the room interior — x[5,62] keeps it off the west throat mouth and the east exit
+			-- wall; z[-18,18] off the side walls. It approaches within the room and can never clip out of it.
+			local cx = math.clamp(newPos.X, 5, 62)
+			local cz = math.clamp(newPos.Z, -18, 18)
 			-- move the authoritative root only; the client smoothly follows it (no PivotTo — there is no body here)
-			handle.root.CFrame = CFrame.lookAt(
-				Vector3.new(newPos.X, pos.Y, newPos.Z),
-				Vector3.new(target.Position.X, pos.Y, target.Position.Z)
-			)
+			handle.root.CFrame =
+				CFrame.lookAt(Vector3.new(cx, pos.Y, cz), Vector3.new(target.Position.X, pos.Y, target.Position.Z))
 		end
 	end
 	return nil

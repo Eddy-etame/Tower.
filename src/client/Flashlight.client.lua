@@ -18,12 +18,14 @@ local camera = workspace.CurrentCamera
 local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
 
 if isMobile then
-	Lighting.ExposureCompensation = 0.35
+	-- keep the mobile boost RELATIVE to the new base exposure (0.25 in Lighting): small screens in bright rooms
+	-- need more headroom than desktops in dim rooms
+	Lighting.ExposureCompensation = 0.45
 end
 
 local CONE_ANGLE = isMobile and 48 or 45
 local CONE_RANGE = 55
-local CONE_BRIGHTNESS = isMobile and 6 or 4
+local CONE_BRIGHTNESS = isMobile and 9 or 8 -- verified too weak in-game at 4-6: the cone must OWN the dark
 local CONE_COLOR = Color3.fromRGB(232, 238, 248)
 
 local enabled = true
@@ -77,7 +79,7 @@ local function applyLight()
 		return
 	end
 	if dead then
-		light.Brightness = CONE_BRIGHTNESS * 0.18 -- a dying floor: you can just barely navigate, cannot freeze
+		light.Brightness = CONE_BRIGHTNESS * 0.55 -- a dying floor: dim + cannot freeze, but you can still SEE to move
 	else
 		light.Brightness = CONE_BRIGHTNESS
 	end
@@ -101,15 +103,15 @@ local function build(character)
 	light.Range = CONE_RANGE
 	light.Brightness = CONE_BRIGHTNESS
 	light.Color = CONE_COLOR
-	-- the cone is the ONLY dynamic shadow-caster in the scene and it re-CFrames every frame; on mobile that
-	-- re-renders the shadow map over ~40 room casters each frame, so gate it off on touch (keep it on desktop)
-	light.Shadows = not isMobile
+	-- SHADOWLESS EVERYWHERE (verified on-device): a moving shadowed SpotLight is the first thing weak GPUs /
+	-- low quality levels cull — the cone must survive on every machine, dread be damped a notch. Playability first.
+	light.Shadows = false
 	light.Enabled = enabled
 	light.Parent = anchor
 
 	fill = Instance.new("PointLight")
-	fill.Range = 8
-	fill.Brightness = 0.4
+	fill.Range = 12
+	fill.Brightness = 1.1 -- the near-field must always be readable: your own feet, the wall you face
 	fill.Color = CONE_COLOR
 	fill.Shadows = false
 	fill.Enabled = enabled

@@ -31,15 +31,25 @@ function Beginning.build(ctx)
 	dl.Color = doorLamp.Color
 	dl.Shadows = false
 	dl.Parent = doorLamp
-	-- a breadcrumb path: faint floor strips from the spawn to the door — in the dark, the way IS the guide
-	for _, bx in { 10, 16, 22, 28 } do
-		BuildKit.part({
-			Size = Vector3.new(1.6, 0.12, 0.4),
-			CFrame = CFrame.new(bx, 0.28, 0),
-			Color = Color3.fromRGB(96, 112, 138),
+	-- the amber runway from spawn (x 4) to the door (x 34) — same "follow the lit road" language as the Watcher
+	-- room, starting at the player's feet so the way reads the instant you can see. Neon (cull-proof) + glow anchors.
+	local roadX = { 4, 9, 14, 19, 24, 29, 32 }
+	for i, bx in roadX do
+		local strip = BuildKit.part({
+			Size = Vector3.new(2.8, 0.16, 1.1),
+			CFrame = CFrame.new(bx, 0.3, 0),
+			Color = Color3.fromRGB(255, 190, 110),
 			Material = Enum.Material.Neon,
 			Name = "PathStrip",
 		}, folder)
+		if i % 3 == 1 then
+			local g = Instance.new("PointLight")
+			g.Range = 8
+			g.Brightness = 0.8
+			g.Color = strip.Color
+			g.Shadows = false
+			g.Parent = strip
+		end
 	end
 	-- the name, off to the side — read it or don't; the door is the point
 	BuildKit.sign(

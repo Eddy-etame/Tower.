@@ -220,6 +220,14 @@ function BuildKit.grindDoor(folder, doorX, grindSoundId)
 		CanCollide = false,
 		Name = "ThresholdCrossZone",
 	}, folder)
+	-- the vestibule is dark, never BLACK: one faint strip keeps the forward direction readable inside it
+	BuildKit.part({
+		Size = Vector3.new(2.2, 0.14, 0.8),
+		CFrame = CFrame.new(doorX + 5, 0.3, 0),
+		Color = Color3.fromRGB(148, 122, 100),
+		Material = Enum.Material.Neon,
+		Name = "PathStrip",
+	}, folder)
 
 	h.grind = Instance.new("Sound") -- STUB sample (verified in-install); a long low rumble while it rises
 	h.grind.SoundId = grindSoundId

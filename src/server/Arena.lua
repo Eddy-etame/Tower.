@@ -1,8 +1,9 @@
 -- Encounter I's space — a piece of The Threshold, not a box. You enter through a tight, low, black throat
--- (the held breath); it OPENS into a tall room broken by concrete pillars, so you never see all of it at once
--- and the Watcher can be lost between them. It stays dark until powered, and even powered it is sparse pools
--- with shadow between — the flashlight is your real light. FOUR breakers, you need THREE: the deep one sits in
--- the Watcher's ground, so which three (and in what order) is a judgment call, not a checklist (Choice pillar).
+-- (the held breath); it OPENS into a tall room. (The concrete-pillar grid was removed for playability — in the
+-- dark blockout it read as walls and trapped players; see the note above slab(). It returns with real lighting.)
+-- It stays dark until powered, and even powered it is sparse pools with shadow between — the flashlight is your
+-- real light. FOUR breakers, you need THREE: the deep one sits in the Watcher's ground, so which three (and in
+-- what order) is a judgment call, not a checklist (Choice pillar).
 -- Blockout on purpose (Bible: prototypes are fast/cheap) but shaped so the ARCHITECTURE itself feels wrong.
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -39,16 +40,11 @@ local BREAKERS = {
 	{ x = 52, z = 13, fx = 50, fz = 12 }, -- DEEP — beside where the Watcher wakes
 }
 
--- pillars break the long sightline so the room reveals in pieces and the Watcher can be occluded (its freeze
--- needs CLEAR line of sight, enforced in Threat.observedBy — a pillar between you and it means you cannot hold it)
-local PILLARS = {
-	{ 20, -8 },
-	{ 20, 8 },
-	{ 34, -8 },
-	{ 34, 8 },
-	{ 48, -8 },
-	{ 48, 8 },
-}
+-- NOTE (2026-07-09, Eddy playtest): the pillar grid was REMOVED. In the dark blockout — no real lighting, no
+-- art — the pillars read as WALLS, and stepping off the center line to reach a breaker put you inside a grid of
+-- gray surfaces you could not navigate ("a wall separating two roads... i can't move"). A clean open room is
+-- playable NOW; the occlusion/"lost between pillars" layer returns once real lighting + art make a pillar read
+-- as a pillar. Simplicity wins (Bible). Reversible — re-add a PILLARS table + the build loop.
 
 local function slab(folder, cx, cy, cz, sx, sy, sz, color, mat, name)
 	return BuildKit.part({
@@ -71,6 +67,10 @@ function Arena.build(tuning, parentFolder)
 	slab(folder, -8, HALL_H / 2, -4, 20, HALL_H, 1, BuildKit.jitter(WALL), nil, "HallWall")
 	slab(folder, -8, HALL_H / 2, 4, 20, HALL_H, 1, BuildKit.jitter(WALL), nil, "HallWall")
 	slab(folder, -18, HALL_H / 2, 0, 1, HALL_H, 8, BuildKit.jitter(WALL), nil, "HallCap")
+	-- the throat is NEVER black (verified unplayable): two dim service lights carry you to the room's mouth
+	for _, sx in { -13, -4 } do
+		BuildKit.pool(folder, sx, HALL_H - 0.4, 0, Color3.fromRGB(150, 118, 96), 1.1, 13)
+	end
 
 	-- THE ROOM: tall, opening off the throat.
 	slab(folder, 33, 0.1, 0, MAXX - MINX, 0.2, MAXZ - MINZ, BuildKit.jitter(FLOOR), Enum.Material.Concrete, "Floor")
@@ -100,9 +100,30 @@ function Arena.build(tuning, parentFolder)
 	slab(folder, 33, 0.55, MINZ + 0.4, MAXX - MINX, 0.9, 0.5, TRIM, Enum.Material.WoodPlanks, "Baseboard")
 	slab(folder, 33, 0.55, MAXZ - 0.4, MAXX - MINX, 0.9, 0.5, TRIM, Enum.Material.WoodPlanks, "Baseboard")
 
-	-- pillars (structure that breaks the room into readable fragments)
-	for _, p in PILLARS do
-		slab(folder, p[1], ROOM_H / 2, p[2], 2.6, ROOM_H, 2.6, BuildKit.jitter(WALL), Enum.Material.Concrete, "Pillar")
+	-- (pillars removed — see the note above the slab() helper; the room is a clean open space now)
+
+	-- THE ROAD: a continuous amber runway from the SPAWN (deep in the throat, x -14) unbroken to the exit door.
+	-- It MUST read from the entrance itself (Eddy, v0.17.6: stood at the throat mouth and saw no path — the old
+	-- strips began 20 studs in, past the lintel, so from where you enter there was simply no road). Warm amber =
+	-- high contrast against the cold room AND distinct from the RED goal beacons; neon so it survives even if
+	-- every dynamic light culls; a glow anchor every few markers so it reads as a lit trail at a glance.
+	local roadX = { -14, -9, -4, 1, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60 }
+	for i, sx in roadX do
+		local strip = BuildKit.part({
+			Size = Vector3.new(2.8, 0.16, 1.1),
+			CFrame = CFrame.new(sx, 0.3, 0),
+			Color = Color3.fromRGB(255, 190, 110),
+			Material = Enum.Material.Neon,
+			Name = "PathStrip",
+		}, folder)
+		if i % 3 == 1 then -- ~5 soft glow pools along the trail (bonus over the always-visible neon)
+			local g = Instance.new("PointLight")
+			g.Range = 8
+			g.Brightness = 0.8
+			g.Color = strip.Color
+			g.Shadows = false
+			g.Parent = strip
+		end
 	end
 
 	-- environmental story (this place broke; it does not care that you are here): a toppled barricade at the
@@ -183,16 +204,18 @@ function Arena.build(tuning, parentFolder)
 			Material = Enum.Material.Metal,
 			Name = "Breaker" .. i,
 		}, folder)
+		-- the LIGHT-POLE: a tall red beacon visible across the whole dark room — THE goal you walk toward, red
+		-- until you restore it green (verified: the old 0.7-stud cube was invisible; the goal must be luminous)
 		local lamp = BuildKit.part({
-			Size = Vector3.new(0.7, 0.7, 0.7),
-			CFrame = CFrame.new(b.x, 3.1, b.z),
+			Size = Vector3.new(0.5, 5.6, 0.5),
+			CFrame = CFrame.new(b.x, 5.6, b.z),
 			Color = RED,
 			Material = Enum.Material.Neon,
 			Name = "BreakerLamp" .. i,
 		}, folder)
 		local pl = Instance.new("PointLight")
-		pl.Range = 9
-		pl.Brightness = 0.9
+		pl.Range = 15
+		pl.Brightness = 1.6
 		pl.Color = RED
 		pl.Parent = lamp
 		local prompt = Instance.new("ProximityPrompt")
