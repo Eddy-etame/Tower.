@@ -307,6 +307,13 @@ function Arena.build(tuning, parentFolder)
 	sbl.Shadows = false
 	sbl.Parent = safeBulb
 
+	-- the tower's voice in the safe chamber (the world does not care that you made it)
+	BuildKit.sign(
+		folder,
+		CFrame.lookAt(Vector3.new(92.3, 5, 0), Vector3.new(70, 5, 0)),
+		"IT WATCHED YOU LEAVE.",
+		BuildKit.PAPER
+	)
 	handles.doorTouch = BuildKit.part({
 		Size = Vector3.new(3, 8, 6),
 		CFrame = CFrame.new(MAXX + 4, 4, 0),

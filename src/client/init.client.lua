@@ -86,6 +86,17 @@ rules.BorderSizePixel = 0
 rules.Visible = false
 rules.Parent = gui
 
+for _, ry in { 0.16, 0.9 } do
+	local hair = Instance.new("Frame")
+	hair.AnchorPoint = Vector2.new(0.5, 0.5)
+	hair.Position = UDim2.fromScale(0.5, ry)
+	hair.Size = UDim2.new(0.6, 0, 0, 1)
+	hair.BackgroundColor3 = Color3.fromRGB(150, 143, 128)
+	hair.BackgroundTransparency = 0.55
+	hair.BorderSizePixel = 0
+	hair.Parent = rules -- the card is FRAMED (a document of this place, not floating text)
+end
+
 local function rulesLine(text, yScale, size, color)
 	local l = Instance.new("TextLabel")
 	l.AnchorPoint = Vector2.new(0.5, 0.5)

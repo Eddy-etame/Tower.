@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 27,
-	stage = "impact-sounds-and-halo",
+	patch = 28,
+	stage = "the-towers-voice",
 }

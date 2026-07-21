@@ -160,6 +160,12 @@ function Corridor.build(tuning, parentFolder)
 	slab(folder, MAXX + 30, H / 2, 0, 1, H, 22, BuildKit.jitter(WALL), Enum.Material.Limestone, "SafeWall")
 	BuildKit.pool(folder, MAXX + 15, H - 0.5, 0, Color3.fromRGB(220, 210, 190), 1.5, 28)
 
+	BuildKit.sign(
+		folder,
+		CFrame.lookAt(Vector3.new(MAXX + 29.3, 5, 0), Vector3.new(MAXX + 10, 5, 0)),
+		"IT IS STILL WALKING.",
+		BuildKit.PAPER
+	)
 	handles.doorTouch = BuildKit.part({
 		Size = Vector3.new(3, H, 12),
 		CFrame = CFrame.new(MAXX + 3, H / 2, 0),
