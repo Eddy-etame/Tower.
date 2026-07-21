@@ -3,6 +3,7 @@
 -- floor between them is lethal when the gallery surges. Wall lamps down both sides carry the countdown (they
 -- cascade toward the surge's origin, then dark-snap as it fires). Blockout, but shaped so the space reads as a
 -- thing with a pulse that ran before you and runs after. All lethality is decided server-side against the marks.
+local TweenService = game:GetService("TweenService")
 local BuildKit = require(script.Parent.BuildKit)
 
 local Gallery = {}
@@ -347,6 +348,16 @@ function Gallery.updateSweep(handles, phase, p)
 		d.CFrame = CFrame.new(x, 1.2 + math.sin(p * 21) * 0.5, 5.6) * CFrame.Angles(p * 9, p * 13, 0)
 	elseif phase == "safe" then
 		d.CFrame = CFrame.new(handles.debrisStartX, 1.2, 5.6)
+	end
+end
+
+-- the "GO" pulse: every mark breathes bright once as the safe window opens (the timing, made visible)
+function Gallery.pulseMarks(handles)
+	for _, m in handles.marks do
+		m.light.Brightness = 2.2
+		TweenService:Create(m.light, TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Brightness = 1.1,
+		}):Play()
 	end
 end
 

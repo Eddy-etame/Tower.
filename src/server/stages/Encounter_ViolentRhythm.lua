@@ -119,6 +119,7 @@ function Stage.update(h, dt)
 			h.ctx.broadcast({ kind = "kick", n = 0.45 }) -- the gallery slams; every camera in the room feels it
 		elseif phase == "safe" then
 			Gallery.setSurge(g, false)
+			Gallery.pulseMarks(g) -- the marks breathe bright once: NOW you move
 		end
 		h.phase = phase
 	end

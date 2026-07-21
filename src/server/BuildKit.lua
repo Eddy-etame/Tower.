@@ -302,7 +302,7 @@ end
 -- on its own as a player nears (the Threshold invites; it does not care), with a dark vestibule beyond and a
 -- walk-through zone. Used by the Beginning (enter the descent) and the Ending (descend again).
 -- Returns a handle for BuildKit.grindDoorUpdate; hook `handle.goZone.Touched` for the advance.
-function BuildKit.grindDoor(folder, doorX, grindSoundId)
+function BuildKit.grindDoor(folder, doorX, grindSoundId, thunkSoundId)
 	local h = {}
 	h.door = BuildKit.part({
 		Size = Vector3.new(1.2, 8.6, 6),
@@ -342,6 +342,23 @@ function BuildKit.grindDoor(folder, doorX, grindSoundId)
 		Color = Color3.fromRGB(30, 31, 33),
 		Name = "VestibuleEnd",
 	}, folder)
+	local ember = BuildKit.part({
+		Size = Vector3.new(0.35, 0.35, 0.35),
+		CFrame = CFrame.new(doorX + 10.2, 5.5, 0),
+		Color = Color3.fromRGB(190, 140, 90),
+		Material = Enum.Material.Neon,
+		Transparency = 0.25,
+		CanCollide = false,
+		CanQuery = false,
+		Name = "DeepEmber", -- the grind door rises on a promise: something faint, further down
+	}, folder)
+	local emberLight = Instance.new("PointLight")
+	emberLight.Range = 9
+	emberLight.Brightness = 0.6
+	emberLight.Color = ember.Color
+	emberLight.Shadows = false
+	emberLight.Parent = ember
+
 	h.goZone = BuildKit.part({
 		Size = Vector3.new(3, 10, 10),
 		CFrame = CFrame.new(doorX + 7, 5, 0),
@@ -358,6 +375,13 @@ function BuildKit.grindDoor(folder, doorX, grindSoundId)
 		Name = "PathStrip",
 	}, folder)
 
+	if thunkSoundId then
+		h.thunk = Instance.new("Sound") -- the seat: a door this heavy ENDS its rise with weight
+		h.thunk.SoundId = thunkSoundId
+		h.thunk.PlaybackSpeed = 0.4
+		h.thunk.Volume = 0.6
+		h.thunk.Parent = h.door
+	end
 	h.grind = Instance.new("Sound") -- STUB sample (verified in-install); a long low rumble while it rises
 	h.grind.SoundId = grindSoundId
 	h.grind.PlaybackSpeed = 0.3
@@ -388,6 +412,9 @@ function BuildKit.grindDoorUpdate(h, step, openDist, openSeconds)
 	h.door.CFrame = h.closed + Vector3.new(0, (h.door.Size.Y - 0.4) * h.openT, 0)
 	if h.openT >= 1 then
 		h.grind:Stop()
+		if h.thunk then
+			h.thunk:Play()
+		end
 	end
 end
 

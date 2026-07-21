@@ -64,7 +64,8 @@ function Stage.build(ctx)
 		task.delay(tuning.PRESENCE_RECORD_SECONDS, function()
 			corridor.reel.Color = Color3.fromRGB(180, 60, 40)
 			h.recording = false
-			-- the reveal: your steps + a SECOND set, offset, one beat late
+			-- the reveal: your steps + a SECOND set, offset, one beat late — and the ROOM goes quiet to listen
+			h.tapeQuietUntil = os.clock() + tuning.TAPE_QUIET_SECS
 			ctx.send(player, { kind = "tape", steps = 7 })
 		end)
 	end)
@@ -186,8 +187,12 @@ function Stage.update(h, dt)
 	Corridor.setSilence(c, h.presenceX, tuning.PRESENCE_SILENCE_RADIUS)
 	if c.bed then
 		local bedRaw = math.clamp(gap / tuning.PRESENCE_SILENCE_RADIUS, 0.15, 1)
-		c.bed.Volume = tuning.AMBIENT_VOLUME
-			* (math.floor(bedRaw * tuning.PRESENCE_BED_STEP) / tuning.PRESENCE_BED_STEP)
+		if h.tapeQuietUntil and os.clock() < h.tapeQuietUntil then
+			c.bed.Volume = 0.02 -- the tape is playing: the world holds its breath (overrides the duck-tell briefly)
+		else
+			c.bed.Volume = tuning.AMBIENT_VOLUME
+				* (math.floor(bedRaw * tuning.PRESENCE_BED_STEP) / tuning.PRESENCE_BED_STEP)
+		end
 	end
 	-- danger vignette: PER-PLAYER from that player's own gap (not the nearest's), quantized + change-gated
 	for _, p in Players:GetPlayers() do

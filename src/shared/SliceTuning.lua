@@ -54,6 +54,7 @@ return {
 	SETTLE_VOLUME = 0.14,
 	SETTLE_GAP_MIN = 14, -- seconds between settles (randomized - never a rhythm)
 	SETTLE_GAP_MAX = 32,
+	TAPE_QUIET_SECS = 4.5, -- the bed drops to near-nothing while the tape plays (the room listens too)
 	CLICK_SOUND = "rbxasset://sounds/volume_slider.ogg", -- the flashlight click (VERIFIED present 2026-07-21)
 	CLICK_VOLUME = 0.5,
 

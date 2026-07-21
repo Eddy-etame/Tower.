@@ -120,7 +120,7 @@ function Beginning.build(ctx)
 	local h = {
 		ctx = ctx,
 		spawn = Vector3.new(4, 3.5, 0),
-		gate = BuildKit.grindDoor(folder, DOOR_X, ctx.tuning.SURGE_SOUND),
+		gate = BuildKit.grindDoor(folder, DOOR_X, ctx.tuning.SURGE_SOUND, ctx.tuning.BREAKER_SOUND),
 		started = false,
 		accum = 0,
 	}

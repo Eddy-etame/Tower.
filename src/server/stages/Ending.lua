@@ -62,7 +62,7 @@ function Ending.build(ctx)
 		BuildKit.PAPER
 	)
 	-- the way down again is a DOOR, like everything here (no game-y pad): it grinds open as you near it
-	local gate = BuildKit.grindDoor(folder, 34, tuning.SURGE_SOUND)
+	local gate = BuildKit.grindDoor(folder, 34, tuning.SURGE_SOUND, tuning.BREAKER_SOUND)
 	BuildKit.sign(folder, CFrame.lookAt(Vector3.new(33.5, 13.1, 0), Vector3.new(0, 12.4, 0)), "AGAIN?", BuildKit.PAPER)
 
 	-- the far glow: the OTHER one, across a dark gap — high in the room's far corner, unlit until it calls

@@ -32,25 +32,25 @@ function Sanctum.build(tuning, parentFolder)
 	local handles = { folder = folder }
 
 	-- ARRIVAL (dark): the companion is the only light here
-	slab(folder, -20, 0.1, 0, 40, 0.2, 24, BuildKit.jitter(FLOOR), nil, "ArrivalFloor")
-	slab(folder, -20, H + 0.25, 0, 40, 0.5, 26, BuildKit.jitter(CEIL), nil, "ArrivalCeiling")
-	slab(folder, -20, H / 2, -12, 40, H, 1, BuildKit.jitter(WALL), nil, "ArrivalWall")
-	slab(folder, -20, H / 2, 12, 40, H, 1, BuildKit.jitter(WALL), nil, "ArrivalWall")
-	slab(folder, -40, H / 2, 0, 1, H, 26, BuildKit.jitter(WALL), nil, "ArrivalBack")
+	slab(folder, -20, 0.1, 0, 40, 0.2, 24, BuildKit.jitter(FLOOR), Enum.Material.Pavement, "ArrivalFloor")
+	slab(folder, -20, H + 0.25, 0, 40, 0.5, 26, BuildKit.jitter(CEIL), Enum.Material.Basalt, "ArrivalCeiling")
+	slab(folder, -20, H / 2, -12, 40, H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "ArrivalWall")
+	slab(folder, -20, H / 2, 12, 40, H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "ArrivalWall")
+	slab(folder, -40, H / 2, 0, 1, H, 26, BuildKit.jitter(WALL), Enum.Material.Limestone, "ArrivalBack")
 	-- the throat between arrival and the exit room (z -4..4 gap in the x=0 wall) — sz 10 leaves the gap open
-	slab(folder, 0, H / 2, -9, 1, H, 10, BuildKit.jitter(WALL), nil, "MidWall")
-	slab(folder, 0, H / 2, 9, 1, H, 10, BuildKit.jitter(WALL), nil, "MidWall")
+	slab(folder, 0, H / 2, -9, 1, H, 10, BuildKit.jitter(WALL), Enum.Material.Limestone, "MidWall")
+	slab(folder, 0, H / 2, 9, 1, H, 10, BuildKit.jitter(WALL), Enum.Material.Limestone, "MidWall")
 
 	-- EXIT ROOM (the one warm-lit room; the warmth is the horror)
-	slab(folder, 25, 0.1, 0, 50, 0.2, 28, BuildKit.jitter(FLOOR), nil, "ExitFloor")
-	slab(folder, 25, H + 0.25, 0, 52, 0.5, 30, BuildKit.jitter(CEIL), nil, "ExitCeiling")
-	slab(folder, 25, H / 2, -14, 50, H, 1, BuildKit.jitter(WALL), nil, "ExitWall")
+	slab(folder, 25, 0.1, 0, 50, 0.2, 28, BuildKit.jitter(FLOOR), Enum.Material.Pavement, "ExitFloor")
+	slab(folder, 25, H + 0.25, 0, 52, 0.5, 30, BuildKit.jitter(CEIL), Enum.Material.Basalt, "ExitCeiling")
+	slab(folder, 25, H / 2, -14, 50, H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "ExitWall")
 	-- north wall with the PASSAGE mouth (x 8..16)
-	slab(folder, 4, H / 2, 14, 8, H, 1, BuildKit.jitter(WALL), nil, "ExitWall")
-	slab(folder, 33, H / 2, 14, 34, H, 1, BuildKit.jitter(WALL), nil, "ExitWall")
+	slab(folder, 4, H / 2, 14, 8, H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "ExitWall")
+	slab(folder, 33, H / 2, 14, 34, H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "ExitWall")
 	-- east wall with the DOOR gap (z -4..4) — sz 10 leaves the gap the door fills
-	slab(folder, 50, H / 2, -9, 1, H, 10, BuildKit.jitter(WALL), nil, "ExitWall")
-	slab(folder, 50, H / 2, 9, 1, H, 10, BuildKit.jitter(WALL), nil, "ExitWall")
+	slab(folder, 50, H / 2, -9, 1, H, 10, BuildKit.jitter(WALL), Enum.Material.Limestone, "ExitWall")
+	slab(folder, 50, H / 2, 9, 1, H, 10, BuildKit.jitter(WALL), Enum.Material.Limestone, "ExitWall")
 
 	-- the SOCKET — carved to fit, polished by use — and its husk (taking's full price, foreknown)
 	slab(folder, 42, 2, -12.5, 4, 4, 1.6, Color3.fromRGB(60, 54, 48), Enum.Material.Slate, "SocketBlock")
@@ -85,7 +85,7 @@ function Sanctum.build(tuning, parentFolder)
 		Size = Vector3.new(1.3, 8, 8),
 		CFrame = CFrame.new(50, 4, 0),
 		Color = Color3.fromRGB(40, 38, 36),
-		Material = Enum.Material.DiamondPlate,
+		Material = Enum.Material.CorrodedMetal,
 		Name = "ExitDoor",
 	}, folder)
 	handles.door = door
@@ -105,7 +105,7 @@ function Sanctum.build(tuning, parentFolder)
 	}, folder)
 
 	-- the dark PASSAGE (path B) — a narrow tunnel north; the shape lives in here, heard never seen
-	slab(folder, 12, 0.1, 41, 8, 0.2, 56, Color3.fromRGB(22, 20, 20), nil, "PassageFloor")
+	slab(folder, 12, 0.1, 41, 8, 0.2, 56, Color3.fromRGB(22, 20, 20), Enum.Material.Pavement, "PassageFloor")
 	slab(folder, 12, H + 0.25, 41, 10, 0.5, 58, BuildKit.jitter(CEIL), nil, "PassageCeil")
 	slab(folder, 7.5, H / 2, 41, 1, H, 56, BuildKit.jitter(WALL), nil, "PassageWall")
 	slab(folder, 16.5, H / 2, 41, 1, H, 56, BuildKit.jitter(WALL), nil, "PassageWall")

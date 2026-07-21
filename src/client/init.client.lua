@@ -502,8 +502,16 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		player:SetAttribute("FeelKick", 1) -- the camera takes the hit (Feel.client decays it)
 		showBanner("RUN.")
 	elseif payload.kind == "retry" then
-		-- back in after a catch: clear the caught card + reset the vignette (no rules re-show)
+		-- back in after a catch: a slow BLINK OPEN (death -> wake has a rhythm), then clear the caught card
 		hideCard()
+		blackout.Visible = true
+		blackout.BackgroundTransparency = 0
+		TweenService:Create(blackout, TweenInfo.new(0.45, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+			BackgroundTransparency = 1,
+		}):Play()
+		task.delay(0.5, function()
+			blackout.Visible = false
+		end)
 		TweenService:Create(vignette, TweenInfo.new(0.4), { ImageTransparency = 1 }):Play()
 	elseif payload.kind == "caught" then
 		TweenService:Create(vignette, TweenInfo.new(0.15), { ImageTransparency = 0.2 }):Play()

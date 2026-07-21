@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 25,
-	stage = "realism-consistency",
+	patch = 26,
+	stage = "beats-and-parity",
 }
