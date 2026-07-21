@@ -57,6 +57,10 @@ function Gallery.build(tuning, parentFolder)
 	slab(folder, (EMINX + MINX) / 2, H / 2, MINZ, MINX - EMINX, H, 1, BuildKit.jitter(WALL), nil, "MezzWall")
 	slab(folder, (EMINX + MINX) / 2, H / 2, MAXZ, MINX - EMINX, H, 1, BuildKit.jitter(WALL), nil, "MezzWall")
 	BuildKit.pool(folder, EMINX / 2, H - 0.5, 0, Color3.fromRGB(220, 210, 190), 1.4, 26)
+	-- the tower's architectural language: pilasters in the safe mezzanine (your last civilized room),
+	-- ceiling beams down the whole gallery (the ribs carry the walls; the beams carry the lid)
+	BuildKit.pilasters(folder, EMINX, MINX, MINZ, MAXZ, H, 8)
+	BuildKit.ceilingBeams(folder, MINX, MAXX, MINZ, MAXZ, H, 10)
 
 	-- the gallery shell
 	slab(folder, (MINX + MAXX) / 2, 0.1, 0, MAXX - MINX, 0.2, MAXZ - MINZ, SCORCH, nil, "GalleryFloor")

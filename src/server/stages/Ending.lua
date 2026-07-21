@@ -18,7 +18,27 @@ Ending.title = "YOU MADE IT OUT"
 function Ending.build(ctx)
 	local folder = ctx.folder
 	local tuning = ctx.tuning
-	BuildKit.room(folder, { minX = 0, maxX = 34, minZ = -12, maxZ = 12 })
+	BuildKit.room(folder, { minX = 0, maxX = 34, minZ = -12, maxZ = 12 }, { height = 15 })
+	-- the Ending mirrors the Beginning's nave (the tower's language closes its loop): pilasters, beams,
+	-- and the "AGAIN?" door framed as the same monument you first walked through
+	BuildKit.pilasters(folder, 0, 34, -12, 12, 15, 5.5)
+	BuildKit.ceilingBeams(folder, 0, 34, -12, 12, 15, 5.5)
+	for _, jz in { -3.4, 3.4 } do
+		BuildKit.part({
+			Size = Vector3.new(2.2, 12, 1.6),
+			CFrame = CFrame.new(33.6, 6, jz),
+			Color = Color3.fromRGB(30, 30, 33),
+			Material = Enum.Material.Slate,
+			Name = "DoorJamb",
+		}, folder)
+	end
+	BuildKit.part({
+		Size = Vector3.new(2.4, 2.6, 8.4),
+		CFrame = CFrame.new(33.6, 10.6, 0),
+		Color = Color3.fromRGB(26, 26, 29),
+		Material = Enum.Material.Slate,
+		Name = "DoorLintel",
+	}, folder)
 	BuildKit.dust(folder, 17, 9, 0, 30, 20) -- shared atmosphere language (see BuildKit.dust)
 	-- warm but DIM: relief, carrying weight — not a bright reward room. You made it out; you'll remember.
 	BuildKit.pool(folder, 17, 10.5, -3, Color3.fromRGB(236, 220, 192), 1.3, 28)
@@ -30,7 +50,7 @@ function Ending.build(ctx)
 	)
 	-- the way down again is a DOOR, like everything here (no game-y pad): it grinds open as you near it
 	local gate = BuildKit.grindDoor(folder, 34, tuning.SURGE_SOUND)
-	BuildKit.sign(folder, CFrame.lookAt(Vector3.new(33.5, 8.6, 0), Vector3.new(0, 8.6, 0)), "AGAIN?", BuildKit.PAPER)
+	BuildKit.sign(folder, CFrame.lookAt(Vector3.new(33.5, 13.1, 0), Vector3.new(0, 12.4, 0)), "AGAIN?", BuildKit.PAPER)
 
 	-- the far glow: the OTHER one, across a dark gap — high in the room's far corner, unlit until it calls
 	local farGlow = BuildKit.part({

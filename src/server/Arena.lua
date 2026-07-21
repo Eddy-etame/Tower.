@@ -224,8 +224,8 @@ function Arena.build(tuning, parentFolder)
 		pl.Color = RED
 		pl.Parent = lamp
 		local prompt = Instance.new("ProximityPrompt")
-		prompt.ActionText = "Restore"
-		prompt.ObjectText = "Breaker " .. i
+		prompt.ActionText = "HOLD - RESTORE POWER"
+		prompt.ObjectText = "BREAKER"
 		prompt.HoldDuration = tuning.LEVER_HOLD
 		prompt.MaxActivationDistance = 9 -- generous in a dark room
 		prompt.RequiresLineOfSight = false
@@ -351,15 +351,32 @@ function Arena.restoreBreaker(handles, index)
 		return false
 	end
 	b.active = true
-	b.lamp.Color = GREEN
-	b.lamp.PointLight.Color = GREEN
-	b.light.Enabled = true
-	b.bulb.Color = ON_BULB
-	b.bulb.Material = Enum.Material.Neon
 	if handles.breakerSound then
 		handles.breakerSound.Parent = b.lamp
 		handles.breakerSound:Play()
 	end
+	-- the lamp SLAMS green with an over-bright pulse that settles (feedback you feel, not a color swap)
+	b.lamp.Color = GREEN
+	b.lamp.PointLight.Color = GREEN
+	b.lamp.PointLight.Brightness = 3.4
+	TweenService:Create(b.lamp.PointLight, TweenInfo.new(0.9, Enum.EasingStyle.Quad), { Brightness = 1.6 }):Play()
+	-- FLUORESCENT STRIKE: the ceiling fixture stutters to life like a real tube — on, drop, on, hold.
+	-- (Restoring power is the room CHANGING, not a switch flipping. Cheap juice, huge feel.)
+	task.spawn(function()
+		local seq = { 0.06, 0.09, 0.05, 0.12, 0.07 } -- strike pattern: lit/dark alternating, then hold
+		for i, dt in seq do
+			local lit = (i % 2 == 1)
+			b.light.Enabled = lit
+			b.bulb.Color = lit and ON_BULB or OFF_BULB
+			b.bulb.Material = lit and Enum.Material.Neon or Enum.Material.SmoothPlastic
+			task.wait(dt)
+		end
+		if b.active and not handles.surged then -- the surge may kill the power mid-strike; never re-light a dead room
+			b.light.Enabled = true
+			b.bulb.Color = ON_BULB
+			b.bulb.Material = Enum.Material.Neon
+		end
+	end)
 	return true
 end
 
@@ -383,6 +400,7 @@ end
 -- hits. The room drops to just the dim emergency red + your flashlight, and now it is a sprint (Threat.surge
 -- gives the Watcher its lunge). The peak of the encounter, not a quiet win.
 function Arena.surge(handles)
+	handles.surged = true
 	Arena.openDoor(handles)
 	for _, b in handles.breakers do
 		b.light.Enabled = false
@@ -396,6 +414,7 @@ function Arena.surge(handles)
 end
 
 function Arena.reset(handles)
+	handles.surged = false
 	handles.door.CFrame = handles.doorClosed
 	handles.doorLamp.Color = RED
 	handles.doorLamp.PointLight.Color = RED

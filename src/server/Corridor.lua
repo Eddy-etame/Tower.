@@ -52,6 +52,10 @@ function Corridor.build(tuning, parentFolder)
 	slab(folder, (EMINX + MAXX) / 2, H / 2, MAXZ, MAXX - EMINX, H, 1, BuildKit.jitter(WALL), nil, "Wall")
 	slab(folder, EMINX, H / 2, 0, 1, H, MAXZ - MINZ + 2, BuildKit.jitter(WALL), nil, "BackWall")
 
+	-- the tower's architectural language: pilaster ribs + beams turn the tube into a passage that was BUILT
+	BuildKit.pilasters(folder, EMINX, MAXX, MINZ, MAXZ, H, 9)
+	BuildKit.ceilingBeams(folder, EMINX, MAXX, MINZ, MAXZ, H, 9)
+
 	-- hanging chains — atmosphere (the industrial airway); static blockout
 	for _, cx in CHAINS_X do
 		slab(folder, cx, H - 3, MAXZ - 1.5, 0.14, 5.6, 0.14, Color3.fromRGB(24, 24, 26), Enum.Material.Metal, "Chain")

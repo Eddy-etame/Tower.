@@ -64,7 +64,7 @@ barLabel.Font = Enum.Font.SpecialElite
 barLabel.TextSize = 13
 barLabel.TextXAlignment = Enum.TextXAlignment.Left
 barLabel.TextColor3 = Color3.fromRGB(150, 143, 128)
-barLabel.Text = "LIGHT"
+barLabel.Text = isMobile and "LIGHT — TAP" or "LIGHT — [F]" -- the meter teaches its own control (UX: never strand a player)
 barLabel.Parent = barBack
 
 local function applyLight()

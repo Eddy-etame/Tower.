@@ -157,6 +157,17 @@ return {
 	MOBILE_DISABLE_ATMOSPHERE = true, -- classic fog takes over (FogStart/End/Color are set in the place)
 	MOBILE_DISABLE_BLOOM = true,
 
+	-- GAME-FEEL (Eddy 2026-07-21: "not smooth, not captivating" — the camera must feel like a body, not a
+	-- tripod). Subtle by design: feel it, never see it.
+	FEEL_BOB_AMP = 0.09, -- studs of vertical bob at full walk speed
+	FEEL_BOB_HZ = 1.9, -- steps per second the bob follows
+	FEEL_SWAY_RATIO = 0.6, -- horizontal sway as a fraction of the bob
+	FEEL_FOV_BASE = 70,
+	FEEL_FOV_MOVE = 3.5, -- extra FOV at full walk speed (motion feels like motion)
+	FEEL_FOV_LERP = 6, -- how fast FOV eases (1-exp(-k*dt))
+	FEEL_LAND_DIP = 0.45, -- studs the camera dips on landing
+	FEEL_LAND_RECOVER = 7, -- spring rate of the landing recovery
+
 	-- the grind doors (Beginning / Ending): heavy slabs that rise on approach — the game's question made physical
 	DOOR_OPEN_DIST = 11, -- studs: the door starts grinding open when a player is this near
 	DOOR_OPEN_SECONDS = 1.8, -- slow enough to feel heavy, fast enough to never gate the player
