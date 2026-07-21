@@ -39,17 +39,32 @@ vignette.ImageTransparency = 1
 vignette.ScaleType = Enum.ScaleType.Stretch
 vignette.Parent = gui
 
+-- the objective: hugged by a quiet backplate so it reads over ANY scene, with a soft pulse when it changes
+-- (the eye is drawn exactly when the goal moves — teaching without words)
 local objective = Instance.new("TextLabel")
 objective.AnchorPoint = Vector2.new(0.5, 1)
 objective.Position = UDim2.new(0.5, 0, 1, -24)
-objective.Size = UDim2.new(0.9, 0, 0, 28)
-objective.BackgroundTransparency = 1
+objective.AutomaticSize = Enum.AutomaticSize.X
+objective.Size = UDim2.fromOffset(0, 30)
+objective.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+objective.BackgroundTransparency = 0.42
+objective.BorderSizePixel = 0
 objective.Font = Enum.Font.SpecialElite
 objective.TextSize = 20
 objective.TextColor3 = INK
 objective.TextStrokeTransparency = 0.4
 objective.Text = ""
+objective.Visible = false -- hidden until the first objective arrives (no empty plate on boot)
 objective.Parent = gui
+local objCorner = Instance.new("UICorner")
+objCorner.CornerRadius = UDim.new(0, 6)
+objCorner.Parent = objective
+local objPad = Instance.new("UIPadding")
+objPad.PaddingLeft = UDim.new(0, 14)
+objPad.PaddingRight = UDim.new(0, 14)
+objPad.Parent = objective
+local objScale = Instance.new("UIScale")
+objScale.Parent = objective
 
 -- the 3-second-understanding onboarding: threat + rule + objective + control, read at a glance then gone.
 -- Data-driven so each encounter sends its own card: kind="rules", lines = { {t=text, y=scale, s=size, c={r,g,b}} }
@@ -137,26 +152,95 @@ local function showBanner(text)
 	end)
 end
 
--- a stage title, shown briefly on entering each stage
+-- THE TITLE BEAT — cinematic, austere (the Threshold names a room the way a film names a chapter):
+-- letterbox bars slide in, the title drifts up out of the dark, a thin rule line draws itself beneath it,
+-- everything withdraws. Pure motion + frame; no decoration this world wouldn't allow.
+local letterTop = Instance.new("Frame")
+letterTop.AnchorPoint = Vector2.new(0.5, 0)
+letterTop.Position = UDim2.fromScale(0.5, -0.11) -- parked fully off-screen; slides down on a title beat
+letterTop.Size = UDim2.fromScale(1, 0.11)
+letterTop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+letterTop.BorderSizePixel = 0
+letterTop.Visible = false
+letterTop.ZIndex = 30
+letterTop.Parent = gui
+local letterBottom = Instance.new("Frame")
+letterBottom.AnchorPoint = Vector2.new(0.5, 1)
+letterBottom.Position = UDim2.fromScale(0.5, 1.11)
+letterBottom.Size = UDim2.fromScale(1, 0.11)
+letterBottom.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+letterBottom.BorderSizePixel = 0
+letterBottom.Visible = false
+letterBottom.ZIndex = 30
+letterBottom.Parent = gui
+
 local titleLabel = Instance.new("TextLabel")
 titleLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-titleLabel.Position = UDim2.fromScale(0.5, 0.28)
-titleLabel.Size = UDim2.new(0.92, 0, 0, 50)
+titleLabel.Position = UDim2.fromScale(0.5, 0.3)
+titleLabel.Size = UDim2.new(0.92, 0, 0, 54)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Font = Enum.Font.SpecialElite
-titleLabel.TextSize = 34
+titleLabel.TextSize = 38
 titleLabel.TextColor3 = INK
 titleLabel.TextStrokeTransparency = 0.4
 titleLabel.TextTransparency = 1
 titleLabel.Text = ""
+titleLabel.ZIndex = 31
 titleLabel.Parent = gui
+-- the rule line: draws itself from the center beneath the title (a chapter mark, not a UI divider)
+local rule = Instance.new("Frame")
+rule.AnchorPoint = Vector2.new(0.5, 0.5)
+rule.Position = UDim2.fromScale(0.5, 0.345)
+rule.Size = UDim2.fromOffset(0, 1)
+rule.BackgroundColor3 = Color3.fromRGB(150, 143, 128)
+rule.BorderSizePixel = 0
+rule.BackgroundTransparency = 1
+rule.ZIndex = 31
+rule.Parent = gui
 
+local titleGen = 0 -- interrupt-safe: a new title beat cancels the previous one's scheduled exits
 local function showTitle(text)
+	titleGen += 1
+	local gen = titleGen
 	titleLabel.Text = text
 	titleLabel.TextTransparency = 1
-	TweenService:Create(titleLabel, TweenInfo.new(0.5), { TextTransparency = 0 }):Play()
-	task.delay(2.6, function()
-		TweenService:Create(titleLabel, TweenInfo.new(1), { TextTransparency = 1 }):Play()
+	titleLabel.Position = UDim2.fromScale(0.5, 0.315) -- starts low, drifts up as it appears
+	letterTop.Visible = true
+	letterBottom.Visible = true
+	letterTop.BackgroundTransparency = 0.25
+	letterBottom.BackgroundTransparency = 0.25
+	rule.Size = UDim2.fromOffset(0, 1)
+	rule.BackgroundTransparency = 0.5
+	local slide = TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	TweenService:Create(letterTop, slide, { Position = UDim2.fromScale(0.5, 0) }):Play()
+	TweenService:Create(letterBottom, slide, { Position = UDim2.fromScale(0.5, 1) }):Play()
+	TweenService:Create(
+		titleLabel,
+		TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ TextTransparency = 0, Position = UDim2.fromScale(0.5, 0.3) }
+	):Play()
+	TweenService:Create(
+		rule,
+		TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Size = UDim2.new(0.24, 0, 0, 1) }
+	):Play()
+	task.delay(2.8, function()
+		if gen ~= titleGen then
+			return
+		end
+		local out = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+		TweenService:Create(titleLabel, out, { TextTransparency = 1 }):Play()
+		TweenService:Create(rule, out, { BackgroundTransparency = 1, Size = UDim2.fromOffset(0, 1) }):Play()
+		TweenService:Create(letterTop, out, { Position = UDim2.fromScale(0.5, -0.11), BackgroundTransparency = 1 })
+			:Play()
+		TweenService:Create(letterBottom, out, { Position = UDim2.fromScale(0.5, 1.11), BackgroundTransparency = 1 })
+			:Play()
+		task.delay(0.85, function()
+			if gen == titleGen then
+				letterTop.Visible = false
+				letterBottom.Visible = false
+			end
+		end)
 	end)
 end
 
@@ -347,7 +431,17 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		return
 	end
 	if payload.kind == "objective" then
-		objective.Text = payload.text or ""
+		local newText = payload.text or ""
+		if newText ~= objective.Text then
+			objective.Text = newText
+			objective.Visible = newText ~= ""
+			-- the change-pulse: a breath, not a bounce
+			objScale.Scale = 1
+			TweenService:Create(objScale, TweenInfo.new(0.12, Enum.EasingStyle.Quad), { Scale = 1.07 }):Play()
+			task.delay(0.13, function()
+				TweenService:Create(objScale, TweenInfo.new(0.3, Enum.EasingStyle.Quad), { Scale = 1 }):Play()
+			end)
+		end
 	elseif payload.kind == "title" then
 		-- stage entry: the world just swapped around us (we crossed through a dark vestibule). Land the swap
 		-- under black and fade in — every transition reads as stepping through darkness into a new place.
