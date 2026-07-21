@@ -480,6 +480,8 @@ uiRemote.OnClientEvent:Connect(function(payload)
 				dismissRules()
 			end
 		end)
+	elseif payload.kind == "kick" then
+		player:SetAttribute("FeelKick", math.clamp(tonumber(payload.n) or 0.5, 0, 1)) -- generic camera impact
 	elseif payload.kind == "banner" then
 		showBanner(payload.text or "")
 	elseif payload.kind == "tape" then

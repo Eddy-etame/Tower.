@@ -4,6 +4,8 @@
 -- (v1-spec RoomService pattern; Rule 21). The Bible's "what's behind the next door" flow, made real.
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local LightingService = game:GetService("Lighting")
 
 local GameService = {}
 
@@ -71,6 +73,28 @@ local function teardown()
 	active, activeHandles, activeFolder, activeCtx = nil, nil, nil, nil
 end
 
+-- PER-ROOM MOOD: every door opens into a different WORLD (the tower promise). A stage may declare
+-- Stage.mood = { ambient={r,g,b}, fog={r,g,b}, saturation=n } (0..1 channels); absent fields fall back to
+-- the base grade. Applied as a slow crossfade on stage start — the world's light changes under the entry fade.
+local MOOD_BASE = { ambient = { 0.15, 0.16, 0.19 }, fog = { 0.07, 0.08, 0.1 }, saturation = -0.25 }
+local function applyMood(mood)
+	mood = mood or {}
+	local amb = mood.ambient or MOOD_BASE.ambient
+	local fog = mood.fog or MOOD_BASE.fog
+	local sat = mood.saturation or MOOD_BASE.saturation
+	local info = TweenInfo.new(tuning.MOOD_TWEEN_SECS, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+	local ambient = Color3.new(amb[1], amb[2], amb[3])
+	TweenService:Create(LightingService, info, {
+		Ambient = ambient,
+		OutdoorAmbient = ambient,
+		FogColor = Color3.new(fog[1], fog[2], fog[3]),
+	}):Play()
+	local grade = LightingService:FindFirstChild("HorrorGrade")
+	if grade then
+		TweenService:Create(grade, info, { Saturation = sat }):Play()
+	end
+end
+
 function GameService.startStage(index)
 	teardown()
 	generation += 1
@@ -83,6 +107,7 @@ function GameService.startStage(index)
 	activeFolder.Name = "Stage_" .. (active.name or tostring(index))
 	activeFolder.Parent = workspace
 	activeCtx = ctxFor(activeFolder, generation)
+	applyMood(active.mood)
 	activeHandles = active.build(activeCtx)
 	for _, player in Players:GetPlayers() do
 		enterPlayer(player)

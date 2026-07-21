@@ -11,6 +11,7 @@ local Corridor = require(script.Parent.Parent.Corridor)
 local Stage = {}
 Stage.name = "HiddenPresence"
 Stage.title = "ENCOUNTER III — THE HIDDEN PRESENCE"
+Stage.mood = { ambient = { 0.13, 0.15, 0.14 }, fog = { 0.075, 0.09, 0.08 }, saturation = -0.38 } -- pale sick green-grey; a corridor that drained
 
 local RULES = {
 	{ t = "THE HIDDEN PRESENCE", y = 0.3, s = 48 },

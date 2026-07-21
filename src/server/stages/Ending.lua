@@ -14,6 +14,7 @@ local BuildKit = require(script.Parent.Parent.BuildKit)
 local Ending = {}
 Ending.name = "Ending"
 Ending.title = "YOU MADE IT OUT"
+Ending.mood = { ambient = { 0.18, 0.165, 0.15 }, fog = { 0.1, 0.09, 0.08 }, saturation = -0.12 } -- warm relief, carrying weight
 
 function Ending.build(ctx)
 	local folder = ctx.folder

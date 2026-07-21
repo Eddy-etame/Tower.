@@ -157,6 +157,8 @@ return {
 	MOBILE_DISABLE_ATMOSPHERE = true, -- classic fog takes over (FogStart/End/Color are set in the place)
 	MOBILE_DISABLE_BLOOM = true,
 
+	MOOD_TWEEN_SECS = 1.6, -- per-room light-mood crossfade (each door opens into a different WORLD)
+
 	-- THE SURGE, PRESENTED (the clippable moment): bulbs SCREAM before they die, then the room breathes red
 	SURGE_FLARE_MULT = 2.3, -- fixtures overload to this multiple of their brightness...
 	SURGE_FLARE_SECS = 0.24, -- ...for this long, THEN the cut to black (death has a breath before it)

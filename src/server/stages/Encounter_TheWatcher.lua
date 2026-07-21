@@ -9,6 +9,7 @@ local Threat = require(script.Parent.Parent.Threat)
 local Stage = {}
 Stage.name = "TheWatcher"
 Stage.title = "ENCOUNTER I — THE WATCHER"
+Stage.mood = { ambient = { 0.13, 0.145, 0.16 }, fog = { 0.06, 0.075, 0.09 }, saturation = -0.32 } -- colder steel; the dark leans blue
 
 local RULES = {
 	{ t = "THE WATCHER", y = 0.3, s = 54 },

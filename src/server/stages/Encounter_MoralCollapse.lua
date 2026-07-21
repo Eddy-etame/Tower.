@@ -10,6 +10,7 @@ local Sanctum = require(script.Parent.Parent.Sanctum)
 local Stage = {}
 Stage.name = "MoralCollapse"
 Stage.title = "ENCOUNTER IV — THE MORAL COLLAPSE"
+Stage.mood = { ambient = { 0.12, 0.115, 0.135 }, fog = { 0.06, 0.055, 0.07 }, saturation = -0.3 } -- deepest violet-dark; the companion is the only warmth
 -- the whole dilemma rests on the companion being your light: with a personal flashlight, "spend your light or
 -- cross the dark" has no weight. GameService tells the client to suppress the cone for this stage.
 Stage.suppressFlashlight = true

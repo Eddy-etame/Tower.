@@ -9,6 +9,7 @@ local Gallery = require(script.Parent.Parent.Gallery)
 local Stage = {}
 Stage.name = "ViolentRhythm"
 Stage.title = "ENCOUNTER II — THE VIOLENT RHYTHM"
+Stage.mood = { ambient = { 0.17, 0.15, 0.12 }, fog = { 0.1, 0.085, 0.06 }, saturation = -0.15 } -- machine amber; the surge red cuts through it
 
 local RULES = {
 	{ t = "THE VIOLENT RHYTHM", y = 0.3, s = 50 },
@@ -115,6 +116,7 @@ function Stage.update(h, dt)
 			Gallery.playInhale(g)
 		elseif phase == "surge" then
 			Gallery.setSurge(g, true)
+			h.ctx.broadcast({ kind = "kick", n = 0.45 }) -- the gallery slams; every camera in the room feels it
 		elseif phase == "safe" then
 			Gallery.setSurge(g, false)
 		end
