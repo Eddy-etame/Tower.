@@ -248,6 +248,41 @@ function BuildKit.pad(folder, position, color)
 	}, folder)
 end
 
+-- a looped ambient bed for a room (the room BREATHES; the ear always has a floor to stand on)
+function BuildKit.ambience(folder, soundId, speed, volume)
+	local bed = Instance.new("Sound")
+	bed.SoundId = soundId
+	bed.PlaybackSpeed = speed
+	bed.Volume = volume
+	bed.Looped = true
+	bed.Parent = folder
+	bed:Play()
+	return bed
+end
+
+-- distant structural settles: rare, randomized one-shots (the building is old and does not care).
+-- The loop dies with the folder (teardown destroys it; the Parent check ends the task).
+function BuildKit.settles(folder, soundId, speed, volume, gapMin, gapMax)
+	task.spawn(function()
+		local rng = Random.new()
+		while folder.Parent do
+			task.wait(rng:NextNumber(gapMin, gapMax))
+			if not folder.Parent then
+				break
+			end
+			local oneShot = Instance.new("Sound")
+			oneShot.SoundId = soundId
+			oneShot.PlaybackSpeed = speed * rng:NextNumber(0.9, 1.15)
+			oneShot.Volume = volume
+			oneShot.Parent = folder
+			oneShot:Play()
+			oneShot.Ended:Once(function()
+				oneShot:Destroy()
+			end)
+		end
+	end)
+end
+
 -- THE GRIND DOOR — the game's engine made physical: a heavy slab in a room's east door gap that grinds UPWARD
 -- on its own as a player nears (the Threshold invites; it does not care), with a dark vestibule beyond and a
 -- walk-through zone. Used by the Beginning (enter the descent) and the Ending (descend again).

@@ -90,6 +90,15 @@ function Beginning.build(ctx)
 
 	-- dust in the air: the light gets volume, the place reads as long-undisturbed (shared BuildKit.dust)
 	BuildKit.dust(folder, 17, 9, 0, 30, 20)
+	BuildKit.ambience(folder, ctx.tuning.AMBIENT_SOUND, ctx.tuning.NAVE_BED_SPEED, ctx.tuning.NAVE_BED_VOLUME)
+	BuildKit.settles(
+		folder,
+		ctx.tuning.SETTLE_SOUND,
+		ctx.tuning.SETTLE_SPEED,
+		ctx.tuning.SETTLE_VOLUME,
+		ctx.tuning.SETTLE_GAP_MIN,
+		ctx.tuning.SETTLE_GAP_MAX
+	)
 	-- the name, on the side wall between pilasters — read it or don't; the door is the point
 	BuildKit.sign(
 		folder,

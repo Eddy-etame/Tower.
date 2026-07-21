@@ -130,6 +130,14 @@ function Arena.build(tuning, parentFolder)
 
 	-- dust over the room (shared atmosphere language; the throat stays clear — contrast on arrival)
 	BuildKit.dust(folder, 33, 9, 0, 50, 34)
+	BuildKit.settles(
+		folder,
+		SliceTuning.SETTLE_SOUND,
+		SliceTuning.SETTLE_SPEED,
+		SliceTuning.SETTLE_VOLUME,
+		SliceTuning.SETTLE_GAP_MIN,
+		SliceTuning.SETTLE_GAP_MAX
+	)
 
 	-- environmental story (this place broke; it does not care that you are here): a toppled barricade at the
 	-- mouth, two fallen ceiling chunks, a dead hung fixture. Cheap parts, but the room stops being a box.

@@ -41,6 +41,15 @@ function Ending.build(ctx)
 		Name = "DoorLintel",
 	}, folder)
 	BuildKit.dust(folder, 17, 9, 0, 30, 20) -- shared atmosphere language (see BuildKit.dust)
+	BuildKit.ambience(folder, tuning.AMBIENT_SOUND, tuning.NAVE_BED_SPEED, tuning.NAVE_BED_VOLUME)
+	BuildKit.settles(
+		folder,
+		tuning.SETTLE_SOUND,
+		tuning.SETTLE_SPEED,
+		tuning.SETTLE_VOLUME,
+		tuning.SETTLE_GAP_MIN,
+		tuning.SETTLE_GAP_MAX
+	)
 	-- warm but DIM: relief, carrying weight — not a bright reward room. You made it out; you'll remember.
 	BuildKit.pool(folder, 17, 10.5, -3, Color3.fromRGB(236, 220, 192), 1.3, 28)
 	BuildKit.sign(

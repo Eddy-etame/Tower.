@@ -99,8 +99,8 @@ function Corridor.build(tuning, parentFolder)
 	}, folder)
 	handles.reel = reel
 	handles.tapePrompt = Instance.new("ProximityPrompt")
-	handles.tapePrompt.ActionText = "Record + play the tape"
-	handles.tapePrompt.ObjectText = "Tape recorder"
+	handles.tapePrompt.ActionText = "HOLD - RECORD"
+	handles.tapePrompt.ObjectText = "THE TAPE"
 	handles.tapePrompt.HoldDuration = 0.4
 	handles.tapePrompt.MaxActivationDistance = 8
 	handles.tapePrompt.RequiresLineOfSight = false

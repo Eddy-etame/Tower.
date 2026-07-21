@@ -71,8 +71,8 @@ function Sanctum.build(tuning, parentFolder)
 	handles.socketGlow = sglow
 	handles.socketPos = Vector3.new(42, 3.6, -11)
 	handles.socketPrompt = Instance.new("ProximityPrompt")
-	handles.socketPrompt.ActionText = "Give it to the socket"
-	handles.socketPrompt.ObjectText = ""
+	handles.socketPrompt.ActionText = "HOLD - GIVE THE LIGHT"
+	handles.socketPrompt.ObjectText = "THE SOCKET"
 	handles.socketPrompt.HoldDuration = tuning.MORAL_SOCKET_HOLD
 	handles.socketPrompt.MaxActivationDistance = 8
 	handles.socketPrompt.RequiresLineOfSight = false
@@ -154,6 +154,7 @@ function Sanctum.build(tuning, parentFolder)
 
 	-- dust in both halves — LightInfluence=1 means the motes are INVISIBLE in the dark arrival and only appear
 	-- inside the companion's warm glow: the little light literally reveals the air around you as it walks with you
+	BuildKit.ambience(folder, tuning.AMBIENT_SOUND, tuning.SANCTUM_BED_SPEED, tuning.SANCTUM_BED_VOLUME)
 	BuildKit.dust(folder, -20, H - 3, 0, 34, 20)
 	BuildKit.dust(folder, 25, H - 3, 0, 44, 24)
 

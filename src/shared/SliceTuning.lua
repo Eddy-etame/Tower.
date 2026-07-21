@@ -41,7 +41,22 @@ return {
 	-- fix remains Audio-dept foley uploaded as rbxassetid:// — these are placeholders that carry the INFORMATION.
 	AMBIENT_SOUND = "rbxasset://sounds/action_falling.ogg", -- wind loop pitched low = the Threshold's airy bed
 	AMBIENT_SPEED = 0.32,
-	AMBIENT_VOLUME = 0.1,
+	AMBIENT_VOLUME = 0.22, -- raised from 0.1 (Eddy: "no background sound" - a bed nobody hears is not a bed)
+	-- THE AMBIENCE LAYER (every room breathes; silence is authored, never accidental digital zero)
+	NAVE_BED_SPEED = 0.28, -- Beginning/Ending: low wind through an old building
+	NAVE_BED_VOLUME = 0.2,
+	GALLERY_BED_SPEED = 0.45, -- II: higher airflow - the machine idling between breaths
+	GALLERY_BED_VOLUME = 0.16,
+	SANCTUM_BED_SPEED = 0.25, -- IV: the faintest air - near-silence that is still ALIVE
+	SANCTUM_BED_VOLUME = 0.07,
+	SETTLE_SOUND = "rbxasset://sounds/action_jump_land.mp3", -- distant structural settles (the building is old)
+	SETTLE_SPEED = 0.22,
+	SETTLE_VOLUME = 0.14,
+	SETTLE_GAP_MIN = 14, -- seconds between settles (randomized - never a rhythm)
+	SETTLE_GAP_MAX = 32,
+	CLICK_SOUND = "rbxasset://sounds/volume_slider.ogg", -- the flashlight click (VERIFIED present 2026-07-21)
+	CLICK_VOLUME = 0.5,
+
 	WATCHER_MOVE_SOUND = "rbxasset://sounds/action_footsteps_plastic.mp3", -- footsteps: you HEAR it walking
 	WATCHER_MOVE_SPEED = 0.55, -- pitched down = something heavy walking
 	WATCHER_MOVE_VOLUME = 0.6,

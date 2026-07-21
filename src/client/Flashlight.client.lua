@@ -144,6 +144,16 @@ local function toggle(_, state)
 	end
 	lastToggle = os.clock()
 	enabled = not enabled
+	-- the CLICK (the most-used interaction was mute): pitch up = on, down = off - the ear learns the state
+	local click = Instance.new("Sound")
+	click.SoundId = tuning.CLICK_SOUND
+	click.PlaybackSpeed = enabled and 1.15 or 0.85
+	click.Volume = tuning.CLICK_VOLUME
+	click.Parent = camera
+	click:Play()
+	click.Ended:Once(function()
+		click:Destroy()
+	end)
 	applyLight()
 	flashlightRemote:FireServer(enabled)
 end

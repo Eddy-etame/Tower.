@@ -199,6 +199,7 @@ function Gallery.build(tuning, parentFolder)
 
 	-- dust over the gallery lane (shared atmosphere language; the surges churn a long-undisturbed air)
 	BuildKit.dust(folder, (MINX + MAXX) / 2, H - 3, 0, MAXX - MINX - 10, MAXZ - MINZ - 2)
+	BuildKit.ambience(folder, tuning.AMBIENT_SOUND, tuning.GALLERY_BED_SPEED, tuning.GALLERY_BED_VOLUME)
 
 	folder.Parent = parentFolder or workspace
 	return handles

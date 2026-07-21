@@ -30,6 +30,16 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 local INK = Color3.fromRGB(228, 222, 208)
 
+-- baseline film vignette: a permanent faint edge-dark (depth in every frame, not only in danger)
+local filmVignette = Instance.new("ImageLabel")
+filmVignette.Size = UDim2.fromScale(1, 1)
+filmVignette.BackgroundTransparency = 1
+filmVignette.Image = "rbxasset://textures/ui/Vignette.png"
+filmVignette.ImageColor3 = Color3.fromRGB(0, 0, 0)
+filmVignette.ImageTransparency = 0.72
+filmVignette.ScaleType = Enum.ScaleType.Stretch
+filmVignette.Parent = gui
+
 local vignette = Instance.new("ImageLabel")
 vignette.Size = UDim2.fromScale(1, 1)
 vignette.BackgroundTransparency = 1
