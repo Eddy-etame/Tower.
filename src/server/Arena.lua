@@ -100,7 +100,16 @@ function Arena.build(tuning, parentFolder)
 	slab(folder, 33, 0.55, MINZ + 0.4, MAXX - MINX, 0.9, 0.5, TRIM, Enum.Material.WoodPlanks, "Baseboard")
 	slab(folder, 33, 0.55, MAXZ - 0.4, MAXX - MINX, 0.9, 0.5, TRIM, Enum.Material.WoodPlanks, "Baseboard")
 
-	-- (pillars removed — see the note above the slab() helper; the room is a clean open space now)
+	-- (the old mid-room pillar GRID stays removed — it trapped players in the dark. The architectural rhythm now
+	-- lives at the WALLS: pilasters + ceiling beams, same language as the Beginning, zero footprint in the play
+	-- space — the room reads as a building without ever blocking a path.)
+	BuildKit.pilasters(folder, MINX, MAXX, MINZ, MAXZ, ROOM_H, 7)
+	BuildKit.ceilingBeams(folder, MINX, MAXX, MINZ, MAXZ, ROOM_H, 7)
+	-- the exit door monument (matches the Beginning's gate: jambs + lintel framing the way out)
+	for _, jz in { -3.4, 3.4 } do
+		slab(folder, MAXX - 0.4, 5.5, jz, 2, 11, 1.6, Color3.fromRGB(30, 30, 33), Enum.Material.Slate, "DoorJamb")
+	end
+	slab(folder, MAXX - 0.4, 10.2, 0, 2.2, 2.4, 8.4, Color3.fromRGB(26, 26, 29), Enum.Material.Slate, "DoorLintel")
 
 	-- THE ROAD: a continuous amber runway from the SPAWN (deep in the throat, x -14) unbroken to the exit door.
 	-- It MUST read from the entrance itself (Eddy, v0.17.6: stood at the throat mouth and saw no path — the old

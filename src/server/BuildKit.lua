@@ -205,6 +205,38 @@ function BuildKit.dust(folder, cx, cy, cz, w, d)
 	return anchor
 end
 
+-- ARCHITECTURAL LANGUAGE (the anti-basic kit): pilasters + ceiling beams turn a box into a building. The same
+-- rhythm sweeps every room so the whole tower reads as one place. Cheap parts, composed shadows.
+-- pilasters along both z-walls of a room span, every `step` studs: vertical ribs proud of the wall
+function BuildKit.pilasters(folder, minX, maxX, minZ, maxZ, height, step)
+	local dark = Color3.fromRGB(38, 39, 42)
+	for px = minX + (step or 6), maxX - 2, (step or 6) do
+		for _, pz in { minZ + 0.45, maxZ - 0.45 } do
+			BuildKit.part({
+				Size = Vector3.new(1.1, height, 1.3),
+				CFrame = CFrame.new(px, height / 2, pz),
+				Color = dark,
+				Material = Enum.Material.Slate,
+				Name = "Pilaster",
+			}, folder)
+		end
+	end
+end
+
+-- ceiling beams across the room every `step` studs: a shadow rhythm overhead instead of one flat lid
+function BuildKit.ceilingBeams(folder, minX, maxX, minZ, maxZ, height, step)
+	local dark = Color3.fromRGB(30, 31, 34)
+	for bx = minX + (step or 6), maxX - 2, (step or 6) do
+		BuildKit.part({
+			Size = Vector3.new(0.9, 0.8, maxZ - minZ),
+			CFrame = CFrame.new(bx, height - 0.4, (minZ + maxZ) / 2),
+			Color = dark,
+			Material = Enum.Material.Slate,
+			Name = "Beam",
+		}, folder)
+	end
+end
+
 -- an interaction pad the player walks onto to proceed (used for stub-encounter "proceed" and transitions)
 function BuildKit.pad(folder, position, color)
 	return BuildKit.part({
