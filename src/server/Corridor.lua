@@ -62,9 +62,19 @@ function Corridor.build(tuning, parentFolder)
 		slab(folder, cx, H - 3, MAXZ - 1.5, 0.14, 5.6, 0.14, Color3.fromRGB(24, 24, 26), Enum.Material.Metal, "Chain")
 	end
 
+	-- the conduit lines the lamps LIVE on (both walls, lamp height): the corridor was WIRED, by someone, once
+	BuildKit.conduit(folder, MINX + 2, MAXX - 2, H - 3.5, MINZ + 0.55, 18)
+	BuildKit.conduit(folder, MINX + 2, MAXX - 2, H - 3.5, MAXZ - 0.55, 18)
 	-- the wall lamps (the tell): one per station, alternating walls, each remembers its calm brightness
 	for i, lx in LAMPS_X do
 		local lz = (i % 2 == 0) and (MAXZ - 0.6) or (MINZ + 0.6)
+		BuildKit.part({
+			Size = Vector3.new(1.8, 1.8, 0.35),
+			CFrame = CFrame.new(lx, H - 3.5, (lz > 0) and (lz + 0.22) or (lz - 0.22)),
+			Color = Color3.fromRGB(46, 44, 42),
+			Material = Enum.Material.CorrodedMetal, -- the housing plate behind each lamp
+			Name = "LampHousing",
+		}, folder)
 		local bulb = BuildKit.part({
 			Size = Vector3.new(1.4, 1.4, 0.5),
 			CFrame = CFrame.new(lx, H - 3.5, lz),
@@ -142,6 +152,9 @@ function Corridor.build(tuning, parentFolder)
 	-- dust down the corridor: motes catch each lamp pool, so the dead-lamp band (the presence's tell) reads as
 	-- a hole in the drifting light too — the atmosphere itself carries the positional signal
 	BuildKit.dust(folder, (MINX + MAXX) / 2, H - 3, 0, MAXX - MINX - 10, MAXZ - MINZ - 1)
+	BuildKit.stain(folder, CFrame.new(34, 2.8, MINZ + 0.53), 6, 4.5)
+	BuildKit.stain(folder, CFrame.new(88, 3.4, MAXZ - 0.53), 8, 5)
+	BuildKit.stain(folder, CFrame.new(60, 0.22, 2) * CFrame.Angles(math.rad(90), 0, 0), 7, 5)
 
 	folder.Parent = parentFolder or workspace
 	return handles

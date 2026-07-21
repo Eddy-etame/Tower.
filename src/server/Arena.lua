@@ -130,6 +130,12 @@ function Arena.build(tuning, parentFolder)
 
 	-- dust over the room (shared atmosphere language; the throat stays clear — contrast on arrival)
 	BuildKit.dust(folder, 33, 9, 0, 50, 34)
+	-- infrastructure + age: conduit runs along both walls feeding the breakers; stains where water found a way
+	BuildKit.conduit(folder, MINX + 2, MAXX - 2, ROOM_H - 2.2, MINZ + 0.62, 16)
+	BuildKit.conduit(folder, MINX + 2, MAXX - 2, ROOM_H - 2.2, MAXZ - 0.62, 16)
+	BuildKit.stain(folder, CFrame.new(20, 3.2, MINZ + 0.58), 7, 5)
+	BuildKit.stain(folder, CFrame.new(45, 2.6, MAXZ - 0.58), 9, 4)
+	BuildKit.stain(folder, CFrame.new(33, 0.22, -8) * CFrame.Angles(math.rad(90), 0, 0), 8, 6)
 	BuildKit.settles(
 		folder,
 		SliceTuning.SETTLE_SOUND,
@@ -214,8 +220,8 @@ function Arena.build(tuning, parentFolder)
 		BuildKit.part({
 			Size = Vector3.new(2, 2.6, 1.2),
 			CFrame = CFrame.new(b.x, 1.5, b.z),
-			Color = Color3.fromRGB(70, 72, 76),
-			Material = Enum.Material.Metal,
+			Color = Color3.fromRGB(64, 62, 60),
+			Material = Enum.Material.CorrodedMetal, -- an old panel that has waited a long time
 			Name = "Breaker" .. i,
 		}, folder)
 		-- the LIGHT-POLE: a tall red beacon visible across the whole dark room — THE goal you walk toward, red

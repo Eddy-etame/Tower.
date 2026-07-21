@@ -45,12 +45,14 @@ function BuildKit.room(folder, b, opts)
 		Size = Vector3.new(w, 0.2, d),
 		CFrame = CFrame.new(cx, 0.1, cz),
 		Color = BuildKit.jitter(BuildKit.FLOOR),
+		Material = Enum.Material.Pavement, -- worn hard floor (PBR grain), not render-flat concrete
 		Name = "Floor",
 	}, folder)
 	BuildKit.part({
 		Size = Vector3.new(w + 2, 0.5, d + 2),
 		CFrame = CFrame.new(cx, h + 0.25, cz),
 		Color = BuildKit.jitter(BuildKit.CEIL),
+		Material = Enum.Material.Basalt, -- a dark heavy lid
 		Name = "Ceiling",
 	}, folder)
 	-- south + north walls
@@ -58,12 +60,14 @@ function BuildKit.room(folder, b, opts)
 		Size = Vector3.new(w, h, 1),
 		CFrame = CFrame.new(cx, h / 2, b.minZ),
 		Color = BuildKit.jitter(BuildKit.WALL),
+		Material = Enum.Material.Limestone,
 		Name = "Wall",
 	}, folder)
 	BuildKit.part({
 		Size = Vector3.new(w, h, 1),
 		CFrame = CFrame.new(cx, h / 2, b.maxZ),
 		Color = BuildKit.jitter(BuildKit.WALL),
+		Material = Enum.Material.Limestone,
 		Name = "Wall",
 	}, folder)
 	-- west wall (entrance side; solid)
@@ -71,6 +75,7 @@ function BuildKit.room(folder, b, opts)
 		Size = Vector3.new(1, h, d),
 		CFrame = CFrame.new(b.minX, h / 2, cz),
 		Color = BuildKit.jitter(BuildKit.WALL),
+		Material = Enum.Material.Limestone,
 		Name = "Wall",
 	}, folder)
 	-- east wall with a door gap (z -3..3)
@@ -79,18 +84,21 @@ function BuildKit.room(folder, b, opts)
 		Size = Vector3.new(1, h, d / 2 - gapHalf),
 		CFrame = CFrame.new(b.maxX, h / 2, b.minZ + (d / 2 - gapHalf) / 2),
 		Color = BuildKit.jitter(BuildKit.WALL),
+		Material = Enum.Material.Limestone,
 		Name = "Wall",
 	}, folder)
 	BuildKit.part({
 		Size = Vector3.new(1, h, d / 2 - gapHalf),
 		CFrame = CFrame.new(b.maxX, h / 2, b.maxZ - (d / 2 - gapHalf) / 2),
 		Color = BuildKit.jitter(BuildKit.WALL),
+		Material = Enum.Material.Limestone,
 		Name = "Wall",
 	}, folder)
 	BuildKit.part({
 		Size = Vector3.new(1, h - gapHalf * 2 - 2, gapHalf * 2),
 		CFrame = CFrame.new(b.maxX, h - (h - gapHalf * 2 - 2) / 2, cz),
 		Color = BuildKit.jitter(BuildKit.WALL),
+		Material = Enum.Material.Limestone,
 		Name = "Lintel",
 	}, folder)
 	-- baseboards
@@ -113,6 +121,13 @@ end
 
 -- a ceiling light pool (dark gaps between; horror lights as sparse pools, never uniform fill)
 function BuildKit.pool(folder, x, y, z, color, brightness, range)
+	BuildKit.part({
+		Size = Vector3.new(2.2, 0.25, 2.2),
+		CFrame = CFrame.new(x, y + 0.24, z),
+		Color = Color3.fromRGB(48, 46, 44),
+		Material = Enum.Material.CorrodedMetal, -- the housing: a light is a made thing bolted to the ceiling
+		Name = "FixtureHousing",
+	}, folder)
 	local bulb = BuildKit.part({
 		Size = Vector3.new(1.6, 0.3, 1.6),
 		CFrame = CFrame.new(x, y, z),
@@ -292,8 +307,8 @@ function BuildKit.grindDoor(folder, doorX, grindSoundId)
 	h.door = BuildKit.part({
 		Size = Vector3.new(1.2, 8.6, 6),
 		CFrame = CFrame.new(doorX, 4.3, 0),
-		Color = Color3.fromRGB(42, 40, 38),
-		Material = Enum.Material.DiamondPlate,
+		Color = Color3.fromRGB(52, 48, 44),
+		Material = Enum.Material.CorrodedMetal,
 		Name = "GrindDoor",
 	}, folder)
 	h.closed = h.door.CFrame
@@ -374,6 +389,42 @@ function BuildKit.grindDoorUpdate(h, step, openDist, openSeconds)
 	if h.openT >= 1 then
 		h.grind:Stop()
 	end
+end
+
+-- a wall conduit run: a thin pipe at height y along the z-face from x1..x2, with junction boxes — the
+-- infrastructure DNA that makes a corridor read as a BUILDING (something was wired, by someone, long ago)
+function BuildKit.conduit(folder, x1, x2, y, z, boxEvery)
+	BuildKit.part({
+		Size = Vector3.new(math.abs(x2 - x1), 0.18, 0.18),
+		CFrame = CFrame.new((x1 + x2) / 2, y, z),
+		Color = Color3.fromRGB(44, 42, 40),
+		Material = Enum.Material.CorrodedMetal,
+		Name = "Conduit",
+	}, folder)
+	local step = boxEvery or 14
+	for bx = math.min(x1, x2) + step / 2, math.max(x1, x2) - 1, step do
+		BuildKit.part({
+			Size = Vector3.new(0.7, 0.7, 0.3),
+			CFrame = CFrame.new(bx, y, z),
+			Color = Color3.fromRGB(52, 50, 46),
+			Material = Enum.Material.Metal,
+			Name = "JunctionBox",
+		}, folder)
+	end
+end
+
+-- a grime stain: a barely-proud dark patch on a surface (water damage, age). orient = "floor" | "wall"
+function BuildKit.stain(folder, cf, w, h)
+	BuildKit.part({
+		Size = Vector3.new(w, h, 0.05),
+		CFrame = cf,
+		Color = Color3.fromRGB(38, 37, 35),
+		Material = Enum.Material.Asphalt, -- rough dark blotch
+		Transparency = 0.35,
+		CanCollide = false,
+		CanQuery = false,
+		Name = "Stain",
+	}, folder)
 end
 
 return BuildKit

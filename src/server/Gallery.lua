@@ -104,6 +104,13 @@ function Gallery.build(tuning, parentFolder)
 	for _, lx in LAMPS_X do
 		local nx = (lx - MINX) / (MAXX - MINX) -- 0 = near entrance, 1 = far origin
 		for _, lz in { MINZ + 0.6, MAXZ - 0.6 } do
+			BuildKit.part({
+				Size = Vector3.new(0.35, 2.0, 2.0),
+				CFrame = CFrame.new(lx, H - 3, (lz > 0) and (lz + 0.28) or (lz - 0.28)),
+				Color = Color3.fromRGB(46, 44, 42),
+				Material = Enum.Material.CorrodedMetal,
+				Name = "LampHousing",
+			}, folder)
 			local bulb = BuildKit.part({
 				Size = Vector3.new(0.6, 1.6, 1.6),
 				CFrame = CFrame.new(lx, H - 3, lz),
@@ -200,6 +207,8 @@ function Gallery.build(tuning, parentFolder)
 	-- dust over the gallery lane (shared atmosphere language; the surges churn a long-undisturbed air)
 	BuildKit.dust(folder, (MINX + MAXX) / 2, H - 3, 0, MAXX - MINX - 10, MAXZ - MINZ - 2)
 	BuildKit.ambience(folder, tuning.AMBIENT_SOUND, tuning.GALLERY_BED_SPEED, tuning.GALLERY_BED_VOLUME)
+	BuildKit.conduit(folder, MINX + 2, MAXX - 2, H - 1.6, MINZ + 0.6, 20)
+	BuildKit.conduit(folder, MINX + 2, MAXX - 2, H - 1.6, MAXZ - 0.6, 20)
 
 	folder.Parent = parentFolder or workspace
 	return handles

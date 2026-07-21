@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 23,
-	stage = "the-rooms-breathe",
+	patch = 24,
+	stage = "realism-pass-1",
 }
