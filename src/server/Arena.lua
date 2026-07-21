@@ -156,6 +156,7 @@ function Arena.build(tuning, parentFolder)
 	el.Brightness = 0.55
 	el.Color = Color3.fromRGB(150, 84, 76)
 	el.Parent = emerg
+	handles.emergLight = el
 
 	-- THE REVEAL: a dim, sick swell of light high over the room that lifts it out of black for ~1.4s on entry,
 	-- long enough to half-see the tall shape far off, then sinks back to nothing. Uncertainty, not a jump scare
@@ -402,15 +403,49 @@ end
 function Arena.surge(handles)
 	handles.surged = true
 	Arena.openDoor(handles)
-	for _, b in handles.breakers do
-		b.light.Enabled = false
-		b.bulb.Color = OFF_BULB
-		b.bulb.Material = Enum.Material.SmoothPlastic
-		b.prompt.Enabled = false -- power is done; no live "Restore" prompt left dangling during the escape
-	end
 	if handles.surgeSound then
 		handles.surgeSound:Play()
 	end
+	-- THE DYING BREATH: every live fixture OVERLOADS (screams bright) for a beat... THEN the cut to black.
+	-- Death gets a breath before it — the room's last light is the loudest.
+	for _, b in handles.breakers do
+		b.prompt.Enabled = false -- no live "Restore" prompt left dangling during the escape
+		if b.active then
+			b.light.Brightness = b.light.Brightness * SliceTuning.SURGE_FLARE_MULT
+		end
+	end
+	task.delay(SliceTuning.SURGE_FLARE_SECS, function()
+		for _, b in handles.breakers do
+			b.light.Enabled = false
+			b.light.Brightness = 1.5 -- restore the base level for the next attempt
+			b.bulb.Color = OFF_BULB
+			b.bulb.Material = Enum.Material.SmoothPlastic
+		end
+	end)
+	-- the escape heartbeat: the emergency red + the open-door green BREATHE while the surge state holds
+	task.spawn(function()
+		local up = true
+		while handles.surged do
+			local target = up and SliceTuning.SURGE_PULSE_HI or SliceTuning.SURGE_PULSE_LO
+			local info =
+				TweenInfo.new(SliceTuning.SURGE_PULSE_SECS / 2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+			if handles.emergLight then
+				TweenService:Create(handles.emergLight, info, { Brightness = target }):Play()
+			end
+			if handles.doorLamp then
+				TweenService:Create(handles.doorLamp.PointLight, info, { Brightness = target + 0.3 }):Play()
+			end
+			up = not up
+			task.wait(SliceTuning.SURGE_PULSE_SECS / 2)
+		end
+		-- state released (reset): settle both lights back to their resting levels
+		if handles.emergLight then
+			handles.emergLight.Brightness = 0.55
+		end
+		if handles.doorLamp then
+			handles.doorLamp.PointLight.Brightness = 1.2
+		end
+	end)
 end
 
 function Arena.reset(handles)

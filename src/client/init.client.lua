@@ -459,8 +459,14 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		buildRules(payload.lines)
 		rules.Visible = true
 		rules.BackgroundTransparency = 0.35
-		for _, l in rulesParts do
-			l.TextTransparency = 0
+		-- typewriter cadence: each line arrives a beat after the last (the card SPEAKS instead of appearing)
+		for i, l in rulesParts do
+			l.TextTransparency = 1
+			task.delay((i - 1) * tuning.RULES_STAGGER, function()
+				if rules.Visible then
+					TweenService:Create(l, TweenInfo.new(0.22), { TextTransparency = 0 }):Play()
+				end
+			end)
 		end
 		local shownAt = os.clock()
 		if rulesConn then
@@ -487,6 +493,7 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		-- the power died: a hard red flash spike (the danger vignette resumes control on the next tick)
 		vignette.ImageTransparency = 0.2
 		TweenService:Create(vignette, TweenInfo.new(0.6), { ImageTransparency = 0.55 }):Play()
+		player:SetAttribute("FeelKick", 1) -- the camera takes the hit (Feel.client decays it)
 		showBanner("RUN.")
 	elseif payload.kind == "retry" then
 		-- back in after a catch: clear the caught card + reset the vignette (no rules re-show)

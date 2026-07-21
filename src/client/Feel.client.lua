@@ -14,6 +14,14 @@ local camera = workspace.CurrentCamera
 
 local t = 0 -- bob phase (advances only while moving, so the bob never ticks while standing)
 local fov = tuning.FEEL_FOV_BASE
+local kick = 0 -- impact channel: any script sets the player's "FeelKick" attribute; it decays here
+player:GetAttributeChangedSignal("FeelKick"):Connect(function()
+	local v = player:GetAttribute("FeelKick")
+	if typeof(v) == "number" and v > 0 then
+		kick = math.clamp(v, 0, 1)
+		player:SetAttribute("FeelKick", 0)
+	end
+end)
 local dip = 0 -- current landing dip (springs back to 0)
 local dipVel = 0
 
@@ -56,7 +64,8 @@ RunService.RenderStepped:Connect(function(dt)
 	humanoid.CameraOffset = Vector3.new(swayX, bobY + dip, 0)
 
 	-- moving FOV: wider when moving, eased — never a snap zoom
+	kick *= math.exp(-tuning.FEEL_KICK_DECAY * dt) -- the punch decays like a struck thing settling
 	local targetFov = tuning.FEEL_FOV_BASE + tuning.FEEL_FOV_MOVE * move
 	fov += (targetFov - fov) * (1 - math.exp(-tuning.FEEL_FOV_LERP * dt))
-	camera.FieldOfView = fov
+	camera.FieldOfView = fov + kick * tuning.FEEL_KICK_FOV
 end)

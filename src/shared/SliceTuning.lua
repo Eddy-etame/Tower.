@@ -157,6 +157,16 @@ return {
 	MOBILE_DISABLE_ATMOSPHERE = true, -- classic fog takes over (FogStart/End/Color are set in the place)
 	MOBILE_DISABLE_BLOOM = true,
 
+	-- THE SURGE, PRESENTED (the clippable moment): bulbs SCREAM before they die, then the room breathes red
+	SURGE_FLARE_MULT = 2.3, -- fixtures overload to this multiple of their brightness...
+	SURGE_FLARE_SECS = 0.24, -- ...for this long, THEN the cut to black (death has a breath before it)
+	SURGE_PULSE_SECS = 1.1, -- the emergency red + open-door green breathe at this period during the escape
+	SURGE_PULSE_LO = 0.45, -- pulse brightness floor...
+	SURGE_PULSE_HI = 1.15, -- ...and ceiling
+	FEEL_KICK_FOV = 6, -- FOV punch on the surge hit
+	FEEL_KICK_DECAY = 3.2, -- how fast the punch decays (1-exp)
+	RULES_STAGGER = 0.09, -- s between rules-card lines appearing (typewriter cadence, matches the font's voice)
+
 	-- GAME-FEEL (Eddy 2026-07-21: "not smooth, not captivating" — the camera must feel like a body, not a
 	-- tripod). Subtle by design: feel it, never see it.
 	FEEL_BOB_AMP = 0.09, -- studs of vertical bob at full walk speed
