@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 21,
-	stage = "silence-band-alive",
+	patch = 22,
+	stage = "the-world-dims-with-it",
 }

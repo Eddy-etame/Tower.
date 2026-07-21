@@ -14,6 +14,8 @@ local current, active, activeHandles, activeFolder, activeCtx
 local generation = 0 -- bumped each stage build; a stale delayed clear() from a torn-down stage is ignored
 local session = {} -- cross-stage state for ONE descent (e.g. the moral choice); wiped when the loop restarts
 
+local applyMood -- forward-declared (defined below); ctx closures call it late-bound
+
 local function ctxFor(folder, gen)
 	return {
 		folder = folder,
@@ -30,6 +32,9 @@ local function ctxFor(folder, gen)
 		end,
 		players = function()
 			return Players:GetPlayers()
+		end,
+		setMood = function(mood)
+			applyMood(mood) -- a stage may shift the world's light mid-beat (e.g. the world darkens as a light dies)
 		end,
 		-- advance ONLY if this ctx belongs to the still-current stage — so two players finishing within the
 		-- 5s escape window (or any stale scheduled clear) can't double-advance and skip an encounter
@@ -77,7 +82,7 @@ end
 -- Stage.mood = { ambient={r,g,b}, fog={r,g,b}, saturation=n } (0..1 channels); absent fields fall back to
 -- the base grade. Applied as a slow crossfade on stage start — the world's light changes under the entry fade.
 local MOOD_BASE = { ambient = { 0.15, 0.16, 0.19 }, fog = { 0.07, 0.08, 0.1 }, saturation = -0.25 }
-local function applyMood(mood)
+function applyMood(mood)
 	mood = mood or {}
 	local amb = mood.ambient or MOOD_BASE.ambient
 	local fog = mood.fog or MOOD_BASE.fog

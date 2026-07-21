@@ -56,6 +56,8 @@ function Stage.build(ctx)
 		h.committed = "spending"
 		sanctum.socketPrompt.Enabled = false
 		sanctum.orb:SetAttribute("OrbState", "drain") -- the client fades the visual light over the drain
+		-- as the only warmth in this world dies, the WORLD dims with it (brief — the door opens moments later)
+		ctx.setMood({ ambient = { 0.105, 0.1, 0.115 }, fog = { 0.05, 0.047, 0.058 }, saturation = -0.42 })
 		task.spawn(function()
 			local orb, hum = sanctum.orb, sanctum.hum
 			local start = orb.Position
