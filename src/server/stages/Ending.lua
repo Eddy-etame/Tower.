@@ -42,6 +42,9 @@ function Ending.build(ctx)
 	}, folder)
 	BuildKit.dust(folder, 17, 9, 0, 30, 20) -- shared atmosphere language (see BuildKit.dust)
 	BuildKit.ambience(folder, tuning.AMBIENT_SOUND, tuning.NAVE_BED_SPEED, tuning.NAVE_BED_VOLUME)
+	BuildKit.conduit(folder, 2, 32, 12.4, -11.45, 15)
+	BuildKit.conduit(folder, 2, 32, 12.4, 11.45, 15)
+	BuildKit.stain(folder, CFrame.new(24, 3.2, 11.42), 7, 4.5)
 	BuildKit.settles(
 		folder,
 		tuning.SETTLE_SOUND,

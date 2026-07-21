@@ -91,6 +91,9 @@ function Beginning.build(ctx)
 	-- dust in the air: the light gets volume, the place reads as long-undisturbed (shared BuildKit.dust)
 	BuildKit.dust(folder, 17, 9, 0, 30, 20)
 	BuildKit.ambience(folder, ctx.tuning.AMBIENT_SOUND, ctx.tuning.NAVE_BED_SPEED, ctx.tuning.NAVE_BED_VOLUME)
+	BuildKit.conduit(folder, 2, 32, 12.4, -8.45, 15)
+	BuildKit.conduit(folder, 2, 32, 12.4, 8.45, 15)
+	BuildKit.stain(folder, CFrame.new(9, 3.5, -8.42), 6, 4)
 	BuildKit.settles(
 		folder,
 		ctx.tuning.SETTLE_SOUND,

@@ -62,18 +62,18 @@ function Arena.build(tuning, parentFolder)
 	local handles = { folder = folder, breakers = {} }
 
 	-- THE THROAT: a tight, low corridor you walk in through (x -18..2, z -4..4). Spawn is inside it, facing in.
-	slab(folder, -8, 0.1, 0, 20, 0.2, 8, BuildKit.jitter(FLOOR), Enum.Material.Concrete, "HallFloor")
-	slab(folder, -8, HALL_H + 0.25, 0, 20, 0.5, 8, BuildKit.jitter(CEIL), Enum.Material.Concrete, "HallCeiling")
-	slab(folder, -8, HALL_H / 2, -4, 20, HALL_H, 1, BuildKit.jitter(WALL), nil, "HallWall")
-	slab(folder, -8, HALL_H / 2, 4, 20, HALL_H, 1, BuildKit.jitter(WALL), nil, "HallWall")
-	slab(folder, -18, HALL_H / 2, 0, 1, HALL_H, 8, BuildKit.jitter(WALL), nil, "HallCap")
+	slab(folder, -8, 0.1, 0, 20, 0.2, 8, BuildKit.jitter(FLOOR), Enum.Material.Pavement, "HallFloor")
+	slab(folder, -8, HALL_H + 0.25, 0, 20, 0.5, 8, BuildKit.jitter(CEIL), Enum.Material.Basalt, "HallCeiling")
+	slab(folder, -8, HALL_H / 2, -4, 20, HALL_H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "HallWall")
+	slab(folder, -8, HALL_H / 2, 4, 20, HALL_H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "HallWall")
+	slab(folder, -18, HALL_H / 2, 0, 1, HALL_H, 8, BuildKit.jitter(WALL), Enum.Material.Limestone, "HallCap")
 	-- the throat is NEVER black (verified unplayable): two dim service lights carry you to the room's mouth
 	for _, sx in { -13, -4 } do
 		BuildKit.pool(folder, sx, HALL_H - 0.4, 0, Color3.fromRGB(150, 118, 96), 1.1, 13)
 	end
 
 	-- THE ROOM: tall, opening off the throat.
-	slab(folder, 33, 0.1, 0, MAXX - MINX, 0.2, MAXZ - MINZ, BuildKit.jitter(FLOOR), Enum.Material.Concrete, "Floor")
+	slab(folder, 33, 0.1, 0, MAXX - MINX, 0.2, MAXZ - MINZ, BuildKit.jitter(FLOOR), Enum.Material.Pavement, "Floor")
 	slab(
 		folder,
 		33,
@@ -86,16 +86,27 @@ function Arena.build(tuning, parentFolder)
 		Enum.Material.Concrete,
 		"Ceiling"
 	)
-	slab(folder, 33, ROOM_H / 2, MINZ, MAXX - MINX, ROOM_H, 1, BuildKit.jitter(WALL), nil, "Wall")
-	slab(folder, 33, ROOM_H / 2, MAXZ, MAXX - MINX, ROOM_H, 1, BuildKit.jitter(WALL), nil, "Wall")
+	slab(folder, 33, ROOM_H / 2, MINZ, MAXX - MINX, ROOM_H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
+	slab(folder, 33, ROOM_H / 2, MAXZ, MAXX - MINX, ROOM_H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
 	-- west wall with the throat gap (z -4..4); segments south and north of the gap, plus a lintel above it
-	slab(folder, MINX, ROOM_H / 2, -12, 1, ROOM_H, 16, BuildKit.jitter(WALL), nil, "Wall")
-	slab(folder, MINX, ROOM_H / 2, 12, 1, ROOM_H, 16, BuildKit.jitter(WALL), nil, "Wall")
-	slab(folder, MINX, (HALL_H + ROOM_H) / 2, 0, 1, ROOM_H - HALL_H, 8, BuildKit.jitter(WALL), nil, "ThroatLintel")
+	slab(folder, MINX, ROOM_H / 2, -12, 1, ROOM_H, 16, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
+	slab(folder, MINX, ROOM_H / 2, 12, 1, ROOM_H, 16, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
+	slab(
+		folder,
+		MINX,
+		(HALL_H + ROOM_H) / 2,
+		0,
+		1,
+		ROOM_H - HALL_H,
+		8,
+		BuildKit.jitter(WALL),
+		Enum.Material.Limestone,
+		"ThroatLintel"
+	)
 	-- east wall with the door gap (z -3..3)
-	slab(folder, MAXX, ROOM_H / 2, -11.5, 1, ROOM_H, 17, BuildKit.jitter(WALL), nil, "Wall")
-	slab(folder, MAXX, ROOM_H / 2, 11.5, 1, ROOM_H, 17, BuildKit.jitter(WALL), nil, "Wall")
-	slab(folder, MAXX, ROOM_H - 2, 0, 1, 4, 6, BuildKit.jitter(WALL), nil, "DoorLintel")
+	slab(folder, MAXX, ROOM_H / 2, -11.5, 1, ROOM_H, 17, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
+	slab(folder, MAXX, ROOM_H / 2, 11.5, 1, ROOM_H, 17, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
+	slab(folder, MAXX, ROOM_H - 2, 0, 1, 4, 6, BuildKit.jitter(WALL), Enum.Material.Limestone, "DoorLintel")
 	-- baseboards (a cold trim line so walls don't read as one flat plane)
 	slab(folder, 33, 0.55, MINZ + 0.4, MAXX - MINX, 0.9, 0.5, TRIM, Enum.Material.WoodPlanks, "Baseboard")
 	slab(folder, 33, 0.55, MAXZ - 0.4, MAXX - MINX, 0.9, 0.5, TRIM, Enum.Material.WoodPlanks, "Baseboard")
@@ -277,9 +288,9 @@ function Arena.build(tuning, parentFolder)
 	-- the SAFE CHAMBER beyond the door: warm, lit, out of the Watcher's reach. Escaping delivers you here.
 	slab(folder, 78, 0.1, 0, 30, 0.2, 20, BuildKit.jitter(FLOOR), Enum.Material.Concrete, "SafeFloor")
 	slab(folder, 78, ROOM_H + 0.25, 0, 32, 0.5, 22, BuildKit.jitter(CEIL), Enum.Material.Concrete, "SafeCeiling")
-	slab(folder, 78, ROOM_H / 2, -10, 30, ROOM_H, 1, BuildKit.jitter(WALL), nil, "Wall")
-	slab(folder, 78, ROOM_H / 2, 10, 30, ROOM_H, 1, BuildKit.jitter(WALL), nil, "Wall")
-	slab(folder, 93, ROOM_H / 2, 0, 1, ROOM_H, 22, BuildKit.jitter(WALL), nil, "Wall")
+	slab(folder, 78, ROOM_H / 2, -10, 30, ROOM_H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
+	slab(folder, 78, ROOM_H / 2, 10, 30, ROOM_H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
+	slab(folder, 93, ROOM_H / 2, 0, 1, ROOM_H, 22, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
 	local safeBulb = BuildKit.part({
 		Size = Vector3.new(2, 0.3, 2),
 		CFrame = CFrame.new(78, ROOM_H - 0.5, 0),

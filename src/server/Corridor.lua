@@ -36,7 +36,18 @@ function Corridor.build(tuning, parentFolder)
 	local handles = { folder = folder, lamps = {} }
 
 	-- entry alcove + the corridor shell (one long tube; fog hides the far end)
-	slab(folder, (EMINX + MAXX) / 2, 0.1, 0, MAXX - EMINX, 0.2, MAXZ - MINZ, BuildKit.jitter(FLOOR), nil, "Floor")
+	slab(
+		folder,
+		(EMINX + MAXX) / 2,
+		0.1,
+		0,
+		MAXX - EMINX,
+		0.2,
+		MAXZ - MINZ,
+		BuildKit.jitter(FLOOR),
+		Enum.Material.Pavement,
+		"Floor"
+	)
 	slab(
 		folder,
 		(EMINX + MAXX) / 2,
@@ -49,9 +60,31 @@ function Corridor.build(tuning, parentFolder)
 		nil,
 		"Ceiling"
 	)
-	slab(folder, (EMINX + MAXX) / 2, H / 2, MINZ, MAXX - EMINX, H, 1, BuildKit.jitter(WALL), nil, "Wall")
-	slab(folder, (EMINX + MAXX) / 2, H / 2, MAXZ, MAXX - EMINX, H, 1, BuildKit.jitter(WALL), nil, "Wall")
-	slab(folder, EMINX, H / 2, 0, 1, H, MAXZ - MINZ + 2, BuildKit.jitter(WALL), nil, "BackWall")
+	slab(
+		folder,
+		(EMINX + MAXX) / 2,
+		H / 2,
+		MINZ,
+		MAXX - EMINX,
+		H,
+		1,
+		BuildKit.jitter(WALL),
+		Enum.Material.Limestone,
+		"Wall"
+	)
+	slab(
+		folder,
+		(EMINX + MAXX) / 2,
+		H / 2,
+		MAXZ,
+		MAXX - EMINX,
+		H,
+		1,
+		BuildKit.jitter(WALL),
+		Enum.Material.Limestone,
+		"Wall"
+	)
+	slab(folder, EMINX, H / 2, 0, 1, H, MAXZ - MINZ + 2, BuildKit.jitter(WALL), Enum.Material.Limestone, "BackWall")
 
 	-- the tower's architectural language: pilaster ribs + beams turn the tube into a passage that was BUILT
 	BuildKit.pilasters(folder, EMINX, MAXX, MINZ, MAXZ, H, 9)
@@ -117,14 +150,14 @@ function Corridor.build(tuning, parentFolder)
 	handles.tapePrompt.Parent = recorder
 
 	-- exit + safe chamber
-	slab(folder, MAXX, H / 2, -6.5, 1, H, 7, BuildKit.jitter(WALL), nil, "ExitWall")
-	slab(folder, MAXX, H / 2, 6.5, 1, H, 7, BuildKit.jitter(WALL), nil, "ExitWall")
-	slab(folder, MAXX, H - 2, 0, 1, 4, 6, BuildKit.jitter(WALL), nil, "ExitLintel")
-	slab(folder, MAXX + 15, 0.1, 0, 30, 0.2, 20, BuildKit.jitter(FLOOR), nil, "SafeFloor")
-	slab(folder, MAXX + 15, H + 0.25, 0, 32, 0.5, 22, BuildKit.jitter(CEIL), nil, "SafeCeiling")
-	slab(folder, MAXX + 15, H / 2, -10, 30, H, 1, BuildKit.jitter(WALL), nil, "SafeWall")
-	slab(folder, MAXX + 15, H / 2, 10, 30, H, 1, BuildKit.jitter(WALL), nil, "SafeWall")
-	slab(folder, MAXX + 30, H / 2, 0, 1, H, 22, BuildKit.jitter(WALL), nil, "SafeWall")
+	slab(folder, MAXX, H / 2, -6.5, 1, H, 7, BuildKit.jitter(WALL), Enum.Material.Limestone, "ExitWall")
+	slab(folder, MAXX, H / 2, 6.5, 1, H, 7, BuildKit.jitter(WALL), Enum.Material.Limestone, "ExitWall")
+	slab(folder, MAXX, H - 2, 0, 1, 4, 6, BuildKit.jitter(WALL), Enum.Material.Limestone, "ExitLintel")
+	slab(folder, MAXX + 15, 0.1, 0, 30, 0.2, 20, BuildKit.jitter(FLOOR), Enum.Material.Pavement, "SafeFloor")
+	slab(folder, MAXX + 15, H + 0.25, 0, 32, 0.5, 22, BuildKit.jitter(CEIL), Enum.Material.Basalt, "SafeCeiling")
+	slab(folder, MAXX + 15, H / 2, -10, 30, H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "SafeWall")
+	slab(folder, MAXX + 15, H / 2, 10, 30, H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "SafeWall")
+	slab(folder, MAXX + 30, H / 2, 0, 1, H, 22, BuildKit.jitter(WALL), Enum.Material.Limestone, "SafeWall")
 	BuildKit.pool(folder, MAXX + 15, H - 0.5, 0, Color3.fromRGB(220, 210, 190), 1.5, 28)
 
 	handles.doorTouch = BuildKit.part({
