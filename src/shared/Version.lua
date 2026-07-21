@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 19,
+	patch = 20,
 	stage = "atmosphere-sweep-all-rooms",
 }

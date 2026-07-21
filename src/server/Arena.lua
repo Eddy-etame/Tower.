@@ -336,12 +336,16 @@ function Arena.playReveal(handles)
 	end
 	local up = TweenService:Create(
 		light,
-		TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-		{ Brightness = 0.85 }
+		TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+		{ Brightness = 1.2 }
 	)
 	up.Completed:Connect(function()
-		TweenService:Create(light, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.In), { Brightness = 0 })
-			:Play()
+		-- HOLD the half-light a beat (long enough to half-see the tall shape far off), then let it sink
+		task.delay(0.4, function()
+			TweenService
+				:Create(light, TweenInfo.new(1.4, Enum.EasingStyle.Sine, Enum.EasingDirection.In), { Brightness = 0 })
+				:Play()
+		end)
 	end)
 	up:Play()
 end

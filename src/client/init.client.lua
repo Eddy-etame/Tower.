@@ -122,6 +122,8 @@ cardText.TextSize = 46
 cardText.TextColor3 = INK
 cardText.Text = ""
 cardText.Parent = fullCard
+local cardScale = Instance.new("UIScale")
+cardScale.Parent = cardText
 
 -- a brief text-only banner (no screen-filling background) for good beats like escaping
 local banner = Instance.new("TextLabel")
@@ -136,6 +138,8 @@ banner.TextStrokeTransparency = 0.3
 banner.TextTransparency = 1
 banner.Text = ""
 banner.Parent = gui
+local bannerScale = Instance.new("UIScale")
+bannerScale.Parent = banner
 
 local bannerGen = 0
 local function showBanner(text)
@@ -242,16 +246,6 @@ local function showTitle(text)
 			end
 		end)
 	end)
-end
-
-local function showCard(text, color)
-	cardText.Text = text
-	fullCard.BackgroundColor3 = color
-	fullCard.Visible = true
-	fullCard.BackgroundTransparency = 1
-	cardText.TextTransparency = 1
-	TweenService:Create(fullCard, TweenInfo.new(0.35), { BackgroundTransparency = 0.05 }):Play()
-	TweenService:Create(cardText, TweenInfo.new(0.5), { TextTransparency = 0 }):Play()
 end
 
 -- the pass-through blackout (Encounter III): fade to total black, hold, fade back
@@ -503,9 +497,30 @@ uiRemote.OnClientEvent:Connect(function(payload)
 		TweenService:Create(vignette, TweenInfo.new(0.4), { ImageTransparency = 1 }):Play()
 	elseif payload.kind == "caught" then
 		TweenService:Create(vignette, TweenInfo.new(0.15), { ImageTransparency = 0.2 }):Play()
-		showCard("IT REACHED YOU.", Color3.fromRGB(20, 0, 0))
+		player:SetAttribute("FeelKick", 0.9) -- death lands in the body
+		-- a beat of PURE dark before the words (the "what happened" breath), then the card slams in
+		fullCard.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+		fullCard.Visible = true
+		fullCard.BackgroundTransparency = 1
+		cardText.Text = ""
+		TweenService:Create(fullCard, TweenInfo.new(0.2), { BackgroundTransparency = 0.05 }):Play()
+		task.delay(0.32, function()
+			if not fullCard.Visible then
+				return
+			end
+			cardText.Text = "IT REACHED YOU."
+			cardText.TextTransparency = 0
+			cardScale.Scale = 1.14
+			TweenService:Create(cardScale, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Scale = 1,
+			}):Play()
+		end)
 	elseif payload.kind == "escaped" then
 		TweenService:Create(vignette, TweenInfo.new(0.6), { ImageTransparency = 1 }):Play()
+		bannerScale.Scale = 1.08 -- a breath released: the words settle instead of appearing
+		TweenService:Create(bannerScale, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Scale = 1,
+		}):Play()
 		showBanner("YOU GOT OUT.") -- brief text, no screen-fill, so the safe chamber is visible immediately
 	end
 end)

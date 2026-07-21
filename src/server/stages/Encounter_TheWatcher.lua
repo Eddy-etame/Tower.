@@ -185,6 +185,7 @@ function Stage.update(h, dt)
 			if root and root.Position.X > 6 then
 				h.revealed = true
 				Arena.playReveal(h.arena)
+				h.ctx.broadcast({ kind = "kick", n = 0.3 }) -- the room opening is felt, not just seen
 				break
 			end
 		end
