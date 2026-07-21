@@ -6,6 +6,18 @@
 local Players = game:GetService("Players")
 local Gallery = require(script.Parent.Parent.Gallery)
 
+local function playAt(part, soundId, speed, volume)
+	local s = Instance.new("Sound")
+	s.SoundId = soundId
+	s.PlaybackSpeed = speed
+	s.Volume = volume
+	s.Parent = part
+	s:Play()
+	s.Ended:Once(function()
+		s:Destroy()
+	end)
+end
+
 local Stage = {}
 Stage.name = "ViolentRhythm"
 Stage.title = "ENCOUNTER II — THE VIOLENT RHYTHM"
@@ -145,6 +157,8 @@ function Stage.update(h, dt)
 				local mi = h.lastMark[uid]
 				local target = (mi and mi > 0) and g.marks[mi].pos or g.entranceSpawn
 				root.CFrame = CFrame.new(target + Vector3.new(0, 3, 0))
+				playAt(root, tuning.SWEPT_SOUND, tuning.SWEPT_SOUND_SPEED, tuning.SWEPT_SOUND_VOLUME)
+				h.ctx.send(pl, { kind = "kick", n = 0.8 })
 				h.ctx.send(pl, { kind = "banner", text = "SWEPT." })
 			end
 

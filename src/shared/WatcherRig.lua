@@ -68,6 +68,14 @@ function WatcherRig.buildLocal(parent)
 	for i = 1, 2 do
 		h.eyes[i] = makePart(Vector3.new(0.24, 0.16, 0.2), EYE_DIM, Enum.Material.Neon, "Eye")
 	end
+	-- the halo: a faint red presence-glow on the head — trackable in pitch dark while it is ALIVE, gone when
+	-- frozen (the light itself teaches the rule). Driven per-frame by pose() via p.haloBright.
+	h.halo = Instance.new("PointLight")
+	h.halo.Color = EYE_HOT
+	h.halo.Brightness = 0
+	h.halo.Range = 7
+	h.halo.Shadows = false
+	h.halo.Parent = h.head
 
 	for _, part in { h.torso, h.chest, h.head, h.armL, h.armR, h.legL, h.legR, h.eyes[1], h.eyes[2] } do
 		part.Parent = folder
@@ -103,6 +111,9 @@ function WatcherRig.pose(h, renderCF, p)
 	local c = EYE_DIM:Lerp(EYE_HOT, math.clamp(p.eyeBright or 0, 0, 1))
 	h.eyes[1].Color = c
 	h.eyes[2].Color = c
+	if h.halo then
+		h.halo.Brightness = p.haloBright or 0
+	end
 end
 
 function WatcherRig.destroy(h)

@@ -8,6 +8,18 @@
 local Players = game:GetService("Players")
 local Corridor = require(script.Parent.Parent.Corridor)
 
+local function playAt(part, soundId, speed, volume)
+	local s = Instance.new("Sound")
+	s.SoundId = soundId
+	s.PlaybackSpeed = speed
+	s.Volume = volume
+	s.Parent = part
+	s:Play()
+	s.Ended:Once(function()
+		s:Destroy()
+	end)
+end
+
 local Stage = {}
 Stage.name = "HiddenPresence"
 Stage.title = "ENCOUNTER III — THE HIDDEN PRESENCE"
@@ -162,6 +174,11 @@ function Stage.update(h, dt)
 			h.blackedOut = true
 			for _, p in Players:GetPlayers() do
 				if not h.escaped[p.UserId] then
+					local proot = p.Character and p.Character.PrimaryPart
+					if proot then
+						-- the pass-through: a wet rush THROUGH you as everything goes dark
+						playAt(proot, tuning.PASS_SOUND, tuning.PASS_SOUND_SPEED, tuning.PASS_SOUND_VOLUME)
+					end
 					h.ctx.send(p, { kind = "blackout", seconds = tuning.PRESENCE_BLACKOUT })
 				end
 			end

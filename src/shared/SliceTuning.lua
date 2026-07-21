@@ -55,6 +55,17 @@ return {
 	SETTLE_GAP_MIN = 14, -- seconds between settles (randomized - never a rhythm)
 	SETTLE_GAP_MAX = 32,
 	TAPE_QUIET_SECS = 4.5, -- the bed drops to near-nothing while the tape plays (the room listens too)
+	CATCH_SOUND = "rbxasset://sounds/impact_explosion_03.mp3", -- the catch: a muffled body-blow
+	CATCH_SOUND_SPEED = 0.7,
+	CATCH_SOUND_VOLUME = 0.55,
+	SWEPT_SOUND = "rbxasset://sounds/impact_water.mp3", -- the sweep: a violent rush past the ear
+	SWEPT_SOUND_SPEED = 0.55,
+	SWEPT_SOUND_VOLUME = 0.6,
+	PASS_SOUND = "rbxasset://sounds/impact_water.mp3", -- III pass-through: a wet rush THROUGH you
+	PASS_SOUND_SPEED = 0.35,
+	PASS_SOUND_VOLUME = 0.65,
+	WATCHER_HALO_BRIGHT = 0.34, -- the faint red halo on its head while it advances (trackable in pitch dark)
+	WATCHER_HALO_RANGE = 7,
 	CLICK_SOUND = "rbxasset://sounds/volume_slider.ogg", -- the flashlight click (VERIFIED present 2026-07-21)
 	CLICK_VOLUME = 0.5,
 

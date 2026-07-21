@@ -179,6 +179,8 @@ local function step(dt)
 	p.neckYaw = M.yaw
 	p.neckPitch = M.pitch
 	p.eyeBright = tuning.WATCHER_EYE_LO + (tuning.WATCHER_EYE_HI - tuning.WATCHER_EYE_LO) * M.eyePulse
+	-- halo follows aliveness (advancing = lit, frozen = dark) + spikes with the notice pulse
+	p.haloBright = tuning.WATCHER_HALO_BRIGHT * M.alive + 0.35 * M.eyePulse
 	WatcherRig.pose(M.rig, renderCF, p)
 end
 

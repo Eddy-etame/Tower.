@@ -6,6 +6,18 @@ local Players = game:GetService("Players")
 local Arena = require(script.Parent.Parent.Arena)
 local Threat = require(script.Parent.Parent.Threat)
 
+local function playAt(part, soundId, speed, volume)
+	local s = Instance.new("Sound")
+	s.SoundId = soundId
+	s.PlaybackSpeed = speed
+	s.Volume = volume
+	s.Parent = part
+	s:Play()
+	s.Ended:Once(function()
+		s:Destroy()
+	end)
+end
+
 local Stage = {}
 Stage.name = "TheWatcher"
 Stage.title = "ENCOUNTER I — THE WATCHER"
@@ -200,6 +212,10 @@ function Stage.update(h, dt)
 		h.caughtCooldown[caught.UserId] = true
 		-- freeze the Watcher for the caught screen; onPlayerEnter then sets the (shorter) post-retry hold
 		h.holdUntil = os.clock() + tuning.CAUGHT_SECONDS
+		local croot = caught.Character and caught.Character.PrimaryPart
+		if croot then
+			playAt(croot, tuning.CATCH_SOUND, tuning.CATCH_SOUND_SPEED, tuning.CATCH_SOUND_VOLUME)
+		end
 		h.ctx.send(caught, { kind = "caught" })
 		task.delay(tuning.CAUGHT_SECONDS, function()
 			-- fire-time re-checks: the stage may have been torn down (h.active), the player may have left, or
