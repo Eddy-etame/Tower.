@@ -107,24 +107,20 @@ function Arena.build(tuning, parentFolder)
 	-- strips began 20 studs in, past the lintel, so from where you enter there was simply no road). Warm amber =
 	-- high contrast against the cold room AND distinct from the RED goal beacons; neon so it survives even if
 	-- every dynamic light culls; a glow anchor every few markers so it reads as a lit trail at a glance.
-	local roadX = { -14, -9, -4, 1, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60 }
-	for i, sx in roadX do
-		local strip = BuildKit.part({
-			Size = Vector3.new(2.8, 0.16, 1.1),
-			CFrame = CFrame.new(sx, 0.3, 0),
-			Color = Color3.fromRGB(255, 190, 110),
+	-- refined to the Beginning's language (v0.17.14): a slim recessed amber seam, not glowing runway blocks —
+	-- elegant, continuous from the spawn to the exit, still cull-proof neon
+	for sx = -14, 61, 2 do
+		BuildKit.part({
+			Size = Vector3.new(1.5, 0.08, 0.35),
+			CFrame = CFrame.new(sx, 0.26, 0),
+			Color = Color3.fromRGB(196, 150, 96),
 			Material = Enum.Material.Neon,
 			Name = "PathStrip",
 		}, folder)
-		if i % 3 == 1 then -- ~5 soft glow pools along the trail (bonus over the always-visible neon)
-			local g = Instance.new("PointLight")
-			g.Range = 8
-			g.Brightness = 0.8
-			g.Color = strip.Color
-			g.Shadows = false
-			g.Parent = strip
-		end
 	end
+
+	-- dust over the room (shared atmosphere language; the throat stays clear — contrast on arrival)
+	BuildKit.dust(folder, 33, 9, 0, 50, 34)
 
 	-- environmental story (this place broke; it does not care that you are here): a toppled barricade at the
 	-- mouth, two fallen ceiling chunks, a dead hung fixture. Cheap parts, but the room stops being a box.

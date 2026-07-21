@@ -171,6 +171,40 @@ function BuildKit.sign(folder, cframe, text, color)
 	return label
 end
 
+-- drifting dust motes over a region — the light gets volume, the place reads as long-undisturbed. One emitter,
+-- cheap (rate ~20), texture verified present in the installed Roblox content (2026-07-09).
+function BuildKit.dust(folder, cx, cy, cz, w, d)
+	local anchor = BuildKit.part({
+		Size = Vector3.new(w, 1, d),
+		CFrame = CFrame.new(cx, cy, cz),
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		Name = "DustField",
+	}, folder)
+	local dust = Instance.new("ParticleEmitter")
+	dust.Texture = "rbxasset://textures/particles/smoke_main.dds"
+	dust.Color = ColorSequence.new(Color3.fromRGB(150, 150, 158))
+	dust.LightEmission = 0.35
+	dust.LightInfluence = 1 -- motes shine only where light falls (volume, not glitter)
+	dust.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.15, 0.86),
+		NumberSequenceKeypoint.new(0.85, 0.9),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	dust.Size = NumberSequence.new(0.14, 0.28)
+	dust.Lifetime = NumberRange.new(9, 16)
+	dust.Rate = math.clamp((w * d) / 30, 12, 30) -- density scales with area, capped for mobile
+	dust.Speed = NumberRange.new(0.2, 0.7)
+	dust.SpreadAngle = Vector2.new(180, 180)
+	dust.Acceleration = Vector3.new(0.1, -0.35, 0)
+	dust.Rotation = NumberRange.new(0, 360)
+	dust.RotSpeed = NumberRange.new(-8, 8)
+	dust.Parent = anchor
+	return anchor
+end
+
 -- an interaction pad the player walks onto to proceed (used for stub-encounter "proceed" and transitions)
 function BuildKit.pad(folder, position, color)
 	return BuildKit.part({

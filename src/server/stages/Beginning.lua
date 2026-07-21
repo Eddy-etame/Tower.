@@ -45,36 +45,8 @@ function Beginning.build(ctx)
 		}, folder)
 	end
 
-	-- DUST in the air (atmosphere: the light gets volume, the place breathes). A slow, sparse fall of motes lit by
-	-- the room — cheap, but it turns a flat box into a space that has been sitting here, undisturbed, for a long time.
-	local dustAnchor = BuildKit.part({
-		Size = Vector3.new(30, 1, 20),
-		CFrame = CFrame.new(17, 9, 0),
-		Transparency = 1,
-		CanCollide = false,
-		CanQuery = false,
-		Name = "DustField",
-	}, folder)
-	local dust = Instance.new("ParticleEmitter")
-	dust.Texture = "rbxasset://textures/particles/smoke_main.dds" -- built-in, verified present; a soft round mote
-	dust.Color = ColorSequence.new(Color3.fromRGB(150, 150, 158))
-	dust.LightEmission = 0.35
-	dust.LightInfluence = 1 -- catches the room light, so motes only shine where light falls (volume)
-	dust.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 1),
-		NumberSequenceKeypoint.new(0.15, 0.86),
-		NumberSequenceKeypoint.new(0.85, 0.9),
-		NumberSequenceKeypoint.new(1, 1),
-	})
-	dust.Size = NumberSequence.new(0.14, 0.28)
-	dust.Lifetime = NumberRange.new(9, 16)
-	dust.Rate = 26
-	dust.Speed = NumberRange.new(0.2, 0.7)
-	dust.SpreadAngle = Vector2.new(180, 180)
-	dust.Acceleration = Vector3.new(0.1, -0.35, 0) -- an almost-still drift + a faint settle
-	dust.Rotation = NumberRange.new(0, 360)
-	dust.RotSpeed = NumberRange.new(-8, 8)
-	dust.Parent = dustAnchor
+	-- dust in the air: the light gets volume, the place reads as long-undisturbed (shared BuildKit.dust)
+	BuildKit.dust(folder, 17, 9, 0, 30, 20)
 	-- the name, off to the side — read it or don't; the door is the point
 	BuildKit.sign(
 		folder,

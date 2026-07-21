@@ -193,6 +193,9 @@ function Gallery.build(tuning, parentFolder)
 	handles.galleryMinX = MINX
 	handles.galleryMaxX = MAXX
 
+	-- dust over the gallery lane (shared atmosphere language; the surges churn a long-undisturbed air)
+	BuildKit.dust(folder, (MINX + MAXX) / 2, H - 3, 0, MAXX - MINX - 10, MAXZ - MINZ - 2)
+
 	folder.Parent = parentFolder or workspace
 	return handles
 end

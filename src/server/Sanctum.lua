@@ -152,6 +152,11 @@ function Sanctum.build(tuning, parentFolder)
 	-- a very dim warm pool over the socket so the exit room reads as "the one warm room" (the rest stays dark)
 	BuildKit.pool(folder, 42, H - 0.5, -6, Color3.fromRGB(120, 96, 64), 0.7, 20)
 
+	-- dust in both halves — LightInfluence=1 means the motes are INVISIBLE in the dark arrival and only appear
+	-- inside the companion's warm glow: the little light literally reveals the air around you as it walks with you
+	BuildKit.dust(folder, -20, H - 3, 0, 34, 20)
+	BuildKit.dust(folder, 25, H - 3, 0, 44, 24)
+
 	handles.spawn = Vector3.new(-34, 3.5, 0)
 	folder.Parent = parentFolder or workspace
 	return handles

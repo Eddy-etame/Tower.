@@ -134,6 +134,10 @@ function Corridor.build(tuning, parentFolder)
 	handles.corridorMaxX = MAXX
 	handles.recordX = 70
 
+	-- dust down the corridor: motes catch each lamp pool, so the dead-lamp band (the presence's tell) reads as
+	-- a hole in the drifting light too — the atmosphere itself carries the positional signal
+	BuildKit.dust(folder, (MINX + MAXX) / 2, H - 3, 0, MAXX - MINX - 10, MAXZ - MINZ - 1)
+
 	folder.Parent = parentFolder or workspace
 	return handles
 end

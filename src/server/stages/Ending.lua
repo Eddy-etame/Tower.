@@ -19,6 +19,7 @@ function Ending.build(ctx)
 	local folder = ctx.folder
 	local tuning = ctx.tuning
 	BuildKit.room(folder, { minX = 0, maxX = 34, minZ = -12, maxZ = 12 })
+	BuildKit.dust(folder, 17, 9, 0, 30, 20) -- shared atmosphere language (see BuildKit.dust)
 	-- warm but DIM: relief, carrying weight — not a bright reward room. You made it out; you'll remember.
 	BuildKit.pool(folder, 17, 10.5, -3, Color3.fromRGB(236, 220, 192), 1.3, 28)
 	BuildKit.sign(
