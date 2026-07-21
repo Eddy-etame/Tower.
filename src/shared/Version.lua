@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 20,
-	stage = "atmosphere-sweep-all-rooms",
+	patch = 21,
+	stage = "silence-band-alive",
 }

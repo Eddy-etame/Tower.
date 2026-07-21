@@ -3,6 +3,7 @@
 -- ones near the hidden presence lose confidence and dim to almost nothing — a band of dead light that trails
 -- behind you IS the thing's position (the muted player's visible twin of the ambient bed ducking). A tape
 -- recorder sits midway — the one instrument, incorruptible. Blockout; fog (global Lighting) does the occluding.
+local TweenService = game:GetService("TweenService")
 local BuildKit = require(script.Parent.BuildKit)
 
 local Corridor = {}
@@ -153,12 +154,29 @@ function Corridor.setSilence(handles, presenceX, radius)
 		-- a scarred lamp is dead forever (a spent-warning history); never re-light it
 		if not l.scarred then
 			local dead = presenceX ~= nil and math.abs(l.x - presenceX) <= radius
-			if dead then
-				l.bulb.Color = LAMP_DEAD
-				l.light.Brightness = 0.12
-			else
-				l.bulb.Color = LAMP_CALM
-				l.light.Brightness = 1.3
+			if dead ~= l.deadState then -- EDGE-ONLY: the band's movement is a wave of lamps CHANGING, not a repaint
+				l.deadState = dead
+				if dead then
+					-- the lamp GUTTERS OUT as the presence arrives: two failing blinks, then it loses its nerve
+					task.spawn(function()
+						l.light.Brightness = 0.55
+						task.wait(0.07)
+						if l.deadState and not l.scarred then
+							l.light.Brightness = 1.1
+							task.wait(0.05)
+						end
+						if l.deadState and not l.scarred then
+							l.bulb.Color = LAMP_DEAD
+							TweenService:Create(l.light, TweenInfo.new(0.3), { Brightness = 0.12 }):Play()
+						end
+					end)
+				else
+					-- the presence has passed: the lamp regains its nerve SLOWLY (relief is never instant here)
+					l.bulb.Color = LAMP_CALM
+					TweenService:Create(l.light, TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						Brightness = 1.3,
+					}):Play()
+				end
 			end
 		end
 	end
