@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 28,
-	stage = "the-towers-voice",
+	patch = 29,
+	stage = "certified",
 }

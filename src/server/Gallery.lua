@@ -253,14 +253,8 @@ function Gallery.build(tuning, parentFolder)
 		Name = "GalleryWinZone",
 	}, folder)
 
-	-- ambient bed + the breath sounds (STUB rbxasset)
-	local ambient = Instance.new("Sound")
-	ambient.SoundId = tuning.AMBIENT_SOUND
-	ambient.PlaybackSpeed = tuning.AMBIENT_SPEED
-	ambient.Volume = tuning.AMBIENT_VOLUME
-	ambient.Looped = true
-	ambient.Parent = folder
-	ambient:Play()
+	-- (the old anonymous ambient bed was REMOVED — it played on top of the named GALLERY bed: two overlapping
+	-- wind loops, louder and phasey. One room, one bed.)
 
 	handles.inhale = Instance.new("Sound")
 	handles.inhale.SoundId = tuning.RHYTHM_INHALE_SOUND

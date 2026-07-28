@@ -17,7 +17,7 @@ local LAMP_DEAD = Color3.fromRGB(30, 30, 34) -- the dead-zone: the light that ha
 local H = 12
 local MINX, MAXX, MINZ, MAXZ = 0, 140, -6, 6
 local EMINX = -14 -- entry alcove
-local LAMPS_X = { 10, 25, 40, 55, 70, 85, 100, 115, 130 }
+local LAMPS_X = { 10, 25, 42, 55, 70, 87, 100, 115, 132 } -- 40/85/130 sat INSIDE pilasters (step-9 grid from -14)
 local CHAINS_X = { 20, 48, 66, 96, 122 }
 
 local function slab(folder, cx, cy, cz, sx, sy, sz, color, mat, name)

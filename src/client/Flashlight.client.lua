@@ -32,7 +32,7 @@ local enabled = true
 local suppressed = false -- stage-declared (server): a room whose fiction needs the dark turns the cone off entirely
 local lastToggle = 0
 local managed, level = false, 1 -- server-owned battery state (only in the rationing encounter)
-local light, fill, anchor
+local light, fill
 
 -- battery bar (shown only while the light is rationed)
 local gui = Instance.new("ScreenGui")
@@ -87,15 +87,18 @@ end
 
 local function build(character)
 	local head = character:WaitForChild("Head")
-	anchor = Instance.new("Part")
-	anchor.Name = "FlashlightAnchor"
-	anchor.Size = Vector3.new(0.2, 0.2, 0.2)
-	anchor.Transparency = 1
-	anchor.CanCollide = false
-	anchor.CanQuery = false
-	anchor.Massless = true
-	anchor.CastShadow = false
-	anchor.Parent = character
+	-- myAnchor is FUNCTION-LOCAL on purpose: the render closure below must track THIS build's anchor. When it
+	-- was the shared upvalue, a respawn re-pointed it at the NEW anchor, so the OLD closure never disconnected
+	-- and kept pinning the cone to the dead character's head position, fighting the live one every frame.
+	local myAnchor = Instance.new("Part")
+	myAnchor.Name = "FlashlightAnchor"
+	myAnchor.Size = Vector3.new(0.2, 0.2, 0.2)
+	myAnchor.Transparency = 1
+	myAnchor.CanCollide = false
+	myAnchor.CanQuery = false
+	myAnchor.Massless = true
+	myAnchor.CastShadow = false
+	myAnchor.Parent = character
 
 	light = Instance.new("SpotLight")
 	light.Face = Enum.NormalId.Front
@@ -107,7 +110,7 @@ local function build(character)
 	-- low quality levels cull — the cone must survive on every machine, dread be damped a notch. Playability first.
 	light.Shadows = false
 	light.Enabled = enabled
-	light.Parent = anchor
+	light.Parent = myAnchor
 
 	fill = Instance.new("PointLight")
 	fill.Range = 12
@@ -115,7 +118,7 @@ local function build(character)
 	fill.Color = CONE_COLOR
 	fill.Shadows = false
 	fill.Enabled = enabled
-	fill.Parent = anchor
+	fill.Parent = myAnchor
 
 	applyLight()
 	flashlightRemote:FireServer(enabled) -- report initial state
@@ -123,12 +126,12 @@ local function build(character)
 	local smoothed = camera.CFrame
 	local connection
 	connection = RunService.RenderStepped:Connect(function(dt)
-		if not anchor.Parent then
+		if not myAnchor.Parent then
 			connection:Disconnect()
 			return
 		end
 		smoothed = smoothed:Lerp(camera.CFrame, math.clamp(dt * 12, 0, 1))
-		anchor.CFrame = CFrame.lookAt(head.Position, head.Position + smoothed.LookVector)
+		myAnchor.CFrame = CFrame.lookAt(head.Position, head.Position + smoothed.LookVector)
 	end)
 end
 

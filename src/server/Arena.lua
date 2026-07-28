@@ -461,7 +461,10 @@ function Arena.surge(handles)
 	-- the escape heartbeat: the emergency red + the open-door green BREATHE while the surge state holds
 	task.spawn(function()
 		local up = true
-		while handles.surged do
+		-- LIFETIME: the loop must die with the STAGE, not only with reset — a player escaping mid-surge tears the
+		-- folder down while surged is still true; without the Parent check this loop is immortal and tweens
+		-- destroyed lights forever
+		while handles.surged and handles.folder.Parent do
 			local target = up and SliceTuning.SURGE_PULSE_HI or SliceTuning.SURGE_PULSE_LO
 			local info =
 				TweenInfo.new(SliceTuning.SURGE_PULSE_SECS / 2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
@@ -474,11 +477,11 @@ function Arena.surge(handles)
 			up = not up
 			task.wait(SliceTuning.SURGE_PULSE_SECS / 2)
 		end
-		-- state released (reset): settle both lights back to their resting levels
-		if handles.emergLight then
+		-- state released (reset or teardown): settle both lights back to their resting levels
+		if handles.emergLight and handles.emergLight.Parent then
 			handles.emergLight.Brightness = 0.55
 		end
-		if handles.doorLamp then
+		if handles.doorLamp and handles.doorLamp.Parent then
 			handles.doorLamp.PointLight.Brightness = 1.2
 		end
 	end)
@@ -486,6 +489,11 @@ end
 
 function Arena.reset(handles)
 	handles.surged = false
+	-- pin the pulse-driven brightnesses too: a mid-flight tween can land AFTER the loop's settle write
+	if handles.emergLight then
+		handles.emergLight.Brightness = 0.55
+	end
+	handles.doorLamp.PointLight.Brightness = 1.2
 	handles.door.CFrame = handles.doorClosed
 	handles.doorLamp.Color = RED
 	handles.doorLamp.PointLight.Color = RED

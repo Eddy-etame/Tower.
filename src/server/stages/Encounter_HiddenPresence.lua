@@ -74,6 +74,9 @@ function Stage.build(ctx)
 		h.recording = true
 		corridor.reel.Color = Color3.fromRGB(90, 230, 120) -- reel spins (recording)
 		task.delay(tuning.PRESENCE_RECORD_SECONDS, function()
+			if h.torn then
+				return -- the stage ended mid-recording; the reveal must never pop in the NEXT room
+			end
 			corridor.reel.Color = Color3.fromRGB(180, 60, 40)
 			h.recording = false
 			-- the reveal: your steps + a SECOND set, offset, one beat late — and the ROOM goes quiet to listen

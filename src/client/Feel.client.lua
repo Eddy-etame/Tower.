@@ -54,6 +54,11 @@ RunService.RenderStepped:Connect(function(dt)
 	t += dt * tuning.FEEL_BOB_HZ * 2 * math.pi * math.max(move, 0.01)
 	local bobY = math.sin(t * 2) * tuning.FEEL_BOB_AMP * move -- double-frequency vertical (two footfalls per cycle)
 	local swayX = math.sin(t) * tuning.FEEL_BOB_AMP * tuning.FEEL_SWAY_RATIO * move
+	-- idle breathing (absorbed from the retired Juice.client — Feel is the CAMERA'S ONLY OWNER; two scripts
+	-- writing CameraOffset per frame was a last-writer-wins war): fades OUT as movement takes over
+	local clock = os.clock()
+	local breatheY = math.sin(clock * 2 * math.pi * 0.22) * 0.06 * (1 - move)
+	local idleSwayX = math.sin(clock * 0.5) * 0.02 * (1 - move)
 
 	-- landing dip: critically-damped spring back to zero
 	local k = tuning.FEEL_LAND_RECOVER
@@ -61,7 +66,7 @@ RunService.RenderStepped:Connect(function(dt)
 	dipVel += (-k * dip - c * dipVel) * dt
 	dip += dipVel * dt
 
-	humanoid.CameraOffset = Vector3.new(swayX, bobY + dip, 0)
+	humanoid.CameraOffset = Vector3.new(swayX + idleSwayX, bobY + breatheY + dip, 0)
 
 	-- moving FOV: wider when moving, eased — never a snap zoom
 	kick *= math.exp(-tuning.FEEL_KICK_DECAY * dt) -- the punch decays like a struck thing settling
