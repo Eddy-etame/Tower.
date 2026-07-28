@@ -62,7 +62,7 @@ function Gallery.build(tuning, parentFolder)
 		0.5,
 		MAXZ - MINZ + 2,
 		BuildKit.jitter(CEIL),
-		nil,
+		Enum.Material.Basalt,
 		"MezzCeiling"
 	)
 	slab(folder, EMINX, H / 2, 0, 1, H, MAXZ - MINZ + 2, BuildKit.jitter(WALL), Enum.Material.Limestone, "MezzBack")
@@ -118,7 +118,7 @@ function Gallery.build(tuning, parentFolder)
 		0.5,
 		MAXZ - MINZ + 2,
 		BuildKit.jitter(CEIL),
-		nil,
+		Enum.Material.Basalt,
 		"GalleryCeiling"
 	)
 	slab(

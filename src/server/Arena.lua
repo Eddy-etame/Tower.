@@ -83,7 +83,7 @@ function Arena.build(tuning, parentFolder)
 		0.5,
 		MAXZ - MINZ + 2,
 		BuildKit.jitter(CEIL),
-		Enum.Material.Concrete,
+		Enum.Material.Basalt,
 		"Ceiling"
 	)
 	slab(folder, 33, ROOM_H / 2, MINZ, MAXX - MINX, ROOM_H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
@@ -286,8 +286,8 @@ function Arena.build(tuning, parentFolder)
 	handles.doorLamp = doorLamp
 
 	-- the SAFE CHAMBER beyond the door: warm, lit, out of the Watcher's reach. Escaping delivers you here.
-	slab(folder, 78, 0.1, 0, 30, 0.2, 20, BuildKit.jitter(FLOOR), Enum.Material.Concrete, "SafeFloor")
-	slab(folder, 78, ROOM_H + 0.25, 0, 32, 0.5, 22, BuildKit.jitter(CEIL), Enum.Material.Concrete, "SafeCeiling")
+	slab(folder, 78, 0.1, 0, 30, 0.2, 20, BuildKit.jitter(FLOOR), Enum.Material.Pavement, "SafeFloor")
+	slab(folder, 78, ROOM_H + 0.25, 0, 32, 0.5, 22, BuildKit.jitter(CEIL), Enum.Material.Basalt, "SafeCeiling")
 	slab(folder, 78, ROOM_H / 2, -10, 30, ROOM_H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
 	slab(folder, 78, ROOM_H / 2, 10, 30, ROOM_H, 1, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")
 	slab(folder, 93, ROOM_H / 2, 0, 1, ROOM_H, 22, BuildKit.jitter(WALL), Enum.Material.Limestone, "Wall")

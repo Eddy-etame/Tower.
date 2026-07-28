@@ -57,7 +57,7 @@ function Corridor.build(tuning, parentFolder)
 		0.5,
 		MAXZ - MINZ + 2,
 		BuildKit.jitter(CEIL),
-		nil,
+		Enum.Material.Basalt,
 		"Ceiling"
 	)
 	slab(
