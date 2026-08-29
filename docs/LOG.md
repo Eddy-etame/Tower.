@@ -14,13 +14,17 @@ Companions: `BRAIN.md` (what I know) · `CAPABILITIES.md` (what I can do).
 - [ ] Await Eddy's new ideas → analyse → pick first → blueprint it.
 - [ ] Re-audit whole build from 15% (design, feelings, immersion, mechanics, ANIMATIONS).
 - [ ] Roblox audio catalog sweep → replace stub `rbxasset://` foley with real curated IDs (browser).
-- [ ] Game icon + thumbnail (currently default green baseplate — visible failure on the store page).
-- [ ] Creature concept art → `multi_image_to_3d` → rigged/animated GLB → import manifest for Eddy.
+- [ ] Game icon + thumbnail (default green baseplate now — generate + upload; icon/thumbnail may still need Creator Hub UI).
+- [ ] Creature concept art → `multi_image_to_3d` → rigged/animated GLB → **convert to FBX** → upload via Open Cloud (test the Model path).
 - [ ] UI/UX pass to baffled bar (text, typography, hit areas, states) — `make-interfaces-feel-better`.
 - [ ] roblox-watch: study DOORS/Pressure/Rooms first frames + UI via browser; document findings here.
 - [ ] Encounter I vs Silent Witness doc contradiction → still a HEAD decision, keep flagged.
 
 ## NEW INFO (fact — source)
+- 2026-08-29 · **OPEN CLOUD UPLOAD WORKS.** API key stored at `~/.claude/secrets/roblox_api_key` (outside repo). Uploader: `~/.claude/tools/rbx_upload.py` (verify | upload | poll). Test Decal uploaded → assetId 105929786978573, moderation **Approved**. Images/decals are now fully automatable end-to-end.
+- 2026-08-29 · Key gotcha: the first paste 401'd — JWT header+payload decoded fine, signature was transcription-corrupted. **Always use "Copy Key To Clipboard", never a visually-read copy.**
+- 2026-08-29 · UNTESTED still: Audio upload (may need ID verification), Model/FBX upload (+ needs GLB→FBX conversion; Blender not installed).
+- 2026-08-29 · Account gaps flagged to Eddy: **no email, no phone** on the Roblox account → no recovery path for the account that owns the game. ID verification entry = Settings → Account info → "Continue with ID".
 - 2026-07-21 · `generate_3d` makes GLB meshes, can rig + animate from a **678-clip library** (`animation_actions`) — MCP tool schema.
 - 2026-07-21 · `generate_audio` is **speech only**; SFX/music models are restricted to a separate game pipeline and must not be used standalone — MCP tool schema. **Foley wall stands; Roblox catalog is the path.**
 - 2026-07-21 · Credits: **857.62, Plus plan** — `balance`.
