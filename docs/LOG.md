@@ -23,7 +23,9 @@ Companions: `BRAIN.md` (what I know) · `CAPABILITIES.md` (what I can do).
 ## NEW INFO (fact — source)
 - 2026-08-29 · **OPEN CLOUD UPLOAD WORKS.** API key stored at `~/.claude/secrets/roblox_api_key` (outside repo). Uploader: `~/.claude/tools/rbx_upload.py` (verify | upload | poll). Test Decal uploaded → assetId 105929786978573, moderation **Approved**. Images/decals are now fully automatable end-to-end.
 - 2026-08-29 · Key gotcha: the first paste 401'd — JWT header+payload decoded fine, signature was transcription-corrupted. **Always use "Copy Key To Clipboard", never a visually-read copy.**
-- 2026-08-29 · UNTESTED still: Audio upload (may need ID verification), Model/FBX upload (+ needs GLB→FBX conversion; Blender not installed).
+- 2026-08-29 · **AUDIO UPLOAD WORKS** (assetId 109173415419557, state Reviewing) after Eddy completed ID + email verification. Both now Verified on the account.
+- 2026-08-29 · **THE FOLEY WALL IS BROKEN — ffmpeg is installed.** I can SYNTHESISE original foley (sine/noise sources + lowpass/highpass, aecho reverb, tremolo, pitch sweeps, fades, layering) and upload it. Not AI generation — real procedural sound design, fully iterable by me. Roblox catalog remains a second source.
+- 2026-08-29 · Model/FBX upload still untested; Blender installing in background for GLB→FBX.
 - 2026-08-29 · Account gaps flagged to Eddy: **no email, no phone** on the Roblox account → no recovery path for the account that owns the game. ID verification entry = Settings → Account info → "Continue with ID".
 - 2026-07-21 · `generate_3d` makes GLB meshes, can rig + animate from a **678-clip library** (`animation_actions`) — MCP tool schema.
 - 2026-07-21 · `generate_audio` is **speech only**; SFX/music models are restricted to a separate game pipeline and must not be used standalone — MCP tool schema. **Foley wall stands; Roblox catalog is the path.**
@@ -37,7 +39,7 @@ Companions: `BRAIN.md` (what I know) · `CAPABILITIES.md` (what I can do).
 ## FLAWS (flaw → fix) — open
 - Game icon/thumbnail = default green baseplate → generate + Eddy uploads via Creator Hub.
 - Watcher body = 7 grey boxes → concept art → 3D pipeline → real mesh.
-- All foley = `rbxasset://` stubs (wrong-but-present samples) → Roblox catalog sweep.
+- All foley = `rbxasset://` stubs → **synthesise originals with ffmpeg + upload** (primary), Roblox catalog (secondary).
 - Published build stale → Eddy publishes.
 
 ## FLAWS FIXED (kept for the sibling-sweep habit)
