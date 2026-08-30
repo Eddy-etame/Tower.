@@ -133,7 +133,12 @@ return {
 	RHYTHM_WARN = 1.3, -- the cascade + inhale countdown
 	RHYTHM_SURGE = 0.9, -- open floor lethal; marks safe. (SAFE + WARN + SURGE MUST equal PERIOD.)
 	RHYTHM_MARK_RADIUS = 3.4, -- studs: how close to a mark's centre counts as "on the mark" (generous — no pixel-perfect)
-	RHYTHM_START_GRACE = 4.6, -- covers the first FULL breath (SAFE+WARN+SURGE): the first surge is witnessed, never lethal
+	RHYTHM_START_GRACE = 4.6,
+	-- ANTI-CAMP (the law that killed the safe corner in Encounter I, finally swept to II): a mark GIVES OUT
+	-- under a player who stands on it. Set above two full periods so waiting out a cycle is always safe and
+	-- only camping is punished. It heats visibly first — the room warns before it takes.
+	RHYTHM_MARK_OVERHEAT = 9.5,
+	RHYTHM_MARK_WARN_AT = 0.55, -- fraction of the overheat where the plate starts visibly heating -- covers the first FULL breath (SAFE+WARN+SURGE): the first surge is witnessed, never lethal
 	-- STUB audio (Audio dept records real foley): the breath — inhale rises, surge roars
 	RHYTHM_INHALE_SOUND = "rbxasset://sounds/action_swim.mp3", -- a long drawn swish = the gallery inhaling
 	RHYTHM_INHALE_SPEED = 0.42,
@@ -175,7 +180,11 @@ return {
 	MORAL_EXHALE_SAFE = 2.1, -- the move window; the rest of the period is the exhale (the companion at the mouth flares)
 	MORAL_MOVE_THRESH = 2, -- studs/s above which you count as MOVING; still is beneath its notice
 	MORAL_EXHALE_WARN = 0.7, -- s before the exhale that the dread ramps up (a facing-independent countdown; the flare is behind you)
-	MORAL_PASSAGE_DANGER = 0.35, -- seconds of moving-during-an-exhale it tolerates before it takes you (grace to stop)
+	MORAL_PASSAGE_DANGER = 0.35,
+	-- SHIP B consequence: the flashlight is no longer confiscated in IV — it is a TEMPTATION. "Slow and quiet is
+	-- beneath its notice" cuts both ways: a lit cone is never beneath notice, so carrying light through the dark
+	-- passage draws the shape even when you stand perfectly still.
+	MORAL_LIGHT_DRAW = 2.4, -- danger multiplier while your cone is lit in the passage -- seconds of moving-during-an-exhale it tolerates before it takes you (grace to stop)
 	MORAL_BLACKOUT = 1.5, -- pass-through blackout on a dark-crossing death (the choice stays open)
 
 	-- MOBILE LOW-TIER (the ~70% majority): the heavy fullscreen passes get gated off on touch devices. DoF and

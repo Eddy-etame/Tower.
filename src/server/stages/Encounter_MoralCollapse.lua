@@ -11,9 +11,10 @@ local Stage = {}
 Stage.name = "MoralCollapse"
 Stage.title = "ENCOUNTER IV — THE MORAL COLLAPSE"
 Stage.mood = { ambient = { 0.12, 0.115, 0.135 }, fog = { 0.06, 0.055, 0.07 }, saturation = -0.3 } -- deepest violet-dark; the companion is the only warmth
--- the whole dilemma rests on the companion being your light: with a personal flashlight, "spend your light or
--- cross the dark" has no weight. GameService tells the client to suppress the cone for this stage.
-Stage.suppressFlashlight = true
+-- SHIP B: the cone is NO LONGER confiscated here. By this point in the descent your own light is nearly gone
+-- anyway (it never refilled), so the companion is your real light by consequence rather than by decree — and
+-- whatever you have left becomes a TEMPTATION: "slow and quiet is beneath its notice" cuts both ways, and a lit
+-- cone is never beneath notice. Carrying light into the dark passage draws the shape even standing still.
 
 local RULES = {
 	{ t = "THE MORAL COLLAPSE", y = 0.3, s = 48 },
@@ -21,7 +22,7 @@ local RULES = {
 	{ t = "THE WAY OUT NEEDS LIGHT.", y = 0.51, s = 28 },
 	{ t = "GIVE IT TO THE SOCKET,", y = 0.61, s = 30 },
 	{ t = "OR CROSS THE DARK AND KEEP IT.", y = 0.68, s = 30, c = { 200, 60, 60 } },
-	{ t = "IN THE DARK: SLOW AND QUIET. DON'T RUN.", y = 0.82, s = 20, c = { 150, 143, 128 } },
+	{ t = "IN THE DARK: SLOW, QUIET, UNLIT. DON'T RUN.", y = 0.82, s = 20, c = { 150, 143, 128 } },
 }
 
 local function inPassage(p, pos)
@@ -187,8 +188,16 @@ function Stage.update(h, dt)
 			and Vector3.new(pos.X - h.lastPassagePos.X, 0, pos.Z - h.lastPassagePos.Z).Magnitude / step
 				> tuning.MORAL_MOVE_THRESH
 		h.lastPassagePos = pos
-		if exhaling and moving then
-			h.danger += step
+		-- your own cone, carried into the passage, is never beneath its notice. FAIR-LEARNING: the warning fires
+		-- during the WARN ramp, BEFORE the exhale, so there is always time to douse the light. Being lit costs the
+		-- same as moving (a real grace window); being lit AND moving is what the shape truly cannot ignore.
+		local lit = h.ctx.lighting()[player.UserId] == true
+		if lit and warn > 0.5 and not h.taughtLight then
+			h.taughtLight = true
+			h.ctx.send(player, { kind = "banner", text = "IT SEES YOUR LIGHT." })
+		end
+		if exhaling and (moving or lit) then
+			h.danger += step * ((moving and lit) and tuning.MORAL_LIGHT_DRAW or 1)
 			if not h.taughtExhale then
 				h.taughtExhale = true
 				h.ctx.send(player, { kind = "banner", text = "IT EXHALES. BE STILL." })

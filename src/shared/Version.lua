@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 31,
-	stage = "ship-b-light-is-the-thread",
+	patch = 32,
+	stage = "ship-b-verified",
 }

@@ -30,9 +30,18 @@ local RULES = {
 	{ t = "SOMETHING KEEPS ITS DISTANCE BEHIND YOU.", y = 0.44, s = 28 },
 	{ t = "WHERE THE LAMPS DIE, IT STANDS.", y = 0.51, s = 28 },
 	{ t = "KEEP MOVING. DON'T LET IT CLOSE.", y = 0.61, s = 32, c = { 200, 60, 60 } },
-	{ t = "REACH THE DOOR.", y = 0.71, s = 26 },
+	{ t = "THE DOOR ONLY OPENS FOR WHAT THE TAPE HEARD.", y = 0.71, s = 26 },
 	{ t = "THE TAPE HEARS WHAT YOU CANNOT.", y = 0.82, s = 20, c = { 150, 143, 128 } },
 }
+
+-- the corridor's objective is two-phase now: the exit is SEALED until you have stood still long enough to
+-- record and play the tape. The encounter's whole threat was opt-in while its one reason to stop was optional.
+local function objectiveText(h)
+	if h.tapeDone then
+		return "REACH THE DOOR — KEEP MOVING SO IT CAN'T CLOSE."
+	end
+	return "FIND THE RECORDER. THE DOOR WANTS WHAT IT HEARD."
+end
 
 local function nearestPlayer(corridor)
 	local best, bestRoot
@@ -81,13 +90,26 @@ function Stage.build(ctx)
 			h.recording = false
 			-- the reveal: your steps + a SECOND set, offset, one beat late — and the ROOM goes quiet to listen
 			h.tapeQuietUntil = os.clock() + tuning.TAPE_QUIET_SECS
+			h.tapeDone = true -- the exit unseals: you have heard what walks with you
 			ctx.send(player, { kind = "tape", steps = 7 })
+			for _, p in ctx.players() do
+				ctx.send(p, { kind = "objective", text = objectiveText(h) })
+			end
 		end)
 	end)
 
 	corridor.doorTouch.Touched:Connect(function(hit)
 		local player = Players:GetPlayerFromCharacter(hit.Parent)
 		if not player or h.escaped[player.UserId] then
+			return
+		end
+		if not h.tapeDone then
+			-- SEALED: the room refuses you until you have stopped, recorded, and listened. Told once per approach.
+			if not h.refusedAt or os.clock() - h.refusedAt > 3 then
+				h.refusedAt = os.clock()
+				ctx.send(player, { kind = "banner", text = "IT WON'T OPEN. NOT YET." })
+				ctx.send(player, { kind = "objective", text = objectiveText(h) })
+			end
 			return
 		end
 		h.escaped[player.UserId] = true
@@ -115,7 +137,7 @@ function Stage.onPlayerEnter(h, ctx, player)
 		h.taught[uid] = true
 		ctx.send(player, { kind = "rules", lines = RULES })
 	end
-	ctx.send(player, { kind = "objective", text = "REACH THE DOOR — KEEP MOVING SO IT CAN'T CLOSE." })
+	ctx.send(player, { kind = "objective", text = objectiveText(h) })
 end
 
 function Stage.teardown(h)

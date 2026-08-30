@@ -105,7 +105,7 @@ function Beginning.build(ctx)
 	-- the name, on the side wall between pilasters — read it or don't; the door is the point
 	BuildKit.sign(
 		folder,
-		CFrame.lookAt(Vector3.new(13.2, 6.5, -8.3), Vector3.new(13.2, 6.5, 0)),
+		CFrame.lookAt(Vector3.new(23, 6.5, -8.3), Vector3.new(23, 6.5, 0)),
 		"THE THRESHOLD",
 		BuildKit.PAPER
 	)

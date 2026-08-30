@@ -58,6 +58,9 @@ function Stage.build(ctx)
 		taught = {}, -- [userId] onboarded (per-player, so a co-op joiner still gets the card; survives respawn)
 		escaped = {},
 		lastMark = {}, -- [userId] = furthest mark index secured (forward respawn)
+		markOn = {}, -- [userId] = mark index currently stood on (nil = off-mark)
+		markTime = {}, -- [userId] = seconds stood on THAT mark (anti-camp: it gives out)
+		markWarned = {}, -- [userId] = the give-out warning was spoken once
 		lastDanger = {}, -- [userId] = last danger level sent (change-gate the vignette remote)
 	}
 
@@ -147,6 +150,35 @@ function Stage.update(h, dt)
 			local pos = root.Position
 			local inGallery = pos.X >= g.galleryMinX and pos.X <= g.galleryMaxX
 			local onMark = markAt(g, pos, tuning.RHYTHM_MARK_RADIUS)
+			-- ANTI-CAMP: a mark gives out under a player who will not move. Standing still was free in this room;
+			-- it is not any more. Waiting out one full cycle is still perfectly safe (overheat > 2 periods).
+			if onMark then
+				if h.markOn[uid] ~= onMark then
+					h.markOn[uid], h.markTime[uid], h.markWarned[uid] = onMark, 0, nil
+				else
+					h.markTime[uid] = (h.markTime[uid] or 0) + step
+				end
+				local heat = (h.markTime[uid] or 0) / tuning.RHYTHM_MARK_OVERHEAT
+				if heat >= tuning.RHYTHM_MARK_WARN_AT then
+					Gallery.setMarkHeat(
+						g,
+						onMark,
+						(heat - tuning.RHYTHM_MARK_WARN_AT) / (1 - tuning.RHYTHM_MARK_WARN_AT)
+					)
+					if not h.markWarned[uid] then
+						h.markWarned[uid] = true
+						h.ctx.send(pl, { kind = "banner", text = "IT IS GIVING OUT. MOVE." })
+					end
+				end
+				if heat >= 1 then
+					onMark = nil -- the plate has given out: this is open floor now
+				end
+			else
+				if h.markOn[uid] then
+					Gallery.coolMarks(g)
+				end
+				h.markOn[uid], h.markTime[uid], h.markWarned[uid] = nil, 0, nil
+			end
 			if onMark then
 				h.lastMark[uid] = math.max(h.lastMark[uid] or 0, onMark) -- secure forward progress
 			end

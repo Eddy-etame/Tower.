@@ -353,6 +353,27 @@ function Gallery.updateSweep(handles, phase, p)
 	end
 end
 
+-- the mark HEATS under a camper: green -> amber -> red as it approaches giving out (the room warns first).
+-- t = 0..1 of the way to overheat. At 1 the mark stops being safe (server decides; this is only the tell).
+function Gallery.setMarkHeat(handles, index, t)
+	local m = handles.marks[index]
+	if not m then
+		return
+	end
+	t = math.clamp(t, 0, 1)
+	local hot = Color3.fromRGB(70, 220, 110):Lerp(Color3.fromRGB(235, 60, 40), t)
+	m.plate.Color = hot
+	m.light.Color = hot
+end
+
+-- every mark back to its resting green (a new cycle, or the camper stepped off)
+function Gallery.coolMarks(handles)
+	for _, m in handles.marks do
+		m.plate.Color = Color3.fromRGB(70, 220, 110)
+		m.light.Color = Color3.fromRGB(70, 220, 110)
+	end
+end
+
 -- the "GO" pulse: every mark breathes bright once as the safe window opens (the timing, made visible)
 function Gallery.pulseMarks(handles)
 	for _, m in handles.marks do

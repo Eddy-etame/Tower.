@@ -21,6 +21,9 @@ Companions: `BRAIN.md` (what I know) · `CAPABILITIES.md` (what I can do).
 - [ ] Encounter I vs Silent Witness doc contradiction → still a HEAD decision, keep flagged.
 
 ## NEW INFO (fact — source)
+- 2026-08-30 · **SHIP B VERIFIED IN-GAME.** Burned light in the Beginning, walked into Encounter I, battery bar arrived RED/near-empty instead of full. The descent-wide light economy works; no nil crash; 0 errors in Output. (Screens: scratchpad/shots/v31_0*.png)
+- 2026-08-30 · Studio driving gotcha: in Play mode, WASD goes to STUDIO unless you first CLICK the 3D viewport. F5 works without it; movement does not.
+- 2026-08-30 · Launch gotcha: `Start-Process -ArgumentList` splits paths on spaces ("C:/Users/Mommy") — use the file association (`Start-Process '<full .rbxl path>'`) instead.
 - 2026-08-29 · **OPEN CLOUD UPLOAD WORKS.** API key stored at `~/.claude/secrets/roblox_api_key` (outside repo). Uploader: `~/.claude/tools/rbx_upload.py` (verify | upload | poll). Test Decal uploaded → assetId 105929786978573, moderation **Approved**. Images/decals are now fully automatable end-to-end.
 - 2026-08-29 · Key gotcha: the first paste 401'd — JWT header+payload decoded fine, signature was transcription-corrupted. **Always use "Copy Key To Clipboard", never a visually-read copy.**
 - 2026-08-29 · **AUDIO UPLOAD WORKS** (assetId 109173415419557, state Reviewing) after Eddy completed ID + email verification. Both now Verified on the account.
@@ -37,6 +40,8 @@ Companions: `BRAIN.md` (what I know) · `CAPABILITIES.md` (what I can do).
 - 2026-07-21 · motion-* skills are React/Next.js — principles transfer, code does not.
 
 ## FLAWS (flaw → fix) — open
+- FIXED 2026-08-30 · "THE THRESHOLD" plaque clipped into unreadable fragments at spawn (sat 9 studs from the camera) → moved down the nave to x=23.
+- Difficulty was arithmetically trivial in II/III (5.3x margin; presence 8 vs player 16) → retuned + Ship B; NEEDS A PLAY-TEST of the new numbers (math says right, feel unproven).
 - Game icon/thumbnail = default green baseplate → generate + Eddy uploads via Creator Hub.
 - Watcher body = 7 grey boxes → concept art → 3D pipeline → real mesh.
 - All foley = `rbxasset://` stubs → **synthesise originals with ffmpeg + upload** (primary), Roblox catalog (secondary).
