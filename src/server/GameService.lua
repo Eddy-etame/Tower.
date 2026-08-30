@@ -172,16 +172,63 @@ function GameService.startStage(index)
 	end
 end
 
+-- the plain next room in the list (the loop wraps at the end: the Ending returns you to the Beginning)
+local function linearNext()
+	local nxt = current + 1
+	if nxt > #stages then
+		nxt = 1
+	end
+	return nxt
+end
+
+local function indexOfName(name)
+	for i, st in stages do
+		if st.name == name then
+			return i
+		end
+	end
+	return nil
+end
+
+-- BRANCHING ROUTER (Floor 2's dilemma rooms: the choice you made BUILDS the next room).
+-- A stage may declare `Stage.next` as: a stage NAME (string), an index (number), or a function(session)
+-- returning either. Absent = the linear next, so Floor 1 is completely unchanged.
+-- INVARIANT: this can never strand the descent — every failure path falls back to the linear next and says
+-- so loudly, because a player stuck in a dead room is the worst outcome this codebase can produce.
+local function resolveNext()
+	local decl = active and active.next
+	if decl == nil then
+		return linearNext()
+	end
+	if type(decl) == "function" then
+		local ok, res = pcall(decl, session)
+		if not ok then
+			warn("[GameService] stage '" .. tostring(active.name) .. "' next() errored: " .. tostring(res))
+			return linearNext()
+		end
+		decl = res
+	end
+	if type(decl) == "string" then
+		local i = indexOfName(decl)
+		if i then
+			return i
+		end
+		warn("[GameService] stage '" .. tostring(active.name) .. "' routed to unknown stage '" .. decl .. "'")
+		return linearNext()
+	end
+	if type(decl) == "number" and stages[decl] then
+		return decl
+	end
+	warn("[GameService] stage '" .. tostring(active.name) .. "' declared an unusable next; going linear")
+	return linearNext()
+end
+
 function GameService.advance(gen)
 	if gen ~= nil and gen ~= generation then
 		return -- a stale clear() from an already-torn-down stage; ignore it
 	end
-	local nxt = current + 1
 	refundAll(tuning.BATTERY_ROOM_REFUND) -- you survived a room: take a breath of light with you
-	if nxt > #stages then
-		nxt = 1 -- Ending loops back to the Beginning (a fresh descent)
-	end
-	GameService.startStage(nxt)
+	GameService.startStage(resolveNext())
 end
 
 function GameService.init(stageList, sliceTuning, remote, flashRemote)

@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 32,
-	stage = "ship-b-verified",
+	patch = 33,
+	stage = "branching-router",
 }
