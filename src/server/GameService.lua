@@ -14,6 +14,44 @@ local current, active, activeHandles, activeFolder, activeCtx
 local generation = 0 -- bumped each stage build; a stale delayed clear() from a torn-down stage is ignored
 local session = {} -- cross-stage state for ONE descent (e.g. the moral choice); wiped when the loop restarts
 
+-- SHIP B — THE LIGHT IS THE THREAD.
+-- Project Bible: "Every completed encounter changes how the player approaches the next."
+-- ONE battery for the whole descent: it drains in EVERY room, recharges slowly, and is wiped only when the
+-- loop restarts at the Beginning. Each room therefore begins with less light than the last, so difficulty
+-- escalates on its own and Encounter IV's choice is EARNED (your own light is nearly gone by then).
+-- Deliberately within-descent only: no upgrades, no meta, nothing carried between runs — the Bible excludes
+-- "large progression systems". This is a resource under judgment, never power.
+local flashOn, flashAt = {}, {} -- live client-reported light state (NOT session: it dies with the run)
+local drainPaused = false -- a stage may pause the drain during a frozen window (rules card / caught screen)
+local lightAccum = 0
+
+-- the client's cone starts ENABLED (Flashlight.client: `local enabled = true`) and reports once on spawn.
+-- If that first report is ever missed, nil must read as ON — otherwise the player would silently burn no
+-- battery while their light is visibly shining, and the Watcher could never be frozen.
+local function lightIsOn(uid)
+	return flashOn[uid] ~= false
+end
+
+local function batteryOf(uid)
+	if session.battery == nil then
+		session.battery = {}
+	end
+	local b = session.battery[uid]
+	if b == nil then
+		b = 1
+		session.battery[uid] = b
+	end
+	return b
+end
+
+-- surviving a room earns a BREATH of light back (SHIP B stays demanding, never a dead end)
+local function refundAll(amount)
+	for _, p in Players:GetPlayers() do
+		local uid = p.UserId
+		session.battery[uid] = math.min(1, batteryOf(uid) + (amount or 0))
+	end
+end
+
 local applyMood -- forward-declared (defined below); ctx closures call it late-bound
 
 local function ctxFor(folder, gen)
@@ -33,6 +71,21 @@ local function ctxFor(folder, gen)
 		players = function()
 			return Players:GetPlayers()
 		end,
+		-- who can currently FREEZE (light on AND charged) — the Watcher reads this
+		lighting = function()
+			local m = {}
+			for _, p in Players:GetPlayers() do
+				local uid = p.UserId
+				m[uid] = lightIsOn(uid) and batteryOf(uid) > tuning.BATTERY_MIN
+			end
+			return m
+		end,
+		-- pause the drain while the player cannot act (fair-learning: never charge them for a frozen window)
+		pauseDrain = function(v)
+			drainPaused = v and true or false
+		end,
+		-- a breath between rooms: safe chambers hand a little light back, so the descent is survivable
+		refund = refundAll,
 		setMood = function(mood)
 			applyMood(mood) -- a stage may shift the world's light mid-beat (e.g. the world darkens as a light dies)
 		end,
@@ -53,13 +106,12 @@ local function enterPlayer(player)
 		char:PivotTo(CFrame.new(activeHandles.spawn))
 	end
 	uiRemote:FireClient(player, { kind = "title", title = active.title or active.name or "" })
-	-- reset the flashlight to unmanaged/full on entering any stage; a stage that rations light (the Watcher)
-	-- takes over with managed battery updates, and a stage whose fiction NEEDS the dark (the Moral Collapse —
-	-- the companion must be your only light or the choice has no weight) declares suppressFlashlight
+	-- SHIP B: the light is NOT refilled on stage entry any more — it is the thread through the whole descent.
+	-- Push the CURRENT level so the bar is truthful the instant the room loads; the heartbeat keeps it live.
 	if flashlightRemote then
 		flashlightRemote:FireClient(player, {
-			managed = false,
-			level = 1,
+			managed = true,
+			level = batteryOf(player.UserId),
 			disabled = active.suppressFlashlight == true,
 		})
 	end
@@ -102,6 +154,7 @@ end
 
 function GameService.startStage(index)
 	teardown()
+	drainPaused = false -- never carry a stage's frozen-window pause into the next room
 	generation += 1
 	if index == 1 then
 		table.clear(session) -- a fresh descent: the previous run's choices don't carry (only DataStore would, later)
@@ -124,6 +177,7 @@ function GameService.advance(gen)
 		return -- a stale clear() from an already-torn-down stage; ignore it
 	end
 	local nxt = current + 1
+	refundAll(tuning.BATTERY_ROOM_REFUND) -- you survived a room: take a breath of light with you
 	if nxt > #stages then
 		nxt = 1 -- Ending loops back to the Beginning (a fresh descent)
 	end
@@ -136,7 +190,41 @@ function GameService.init(stageList, sliceTuning, remote, flashRemote)
 	uiRemote = remote
 	flashlightRemote = flashRemote
 
+	-- ONE global handler for the client's light on/off report (was per-stage, so the economy only existed in
+	-- Encounter I). Validates type and coalesces redundant same-value spam, never dropping a real change.
+	flashlightRemote.OnServerEvent:Connect(function(player, on)
+		if typeof(on) ~= "boolean" then
+			return
+		end
+		local uid, now = player.UserId, os.clock()
+		if flashOn[uid] == on and now - (flashAt[uid] or 0) < tuning.FLASH_MIN_INTERVAL then
+			return
+		end
+		flashAt[uid] = now
+		flashOn[uid] = on
+	end)
+
 	RunService.Heartbeat:Connect(function(dt)
+		-- the descent's light economy, driven in EVERY room at the shared tick
+		lightAccum += dt
+		if lightAccum >= tuning.CHECK_INTERVAL then
+			local step = lightAccum
+			lightAccum = 0
+			local suppressed = active ~= nil and active.suppressFlashlight == true
+			for _, p in Players:GetPlayers() do
+				local uid = p.UserId
+				local b = batteryOf(uid)
+				if not drainPaused and not suppressed then
+					if lightIsOn(uid) then
+						b = math.max(0, b - tuning.BATTERY_DRAIN * step)
+					else
+						b = math.min(1, b + tuning.BATTERY_RECHARGE * step)
+					end
+					session.battery[uid] = b
+				end
+				flashlightRemote:FireClient(p, { managed = true, level = b, disabled = suppressed })
+			end
+		end
 		if active and active.update then
 			active.update(activeHandles, dt)
 		end

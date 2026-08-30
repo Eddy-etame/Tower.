@@ -68,26 +68,8 @@ function Stage.build(ctx)
 		revealed = false, -- the entry reveal beat plays once, not on every caught-retry
 		taught = {}, -- [userId] onboarded (per-player, like II/III/IV — a co-op joiner still gets the card)
 		active = true, -- false after teardown, so a pending caught-retry closure can't fire into the next stage
-		flashOn = {}, -- [userId] = client's reported light on/off (the freeze intent)
-		flashAt = {}, -- [userId] = last accepted report time (coalesces redundant spam)
-		battery = {}, -- [userId] = 0..1, server-owned (the light-rationing anti-camp)
 		lastDanger = {}, -- [userId] = last danger level sent (change-gate the vignette remote)
 	}
-
-	-- the client reports its light on/off; the server owns the battery and gates the freeze on it. Validate type
-	-- and coalesce redundant same-value spam (min-law rate validation), but NEVER drop a real change — dropping a
-	-- toggle-off would leave the server draining/holding a light the player actually turned off.
-	h.flashConn = ctx.flashlightRemote.OnServerEvent:Connect(function(player, on)
-		if typeof(on) ~= "boolean" then
-			return
-		end
-		local uid, now = player.UserId, os.clock()
-		if h.flashOn[uid] == on and now - (h.flashAt[uid] or 0) < tuning.FLASH_MIN_INTERVAL then
-			return
-		end
-		h.flashAt[uid] = now
-		h.flashOn[uid] = on
-	end)
 
 	for index, breaker in arena.breakers do
 		breaker.prompt.Triggered:Connect(function()
@@ -134,8 +116,8 @@ function Stage.onPlayerEnter(h, ctx, player)
 	end
 	local uid = player.UserId
 	h.escaped[uid] = nil -- re-arm the exit for a rejoining player
-	h.flashOn[uid] = true
-	h.battery[uid] = 1
+	-- SHIP B: the light state is the DESCENT's now — this room must NOT reset it (that was the whole bug we
+	-- are fixing: every room used to hand the player a full battery back).
 	-- holdUntil only ever EXTENDS (math.max): a co-op entrant's shorter hold must never cut a peer's in-flight
 	-- rules read short — that would wake the Watcher while someone is still reading the card (unfair catch)
 	if not h.taught[uid] then
@@ -154,9 +136,6 @@ end
 
 function Stage.teardown(h)
 	h.active = false -- pending caught-retry closures bail instead of touching destroyed instances
-	if h.flashConn then
-		h.flashConn:Disconnect()
-	end
 end
 
 function Stage.update(h, dt)
@@ -168,25 +147,12 @@ function Stage.update(h, dt)
 	local step = h.accum
 	h.accum = 0
 
-	-- light-rationing: drain while the light is on, recharge while off; send the level; compute who can freeze.
-	-- FROZEN WINDOW (rules card / caught screen): don't drain — the player can't act and the Watcher isn't stepping,
-	-- so charging them for that time is an unfair penalty (fair-learning).
+	-- SHIP B: the battery now belongs to the DESCENT (GameService drives drain/recharge in every room).
+	-- This room only declares the frozen window (rules card / caught screen), during which the drain pauses —
+	-- the player cannot act and the Watcher is not stepping, so charging them would be unfair (fair-learning).
 	local frozenWindow = os.clock() < h.holdUntil
-	local lighting = {}
-	for _, p in Players:GetPlayers() do
-		local uid = p.UserId
-		local b = h.battery[uid] or 1
-		if not frozenWindow then
-			if h.flashOn[uid] then
-				b = math.max(0, b - tuning.BATTERY_DRAIN * step)
-			else
-				b = math.min(1, b + tuning.BATTERY_RECHARGE * step)
-			end
-			h.battery[uid] = b
-		end
-		lighting[uid] = h.flashOn[uid] and b > tuning.BATTERY_MIN
-		h.ctx.flashlightRemote:FireClient(p, { managed = true, level = b })
-	end
+	h.ctx.pauseDrain(frozenWindow)
+	local lighting = h.ctx.lighting()
 
 	-- THE MOMENT: fire the reveal the instant a player first clears the throat into the room (x > 6), where they
 	-- can actually see the space open and catch the shape — not while they are still in the corridor facing a gap.

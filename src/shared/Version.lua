@@ -2,6 +2,6 @@
 return {
 	major = 0,
 	minor = 17,
-	patch = 30,
-	stage = "fifty-at-our-level",
+	patch = 31,
+	stage = "ship-b-light-is-the-thread",
 }

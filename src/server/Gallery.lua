@@ -21,7 +21,9 @@ local SURGE_RED = Color3.fromRGB(205, 44, 32)
 local H = 14
 local MINX, MAXX, MINZ, MAXZ = 0, 124, -10, 10
 local EMINX = -24 -- entry mezzanine (always safe)
-local MARKS_X = { 14, 34, 54, 74, 94, 114 }
+-- widened 20 -> 26 studs (Eddy 2026-08-30: the old spacing left a 5.3x time margin — it could not be failed).
+-- 26 studs of exposed floor against a 2.2s safe window is a real commitment, not a stroll.
+local MARKS_X = { 14, 40, 66, 92, 118 }
 local LAMPS_X = { 10, 30, 50, 70, 90, 112 }
 local RIBS_X = { 24, 44, 64, 84, 104 }
 

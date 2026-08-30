@@ -30,7 +30,9 @@ return {
 	BATTERY_DRAIN = 0.03, -- per second while ON (~33s of continuous light — a first-timer needs orient time)
 	BATTERY_RECHARGE = 0.06, -- per second while OFF (a burst economy: light, then let it breathe)
 	BATTERY_MIN = 0.08, -- below this the light cannot freeze the Watcher and dims to a floor
-	BATTERY_LOW = 0.25, -- below this the light flickers (a scare beat + a warning)
+	BATTERY_LOW = 0.25,
+	BATTERY_ROOM_REFUND = 0.28, -- SHIP B: surviving a room earns a BREATH of light back. Tuned so a careful
+	-- player gains ground and a wasteful one still arrives at IV nearly dark — pressure, never a dead end. -- below this the light flickers (a scare beat + a warning)
 
 	-- AUDIO-AS-INFORMATION (2026 watch: the #1 lever for a NO-MUSIC horror MVP — the constraint is our weapon).
 	-- The Watcher's move sound plays ONLY while it advances and cuts to silence the instant your light freezes
@@ -126,12 +128,12 @@ return {
 	-- islands. Rule: be on a mark when it surges; cross mark-to-mark to the door. Speed never saves you — position
 	-- + timing do (the slowest player has the same odds as the fastest). Server-authoritative schedule (the surge
 	-- "entity" does not exist between events). Miss a window = wait one cycle, never a life (bus-timetable law).
-	RHYTHM_PERIOD = 6, -- seconds per full breath
-	RHYTHM_SAFE = 3.6, -- the move window (lamps calm)
-	RHYTHM_WARN = 1.7, -- the cascade + inhale countdown
-	RHYTHM_SURGE = 0.7, -- open floor lethal; marks safe. (SAFE + WARN + SURGE MUST equal PERIOD.)
-	RHYTHM_MARK_RADIUS = 4.6, -- studs: how close to a mark's centre counts as "on the mark" (generous — no pixel-perfect)
-	RHYTHM_START_GRACE = 6.3, -- covers the first FULL breath (SAFE+WARN+SURGE): the first surge is witnessed, never lethal
+	RHYTHM_PERIOD = 4.4, -- seconds per full breath
+	RHYTHM_SAFE = 2.2, -- the move window (lamps calm)
+	RHYTHM_WARN = 1.3, -- the cascade + inhale countdown
+	RHYTHM_SURGE = 0.9, -- open floor lethal; marks safe. (SAFE + WARN + SURGE MUST equal PERIOD.)
+	RHYTHM_MARK_RADIUS = 3.4, -- studs: how close to a mark's centre counts as "on the mark" (generous — no pixel-perfect)
+	RHYTHM_START_GRACE = 4.6, -- covers the first FULL breath (SAFE+WARN+SURGE): the first surge is witnessed, never lethal
 	-- STUB audio (Audio dept records real foley): the breath — inhale rises, surge roars
 	RHYTHM_INHALE_SOUND = "rbxasset://sounds/action_swim.mp3", -- a long drawn swish = the gallery inhaling
 	RHYTHM_INHALE_SPEED = 0.42,
@@ -144,11 +146,11 @@ return {
 	-- the muted-player's twin). Walk forward and it stays back; stand still (to use the tape) and it CREEPS in.
 	-- Close the gap twice and you're warned (a lamp dies); a third time it passes through you (blackout, respawn).
 	-- The tape recorder is the reveal: record yourself, play it back, and hear the SECOND set of footsteps.
-	PRESENCE_SPEED = 8, -- studs/s it creeps toward you (half walkspeed — walking forward outpaces it, stillness lets it close)
+	PRESENCE_SPEED = 14.5, -- studs/s it creeps toward you (half walkspeed — walking forward outpaces it, stillness lets it close)
 	PRESENCE_MAX_GAP = 28, -- it never trails further than this (snaps to keep pace — it is always with you)
-	PRESENCE_CLOSE_DIST = 10, -- gap below this = a close event (a warning, then it yields)
-	PRESENCE_YIELD = 15, -- how far it backs off on a warning
-	PRESENCE_WARNINGS = 2, -- warnings before the third close blacks you out
+	PRESENCE_CLOSE_DIST = 12, -- gap below this = a close event (a warning, then it yields)
+	PRESENCE_YIELD = 11, -- how far it backs off on a warning
+	PRESENCE_WARNINGS = 1, -- warnings before the third close blacks you out
 	PRESENCE_BLACKOUT = 1.5, -- seconds of sensory blackout on the third close, then respawn at the start
 	PRESENCE_SILENCE_RADIUS = 18, -- studs: lamps within this of the presence dim to the dead-zone low
 	PRESENCE_RECORD_SECONDS = 3, -- stand still this long at the recorder to capture the tape
@@ -170,10 +172,10 @@ return {
 	MORAL_DRAIN_SECONDS = 4.5, -- the spend: hum + glow slow and fade to nothing over this long (the climax's length)
 	MORAL_SOCKET_HOLD = 1.8, -- held place-action at the socket to commit (proximity alone NEVER commits)
 	MORAL_EXHALE_PERIOD = 4, -- the shape's breath: a safe window to move, then an EXHALE when any movement draws it
-	MORAL_EXHALE_SAFE = 2.8, -- the move window; the rest of the period is the exhale (the companion at the mouth flares)
+	MORAL_EXHALE_SAFE = 2.1, -- the move window; the rest of the period is the exhale (the companion at the mouth flares)
 	MORAL_MOVE_THRESH = 2, -- studs/s above which you count as MOVING; still is beneath its notice
 	MORAL_EXHALE_WARN = 0.7, -- s before the exhale that the dread ramps up (a facing-independent countdown; the flare is behind you)
-	MORAL_PASSAGE_DANGER = 0.6, -- seconds of moving-during-an-exhale it tolerates before it takes you (grace to stop)
+	MORAL_PASSAGE_DANGER = 0.35, -- seconds of moving-during-an-exhale it tolerates before it takes you (grace to stop)
 	MORAL_BLACKOUT = 1.5, -- pass-through blackout on a dark-crossing death (the choice stays open)
 
 	-- MOBILE LOW-TIER (the ~70% majority): the heavy fullscreen passes get gated off on touch devices. DoF and
